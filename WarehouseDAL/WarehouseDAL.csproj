@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Configurations\" />
+    <Folder Include="Data\Contexts\" />
+    <Folder Include="Data\Migrations\" />
+    <Folder Include="Data\SeedData\" />
+    <Folder Include="Entities\Enums\" />
+    <Folder Include="Entities\BaseEntity\" />
+    <Folder Include="UnitOfWork\" />
+    <Folder Include="Repositories\Interfaces\" />
+    <Folder Include="Repositories\Implememtation\" />
+  </ItemGroup>
+
+</Project>

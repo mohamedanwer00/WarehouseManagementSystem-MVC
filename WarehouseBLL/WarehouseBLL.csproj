@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarehouseDAL\WarehouseDAL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BusinessServices\Implememtation\" />
+    <Folder Include="BusinessServices\Interfaces\" />
+    <Folder Include="BusinessServices\View-Models\" />
+    <Folder Include="Mapping\" />
+  </ItemGroup>
+
+</Project>
