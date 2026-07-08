@@ -1,0 +1,37 @@
+﻿@using Clinic.Core.Consts
+@using WarehouseBLL.BusinessServices.View_Models
+@model CategoryViewModel
+
+<tr>
+    <td>@Model.Name</td>
+    <td>
+        <partial name="_LastActionBadge" model="Model.LastAction" />
+    </td>
+
+    <td>
+        <a href="javascript:;" data-url="/Categories/Edit/@Model.Id"
+           class="btn btn-sm btn-label-primary item-edit js-render-modal"
+           data-title="@_localization[DisplayNames.Edit]" data-update="true">
+            @_localization[DisplayNames.Edit]
+        </a>
+    </td>
+    <td>
+
+            @if (Model.LastAction != LastActionName.Delete)
+            {
+            <a href="javascript:;" data-url="/Categories/Delete/@Model.Id"
+                   class="btn btn-sm btn-label-danger item-edit js-toggle-status">
+                    @_localization[DisplayNames.Delete]
+                </a>
+            }
+            else
+            {
+
+            <a href="javascript:;" data-url="/Categories/Restore/@Model.Id"
+                   class="btn btn-sm btn-label-success item-edit js-restore">
+                    @_localization[DisplayNames.Restore]
+                </a>
+            }
+        
+    </td>
+</tr>

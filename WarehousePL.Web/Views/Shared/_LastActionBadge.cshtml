@@ -1,0 +1,21 @@
+﻿@* @model string
+
+@{
+    var badgeClass = Model switch
+    {
+        LastActionName.Insert => "bg-label-success",
+        LastActionName.Update => "bg-label-warning",
+        LastActionName.Delete => "bg-label-danger",
+        _ => "bg-label-secondary"
+    };
+
+    var labelKey = Model switch
+    {
+        // LastActionName.Insert => DisplayNames.LastActionAdded,
+        // LastActionName.Update => DisplayNames.LastActionUpdated,
+        // LastActionName.Delete => DisplayNames.LastActionDeleted,
+        // _ => DisplayNames.Status
+    };
+}
+
+<span class="badge @badgeClass js-last-action">@_localization[labelKey]</span> *@

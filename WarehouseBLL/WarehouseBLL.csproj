@@ -13,8 +13,10 @@
   <ItemGroup>
     <Folder Include="BusinessServices\Implememtation\" />
     <Folder Include="BusinessServices\Interfaces\" />
-    <Folder Include="BusinessServices\View-Models\" />
-    <Folder Include="Mapping\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.2.0" />
   </ItemGroup>
 
 </Project>

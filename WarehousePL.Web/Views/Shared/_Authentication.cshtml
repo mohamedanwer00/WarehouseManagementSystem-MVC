@@ -1,0 +1,131 @@
+﻿@using System.Globalization
+@{
+    var isRTL = CultureInfo.CurrentCulture.Name.StartsWith("ar");
+	var dir = isRTL ? "rtl" : "ltr";
+	var lang = isRTL ? "ar" : "en";
+}
+
+<!doctype html>
+
+<html lang="@lang"
+	  class="layout-navbar-fixed layout-menu-fixed layout-compact"
+	  dir="@dir"
+	  data-skin="default"
+	  data-assets-path="/assets/"
+	  data-template="vertical-menu-template"
+	  data-bs-theme="light">
+<head>
+
+	<meta charset="utf-8" />
+	<title>@ViewData["Title"]</title>
+
+	<!-- Favicon -->
+	<link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico" />
+	<!-- Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" href="/assets/vendor/fonts/iconify-icons.css" />
+	<!-- Core CSS -->
+	<link rel="stylesheet" href="/assets/vendor/libs/pickr/pickr-themes.css" />
+	<link rel="stylesheet" href="/assets/vendor/css/core.css" />
+	<link rel="stylesheet" href="/assets/css/demo.css" />
+	<!-- Vendors CSS -->
+	<link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+	<link href="~/assets/vendor/fonts/fontawesome.css" rel="stylesheet" />
+	<!-- endbuild -->
+	<link rel="stylesheet" href="/assets/vendor/fonts/flag-icons.css" />
+	<link rel="stylesheet" href="/assets/vendor/libs/apex-charts/apex-charts.css" />
+	<!-- Page CSS -->
+	<link rel="stylesheet" href="/assets/vendor/css/pages/page-auth.css" />
+	<!-- Helpers -->
+	<script src="/assets/vendor/js/helpers.js"></script>
+	<script src="/assets/js/config.js"></script>
+	<!--DataTables-->
+	<link href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" rel="stylesheet" />
+	<!-- notyf -->
+	<link rel="stylesheet" href="/assets/vendor/libs/notyf/notyf.css" />
+	<!-- Sweet Alert -->
+	<link rel="stylesheet" href="/assets/vendor/libs/animate-css/animate.css" />
+	<link rel="stylesheet" href="/assets/vendor/libs/sweetalert2/sweetalert2.css" />
+	<!--Select 2-->
+	<link href="~/assets/vendor/libs/select2/select2.css" rel="stylesheet" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	@await RenderSectionAsync("Styles", required: false)
+
+</head>
+
+<body>
+	<!-- Layout wrapper -->
+	@RenderBody()
+
+	<!-- / Layout wrapper -->
+	<!-- Core JS -->
+	<!-- build:js assets/vendor/js/theme.js  -->
+
+	<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+	<script src="/assets/vendor/libs/popper/popper.js"></script>
+	<script src="/assets/vendor/js/bootstrap.js"></script>
+	<script src="/assets/vendor/libs/pickr/pickr.js"></script>
+	<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+	<script src="/assets/vendor/libs/hammer/hammer.js"></script>
+	<script src="/assets/vendor/libs/i18n/i18n.js"></script>
+	<script src="/assets/vendor/js/menu.js"></script>
+	<!-- endbuild -->
+	<!-- Vendors JS -->
+	<script src="/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+	<!-- Main JS -->
+	<script src="/assets/js/main.js"></script>
+	<!-- Page JS -->
+	<!-- notyf js -->
+	<script src="/assets/vendor/libs/notyf/notyf.js"></script>
+	<!-- Sweet Alert js -->
+	<script src="/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+	<!--Select 2-->
+	<script src="~/assets/vendor/libs/select2/select2.js"></script>
+	<!--DataTables-->
+	<script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+	<!--Bootbox-->
+	<script src="~/lib/bootbox.js/bootbox.min.js"></script>
+
+	@Html.AntiForgeryToken()
+	<span id="Message" class="d-none">@TempData["Message"]</span>
+	<span id="ErrorMessage" class="d-none">@TempData["ErrorMessage"]</span>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+	@await RenderSectionAsync("Scripts", required: false)
+
+	<script>
+		var isRTL = getCookie('direction') === 'rtl';
+
+		var localization = {
+		successMessage: ' @_localization["SuccessMessage"]',
+		errorMessage: ' @_localization["ErrorMessage"]',
+		error: ' @_localization["Error"]',
+		success: ' @_localization["Success"]',
+		confirm: ' @_localization["confirmText"]',
+		yes: '@_localization["Yes"]',
+		no: '@_localization["No"]',
+		Export: ' @_localization["Export"]',
+		Active: ' @_localization["Active"]',
+		InActive: ' @_localization["Inactive"]',
+		Edit: '@_localization["Edit"]',
+		Delete: '@_localization["Delete"]',
+		Details: '@_localization["Details"]',
+		Drag: '@_localization["Drag&Drop"]',
+		SelectCity: '@_localization["SelectCity"]',
+		SelectArea: '@_localization["SelectArea"]',
+		SelectElectoralDistrict: '@_localization["SelectElectoralDistrict"]',
+		SelectRegistrationCenter: '@_localization["SelectRegistrationCenter"]',
+		SelectVotingCenter: '@_localization["SelectVotingCenter"]',
+		SelectQuestionStatus: '@_localization["SelectQuestionStatus"]'
+		};
+
+		function getCookie(name) {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) return parts.pop().split(';').shift();
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+﻿@using Clinic.Core.Consts
+@using WarehouseBLL.BusinessServices.View_Models
+@model IEnumerable<CategoryViewModel>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
+@{
+    ViewBag.Title = _localization["Categories"];
+}
+
+<div class="card">
+    <div class="card-datatable text-nowrap" id="">
+        <table class="js-table datatables-basic table table-bordered table-responsive">
+            <thead>
+                <tr>
+                    <th>@_localization[@DisplayNames.Name]</th>
+                    <th>@_localization[@DisplayNames.Status]</th>
+
+                    <th class="js-no-export" data-i18n="Edit"></th>
+                    
+                        <th class="js-no-export" data-i18n="DeleteOrRestore"></th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var category in Model)
+                {
+                    <partial name="_Row" model="@category" />
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<div id="create-button-data"
+     data-address=@_localization["Categories"]
+     data-title=@_localization["AddNew"]
+     data-url="@Url.Action("Create", "Categories")"
+     data-label="@_localization["AddCategory"]"
+     data-mode="modal">
+</div>
+
+<input type="hidden" name="__RequestVerificationToken" value="@antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}
