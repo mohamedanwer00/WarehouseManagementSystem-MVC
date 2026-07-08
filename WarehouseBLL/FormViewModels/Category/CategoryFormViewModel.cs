@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace WarehouseBLL.FormViewModels
+namespace WarehouseBLL.FormViewModels.Category
 {
     public class CategoryFormViewModel
     {

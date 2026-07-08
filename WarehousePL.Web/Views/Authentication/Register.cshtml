@@ -1,0 +1,35 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models
+@model RegisterViewModel
+
+@{
+    Layout = "_Authentication";
+}
+
+<div class="row">
+    <div class="col-md-5 card shade mw-center mh-center">
+        <img src="~/svg/logo.svg" alt="App Logo" class="mw-center" height="130" width="300">
+        <hr class="hr-dashed m-0">
+
+        <form asp-action="Register" asp-controller="Authentication" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- Hidden field to preserve the returnUrl -->
+            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+            <div class="form-group m-0">
+                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Username" class="form-control" placeholder="@_localization["enterUsername"]">
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <div class="form-group m-0">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="@_localization["enterPassword"]">
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+
+            <button type="submit" class="btn shade f-primary btn-block mt-5">@_localization["register"]</button>
+        </form>
+    </div>
+</div>

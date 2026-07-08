@@ -1,4 +1,4 @@
-﻿namespace Clinic.Core.Consts;
+﻿namespace WarehouseBLL.Const;
 
 public class DisplayNames
 {

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using WarehouseBLL.BusinessServices.View_Models;
-using WarehouseBLL.FormViewModels;
+using WarehouseBLL.FormViewModels.Category;
 using WarehouseDAL.Entities;
 
 namespace WarehouseBLL.Mapping

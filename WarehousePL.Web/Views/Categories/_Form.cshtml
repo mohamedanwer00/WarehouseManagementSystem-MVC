@@ -1,5 +1,6 @@
-﻿@using Clinic.Core.Consts
-@using WarehouseBLL.FormViewModels
+﻿@using WarehouseBLL.Const
+@using WarehouseBLL.FormViewModels.Category
+
 @model CategoryFormViewModel
 
 <form asp-action="@(Model?.Id > 0 ? "Edit" : "Create")"

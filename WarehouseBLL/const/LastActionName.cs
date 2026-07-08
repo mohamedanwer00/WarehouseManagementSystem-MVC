@@ -1,8 +1,13 @@
-﻿namespace Clinic.Core.Consts;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-public class LastActionName
+namespace WarehouseBLL.Const
 {
-    public const string Insert = "I";
-    public const string Update = "U";
-    public const string Delete = "D";
+    public class LastActionName
+    {
+        public const string Insert = "I";
+        public const string Update = "U";
+        public const string Delete = "D";
+    }
 }

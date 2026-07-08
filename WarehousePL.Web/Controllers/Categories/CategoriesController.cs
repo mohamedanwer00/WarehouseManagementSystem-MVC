@@ -1,11 +1,10 @@
 using AutoMapper;
-using Clinic.Core.Consts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Linq;
 using WarehouseBLL.BusinessServices.View_Models;
-using WarehouseBLL.FormViewModels;
+using WarehouseBLL.Const;
+using WarehouseBLL.FormViewModels.Category;
 using WarehouseDAL.Entities;
 using WarehouseDAL.Repositories.Interfaces;
 
