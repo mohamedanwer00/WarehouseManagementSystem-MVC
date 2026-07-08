@@ -19,6 +19,6 @@ namespace WarehouseDAL.Data.Contexts
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
 
-        DbSet<Category> Categories { get; set; }
+        public DbSet<Category> Categories { get; set; } = null!;
     }
 }

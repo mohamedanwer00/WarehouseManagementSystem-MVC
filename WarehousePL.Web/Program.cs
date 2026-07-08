@@ -1,4 +1,11 @@
 using Microsoft.Extensions.FileProviders;
+using WarehouseDAL.Data.Contexts;
+using WarehouseBLL.Mapping;
+using AutoMapper;
+using WarehouseDAL.Repositories.Interfaces;
+using WarehouseDAL.Repositories.Implememtation;
+using Microsoft.EntityFrameworkCore;
+using WarehouseDAL.Entities;
 
 namespace WarehousePL.Web
 {
@@ -11,6 +18,20 @@ namespace WarehousePL.Web
             // Add services to the container.
             builder.Services.AddControllersWithViews().AddViewLocalization();
 
+            // DbContext registration
+            builder.Services.AddDbContext<WarehouseDbContext>((sp, options) =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            // AutoMapper - register mapper instance using the project's MappingProfile
+            builder.Services.AddAutoMapper(X => X.AddProfile(new MappingProfile()));
+
+            // Register repositories and UnitOfWork
+            builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -21,7 +42,6 @@ namespace WarehousePL.Web
                 app.UseHsts();
             }
             
-
 
 
             app.UseHttpsRedirection();

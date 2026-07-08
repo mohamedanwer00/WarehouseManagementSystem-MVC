@@ -11,7 +11,6 @@ namespace WarehouseDAL.Repositories.Implememtation
     public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : BaseEntity, new()
     {
         private readonly WarehouseDbContext _dbContext;
-        private WarehouseDbContext dbContixt;
 
         public GenericRepository(WarehouseDbContext dbContext)
         {

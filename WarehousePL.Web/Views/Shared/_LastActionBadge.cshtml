@@ -1,4 +1,5 @@
-﻿@* @model string
+﻿@using Clinic.Core.Consts
+@model string
 
 @{
     var badgeClass = Model switch
@@ -11,11 +12,11 @@
 
     var labelKey = Model switch
     {
-        // LastActionName.Insert => DisplayNames.LastActionAdded,
-        // LastActionName.Update => DisplayNames.LastActionUpdated,
-        // LastActionName.Delete => DisplayNames.LastActionDeleted,
-        // _ => DisplayNames.Status
+        LastActionName.Insert => DisplayNames.LastActionAdded,
+        LastActionName.Update => DisplayNames.LastActionUpdated,
+        LastActionName.Delete => DisplayNames.LastActionDeleted,
+        _ => DisplayNames.Status
     };
 }
 
-<span class="badge @badgeClass js-last-action">@_localization[labelKey]</span> *@
+<span class="badge @badgeClass js-last-action">@_localization[labelKey]</span>

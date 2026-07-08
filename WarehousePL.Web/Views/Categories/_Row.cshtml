@@ -2,10 +2,18 @@
 @using WarehouseBLL.BusinessServices.View_Models
 @model CategoryViewModel
 
-<tr>
+<tr id="row-@Model.Id" data-id="@Model.Id">
     <td>@Model.Name</td>
+
     <td>
-        <partial name="_LastActionBadge" model="Model.LastAction" />
+        @if (Model.LastAction == LastActionName.Delete)
+        {
+            <span class="badge bg-label-danger">@_localization["Deleted"]</span>
+        }
+        else
+        {
+            <span class="badge bg-label-success">@_localization["Active"]</span>
+        }
     </td>
 
     <td>
@@ -15,23 +23,21 @@
             @_localization[DisplayNames.Edit]
         </a>
     </td>
+
     <td>
-
-            @if (Model.LastAction != LastActionName.Delete)
-            {
+        @if (Model.LastAction != LastActionName.Delete)
+        {
             <a href="javascript:;" data-url="/Categories/Delete/@Model.Id"
-                   class="btn btn-sm btn-label-danger item-edit js-toggle-status">
-                    @_localization[DisplayNames.Delete]
-                </a>
-            }
-            else
-            {
-
+               class="btn btn-sm btn-label-danger item-edit js-toggle-status" data-id="@Model.Id">
+                @_localization[DisplayNames.Delete]
+            </a>
+        }
+        else
+        {
             <a href="javascript:;" data-url="/Categories/Restore/@Model.Id"
-                   class="btn btn-sm btn-label-success item-edit js-restore">
-                    @_localization[DisplayNames.Restore]
-                </a>
-            }
-        
+               class="btn btn-sm btn-label-success item-edit js-toggle-status" data-id="@Model.Id">
+                @_localization[DisplayNames.Restore]
+            </a>
+        }
     </td>
 </tr>
