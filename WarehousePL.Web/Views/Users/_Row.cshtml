@@ -1,0 +1,42 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models.Users
+@using WarehouseBLL.Const
+@using WarehouseDAL.Models
+@model UserViewModel
+
+<tr data-user-id="@Model.Id">
+    <td>@Model.Name</td>
+    <td>@Model.UserName</td>
+    <td>@Model.PhoneNumber</td>
+    <td>@(string.Join(" | ", Model.Roles))</td>
+    <td>
+        <partial name="_LastActionBadge" model="Model.LastAction" />
+    </td>
+
+    <td>
+        <a href="javascript:;" data-url="/Users/Edit/@Model.Id"
+           class="btn btn-sm btn-label-primary item-edit js-render-modal"
+           data-title="@_localization[DisplayNames.Edit]" data-update="true">
+            @_localization[DisplayNames.Edit]
+        </a>
+    </td>
+    <td>
+        @if (User.IsInRole(AppRoles.Admin))
+        {
+            @if (Model.LastAction != LastActionName.Delete)
+            {
+                <a href="javascript:;" data-url="/Users/Delete/@Model.Id"
+                   class="btn btn-sm btn-label-danger item-edit js-toggle-status">
+                    @_localization[DisplayNames.Delete]
+                </a>
+            }
+            else
+            {
+
+                <a href="javascript:;" data-url="/Users/Restore/@Model.Id"
+                   class="btn btn-sm btn-label-success item-edit js-restore">
+                    @_localization[DisplayNames.Restore]
+                </a>
+            }
+        }
+    </td>
+</tr>

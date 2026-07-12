@@ -1,0 +1,47 @@
+﻿@using WarehouseBLL.Const
+@using WarehouseBLL.FormViewModels.User
+@model UserFormViewModel
+
+<form asp-action="@(Model?.UserId > 0 ? "Edit" : "Create")"
+      data-ajax-method="post"
+      data-ajax="true"
+      data-ajax-begin="onModalBegin"
+      data-ajax-success="onModalSuccess"
+      data-ajax-failure="showErrorMessage"
+      data-ajax-complete="onModalComplete">
+    @if (Model?.UserId > 0)
+    {
+        <input type="hidden" asp-for="UserId" />
+    }
+    <div class="mb-5">
+        <label asp-for="Name"></label>
+        <input type="text" class="form-control" placeholder="@_localization[DisplayNames.Name]" asp-for="Name" />
+        <span asp-validation-for="Name" class="text-danger d-block"></span>
+    </div>
+    <div class="mb-5">
+        <label asp-for="UserName"></label>
+        <input type="text" class="form-control" placeholder="@_localization[DisplayNames.UserName]" asp-for="UserName" />
+        <span asp-validation-for="UserName" class="text-danger d-block"></span>
+    </div>
+    <div class="mb-5">
+        <label asp-for="PhoneNumber"></label>
+        <input type="text" class="form-control" placeholder="@_localization[DisplayNames.PhoneNumber]" asp-for="PhoneNumber" />
+        <span asp-validation-for="PhoneNumber" class="text-danger d-block"></span>
+    </div>
+    <div class="mb-5">
+        <label asp-for="Password"></label>
+        <input type="text" class="form-control" placeholder="@_localization[DisplayNames.Password]" asp-for="Password" />
+        <span asp-validation-for="Password" class="text-danger d-block"></span>
+    </div>
+    <div class="mb-5">
+        <div class="mb-2">
+            <label asp-for="SelectedRole" class="form-label"></label>
+            <select class="form-select form-select-solid js-select2" data-placeholder="@_localization[DisplayNames.SelectRoles]" asp-for="SelectedRole" asp-items="@Model?.Roles">
+                <option></option>
+            </select>
+        </div>
+        <span asp-validation-for="SelectedRole" class="text-danger d-block"></span>
+    </div>
+
+    <partial name="_PopUpModelFooter" />
+</form>

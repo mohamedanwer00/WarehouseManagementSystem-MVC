@@ -1,0 +1,11 @@
+﻿global using Mapster;
+global using Microsoft.AspNetCore.Identity;
+global  using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc.Rendering;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.Localization;
+global using WarehouseBLL.BusinessServices.View_Models.Users;
+global using WarehouseBLL.Const;
+global using WarehouseBLL.FormViewModels.User;
+global using WarehouseDAL.Entities.Identity;
+global using WarehouseDAL.Repositories.Interfaces;

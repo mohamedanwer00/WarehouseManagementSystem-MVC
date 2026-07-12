@@ -1,7 +1,5 @@
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using WarehouseBLL.BusinessServices.View_Models;
 using WarehouseBLL.Const;
 using WarehouseBLL.FormViewModels.Category;
@@ -12,20 +10,19 @@ namespace WarehousePL.Web.Controllers.Categories
 {
     public class CategoriesController : Controller
     {
-        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CategoriesController(IMapper mapper, IUnitOfWork unitOfWork)
+        public CategoriesController(IUnitOfWork unitOfWork)
         {
-            _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
+
         [HttpGet]
         public IActionResult Index()
         {
             var categories = _unitOfWork.Categories.GetAll();
 
-            var viewModel = _mapper.Map<IEnumerable<CategoryViewModel>>(categories);
+            var viewModel = categories.Adapt<IEnumerable<CategoryViewModel>>();
 
             return View(viewModel);
         }
@@ -36,7 +33,6 @@ namespace WarehousePL.Web.Controllers.Categories
             return PartialView("_Form");
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(CategoryFormViewModel model)
@@ -44,13 +40,15 @@ namespace WarehousePL.Web.Controllers.Categories
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
 
-            var category = _mapper.Map<Category>(model);
+            var category = model.Adapt<Category>();
+
             category.LastAction = LastActionName.Insert;
+
             _unitOfWork.Categories.Add(category);
             _unitOfWork.SaveChanges();
 
-            var viewmodel = _mapper.Map<CategoryViewModel>(category);
-            viewmodel.LastAction = category.LastAction;
+            var viewModel = category.Adapt<CategoryViewModel>();
+            viewModel.LastAction = category.LastAction;
 
             return RedirectToAction(nameof(Index));
         }
@@ -60,10 +58,10 @@ namespace WarehousePL.Web.Controllers.Categories
         {
             var category = _unitOfWork.Categories.GetById(id);
 
-            if (category is null) 
+            if (category is null)
                 return NotFound();
 
-            var form = _mapper.Map<CategoryFormViewModel>(category);
+            var form = category.Adapt<CategoryFormViewModel>();
 
             return PartialView("_Form", form);
         }
@@ -73,19 +71,24 @@ namespace WarehousePL.Web.Controllers.Categories
         public IActionResult Edit(CategoryFormViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return PartialView("_Form", model);
 
-            var category = _unitOfWork.Categories.GetById(model.Id.Value);
-            if (category == null) return NotFound();
+            var category = _unitOfWork.Categories.GetById(model.Id!.Value);
 
-            category.Name = model.Name;
+            if (category is null)
+                return NotFound();
+
+            model.Adapt(category);
+
             category.UpdatedOn = DateTime.Now;
             category.LastAction = LastActionName.Update;
+
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 
-            var viewModel = _mapper.Map<CategoryViewModel>(category);
+            var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -94,19 +97,20 @@ namespace WarehousePL.Web.Controllers.Categories
         public IActionResult Delete(int id)
         {
             var category = _unitOfWork.Categories.GetById(id);
-            if (category is null) 
+
+            if (category is null)
                 return NotFound();
 
             category.IsDeleted = true;
-            category.LastAction =LastActionName.Delete;
+            category.LastAction = LastActionName.Delete;
+
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 
-            var viewModel = _mapper.Map<CategoryViewModel>(category);
+            var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;
 
             return PartialView("_Row", viewModel);
-
         }
 
         [HttpPost]
@@ -114,15 +118,17 @@ namespace WarehousePL.Web.Controllers.Categories
         public IActionResult Restore(int id)
         {
             var category = _unitOfWork.Categories.GetById(id);
+
             if (category is null)
                 return NotFound();
 
             category.IsDeleted = false;
             category.LastAction = LastActionName.Insert;
+
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 
-            var viewModel = _mapper.Map<CategoryViewModel>(category);
+            var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;
 
             return PartialView("_Row", viewModel);

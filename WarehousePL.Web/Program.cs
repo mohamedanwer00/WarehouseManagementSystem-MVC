@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using WarehouseDAL.Data.Contexts;
 using WarehouseBLL.Mapping;
-using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using WarehouseDAL.Entities.Identity;
 using WarehouseDAL.Repositories.Interfaces;
@@ -32,8 +31,9 @@ namespace WarehousePL.Web
             });
 
             // AutoMapper
-            builder.Services.AddAutoMapper(typeof(MappingProfile));
-
+            //builder.Services.AddAutoMapper(typeof(MappingProfile));
+            //mapester
+            MappingConfig.RegisterMappings();
             // Identity
             builder.Services.AddIdentity<User, Role>(options =>
             {
