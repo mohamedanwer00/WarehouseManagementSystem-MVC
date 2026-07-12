@@ -3,10 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using WarehouseBLL.BusinessServices.View_Models;
+using WarehouseBLL.BusinessServices.View_Models.Branch;
 using WarehouseBLL.BusinessServices.View_Models.Users;
+using WarehouseBLL.FormViewModels.Branch;
 using WarehouseBLL.FormViewModels.Category;
 using WarehouseBLL.FormViewModels.User;
 using WarehouseDAL.Entities;
+using WarehouseDAL.Entities.Entities;
 using WarehouseDAL.Entities.Identity;
 
 namespace WarehouseBLL.Mapping
@@ -17,9 +20,10 @@ namespace WarehouseBLL.Mapping
         {
             // Category
 
+            #region Category
             TypeAdapterConfig<Category, CategoryViewModel>
-                .NewConfig()
-                .Ignore(dest => dest.LastAction);
+    .NewConfig()
+    .Ignore(dest => dest.LastAction);
 
             TypeAdapterConfig<CategoryViewModel, Category>
                 .NewConfig();
@@ -29,23 +33,10 @@ namespace WarehouseBLL.Mapping
 
             TypeAdapterConfig<CategoryFormViewModel, Category>
                 .NewConfig();
+            #endregion
+
             // User
-            //TypeAdapterConfig<User, UserViewModel>
-            //    .NewConfig();
-
-            //TypeAdapterConfig<UserViewModel, User>
-            //    .NewConfig();
-
-            //TypeAdapterConfig<UserFormViewModel, User>
-            //    .NewConfig()
-            //    .Map(dest => dest.NormalizedEmail,
-            //         src => src.Email.ToUpper())
-            //    .Map(dest => dest.NormalizedUserName,
-            //         src => src.UserName.ToUpper());
-
-            //TypeAdapterConfig<User, UserFormViewModel>
-            //    .NewConfig();
-
+            #region User
             TypeAdapterConfig<User, UserViewModel>
                 .NewConfig();
 
@@ -65,25 +56,22 @@ namespace WarehouseBLL.Mapping
 
             TypeAdapterConfig<User, UserFormViewModel>
                 .NewConfig();
+            #endregion
+
+            // Branch
+            #region Branch
+            TypeAdapterConfig<Branch, BranchViewModel>
+                .NewConfig()
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
+
+
+            TypeAdapterConfig<BranchFormViewModel, Branch>
+                .NewConfig()
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
+
+            TypeAdapterConfig<Branch, BranchFormViewModel>
+                .NewConfig();
+            #endregion
         }
     }
-    //public class MappingProfile
-    //{
-    //    //public MappingProfile()
-    //    //{
-    //    //    MapCategory();
-    //    //}
-
-    //    //private void MapCategory()
-    //    //{
-    //    //    CreateMap<Category,CategoryViewModel>()
-    //    //        .ForMember(dest => dest.LastAction, opt => opt.Ignore())
-    //    //        .ReverseMap();
-    //    //    CreateMap<Category, CategoryFormViewModel>()
-    //    //        .ReverseMap();
-
-    //    //}
-
-
-    //}
 }

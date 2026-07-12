@@ -45,6 +45,7 @@ namespace WarehousePL.Web
             // Repositories
             builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<IBranchRepository, BranchRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();

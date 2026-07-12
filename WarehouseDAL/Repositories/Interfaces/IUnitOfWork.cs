@@ -8,6 +8,7 @@ namespace WarehouseDAL.Repositories.Interfaces
     public interface IUnitOfWork : IDisposable
     {
         ICategoryRepository Categories { get; }
+        IBranchRepository Branches { get; }
         int SaveChanges();
     }
 }

@@ -86,4 +86,5 @@ public class DisplayNames
     public const string Paid = "Paid";
     public const string Date = "Date";
     public const string TotalAmount = "TotalAmount";
+    public const string Address = "Address";
 }

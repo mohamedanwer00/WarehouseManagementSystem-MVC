@@ -1,0 +1,47 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models.Branch
+@using WarehouseBLL.Const
+@model BranchViewModel
+
+<tr id="row-@Model.Id" data-id="@Model.Id">
+    <td>@Model.Name</td>
+
+    <td>@Model.Address</td>
+
+    <td>@Model.PhoneNumber</td>
+
+    <td>
+        @if (Model.LastAction == LastActionName.Delete)
+        {
+            <span class="badge bg-label-danger">@_localization["Deleted"]</span>
+        }
+        else
+        {
+            <span class="badge bg-label-success">@_localization["Active"]</span>
+        }
+    </td>
+
+    <td>
+        <a href="javascript:;" data-url="/Branches/Edit/@Model.Id"
+           class="btn btn-sm btn-label-primary item-edit js-render-modal"
+           data-title="@_localization[DisplayNames.Edit]" data-update="true">
+            @_localization[DisplayNames.Edit]
+        </a>
+    </td>
+
+    <td>
+        @if (Model.LastAction != LastActionName.Delete)
+        {
+            <a href="javascript:;" data-url="/Branches/Delete/@Model.Id"
+               class="btn btn-sm btn-label-danger item-edit js-toggle-status" data-id="@Model.Id">
+                @_localization[DisplayNames.Delete]
+            </a>
+        }
+        else
+        {
+            <a href="javascript:;" data-url="/Branches/Restore/@Model.Id"
+               class="btn btn-sm btn-label-success item-edit js-toggle-status" data-id="@Model.Id">
+                @_localization[DisplayNames.Restore]
+            </a>
+        }
+    </td>
+</tr>
