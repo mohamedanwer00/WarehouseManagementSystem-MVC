@@ -6,8 +6,17 @@ namespace WarehouseDAL.Entities
 {
     public class Unit : BaseEntity
     {
+
+
         public string Name { get; set; } = null!;
         public string Symbol { get; set; } = null!;//الرمز
-        public ICollection<Product> Products { get; set; } = new List<Product>();
+
+        public ICollection<ProductUnit> ProductUnits { get; set; } = new List<ProductUnit>(); 
+
+
+
+        //public string Name { get; set; } = null!;
+        //public string Symbol { get; set; } = null!;//الرمز
+        //public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }

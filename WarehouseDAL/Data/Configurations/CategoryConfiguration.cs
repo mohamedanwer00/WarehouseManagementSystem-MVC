@@ -15,11 +15,6 @@ namespace WarehouseDAL.Data.Configurations
             builder.Property(c => c.Name)
                 .IsRequired()
                 .HasMaxLength(100);
-
-            builder.HasMany(c => c.Products)
-                .WithOne(p => p.Category)
-                .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

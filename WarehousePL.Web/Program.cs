@@ -55,7 +55,6 @@ namespace WarehousePL.Web
                 var services = scope.ServiceProvider;
 
                 var context = services.GetRequiredService<WarehouseDbContext>();
-                context.Database.Migrate();
 
                 var roleManager = services.GetRequiredService<RoleManager<Role>>();
                 var userManager = services.GetRequiredService<UserManager<User>>();

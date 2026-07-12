@@ -8,10 +8,7 @@ namespace WarehouseDAL.Entities
     public class Warehouse: BaseEntity
     {
         public string Name { get; set; } = null!;
-        public string Code { get; set; } = null!;
         public string Address { get; set; } = null!;
-        public string Description { get; set; } = null!;
-        public bool IsActive { get; set; } = true;
         public int BranchId { get; set; }
         public Branch Branch { get; set; } = null!;
     }

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using WarehouseDAL.Entities;
 using WarehouseDAL.Entities.Identity;
+using WarehouseDAL.Entities.Entities;
 
 namespace WarehouseDAL.Data.Contexts
 {
@@ -23,5 +24,12 @@ namespace WarehouseDAL.Data.Contexts
         }
 
         public DbSet<Category> Categories { get; set; } = null!;
+        public DbSet<Product> Products { get; set; } = null!;
+        public DbSet<ProductUnit> ProductUnits { get; set; } = null!;
+        public DbSet<Unit> Units { get; set; } = null!;
+        public DbSet<Branch> Branches { get; set; } = null!;
+        public DbSet<CashBox> CashBoxes { get; set; } = null!;
+        public DbSet<Warehouse> Warehouses { get; set; } = null!;
+
     }
 }
