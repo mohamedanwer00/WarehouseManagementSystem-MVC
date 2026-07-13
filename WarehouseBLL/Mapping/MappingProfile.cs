@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Text;
 using WarehouseBLL.BusinessServices.View_Models;
 using WarehouseBLL.BusinessServices.View_Models.Branch;
+using WarehouseBLL.BusinessServices.View_Models.CashBox;
 using WarehouseBLL.BusinessServices.View_Models.Users;
 using WarehouseBLL.BusinessServices.View_Models.Warehouse;
 using WarehouseBLL.FormViewModels.Branch;
+using WarehouseBLL.FormViewModels.CashBox;
 using WarehouseBLL.FormViewModels.Category;
 using WarehouseBLL.FormViewModels.User;
 using WarehouseBLL.FormViewModels.Warehouse;
@@ -89,6 +91,23 @@ namespace WarehouseBLL.Mapping
             TypeAdapterConfig<Warehouse, WarehouseFormViewModel>
                 .NewConfig()
                 .Map(dest => dest.SelectedBranch, src => src.BranchId);
+
+            #endregion
+
+            // CashBox
+            #region CashBox
+            TypeAdapterConfig<CashBox, CashBoxViewModel>
+                .NewConfig()
+                .Map(dest => dest.BranchName, src => src.Branch != null ? src.Branch.Name : string.Empty);
+
+            TypeAdapterConfig<CashBoxFormViewModel, CashBox>
+                .NewConfig()
+                .Map(dest => dest.BranchId, src => src.SelectedBranch);
+
+            TypeAdapterConfig<CashBox, CashBoxFormViewModel>
+                .NewConfig()
+                .Map(dest => dest.SelectedBranch, src => src.BranchId);
+
 
             #endregion
         }

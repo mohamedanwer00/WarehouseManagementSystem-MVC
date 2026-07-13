@@ -1,0 +1,53 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models.CashBox
+@using WarehouseBLL.Const
+@model CashBoxViewModel
+
+<tr id="row-@Model.Id" data-id="@Model.Id">
+    <td>@Model.Name</td>
+
+    <td>@Model.BranchName</td>
+
+    <td class="fw-bold text-primary">@Model.CurrentBalance.ToString("N2")</td>
+
+    <td>
+        <partial name="_LastActionBadge" model="Model.LastAction" />
+    </td>
+
+    <td>
+        <a href="javascript:;" data-url="/CashBoxes/Deposit/@Model.Id"
+           class="btn btn-xs btn-label-success me-1 js-render-modal"
+           data-title="إيداع نقدي" data-update="true">
+            <i class="ti ti-plus me-1"></i> إيداع
+        </a>
+        <a href="javascript:;" data-url="/CashBoxes/Withdraw/@Model.Id"
+           class="btn btn-xs btn-label-danger js-render-modal"
+           data-title="سحب نقدي" data-update="true">
+            <i class="ti ti-minus me-1"></i> سحب
+        </a>
+    </td>
+
+    <td>
+        <a href="javascript:;" data-url="/CashBoxes/Edit/@Model.Id"
+           class="btn btn-sm btn-label-primary item-edit js-render-modal"
+           data-title="@_localization[DisplayNames.Edit]" data-update="true">
+            @_localization[DisplayNames.Edit]
+        </a>
+    </td>
+
+    <td>
+        @if (Model.LastAction != LastActionName.Delete)
+        {
+            <a href="javascript:;" data-url="/CashBoxes/Delete/@Model.Id"
+               class="btn btn-sm btn-label-danger item-edit js-toggle-status" data-id="@Model.Id">
+                @_localization[DisplayNames.Delete]
+            </a>
+        }
+        else
+        {
+            <a href="javascript:;" data-url="/CashBoxes/Restore/@Model.Id"
+               class="btn btn-sm btn-label-success item-edit js-toggle-status" data-id="@Model.Id">
+                @_localization[DisplayNames.Restore]
+            </a>
+        }
+    </td>
+</tr>

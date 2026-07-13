@@ -343,5 +343,32 @@
   "FilterByAppointmentStatus": "تصفية حسب حالة الحجز",
   "SelectTime": "اختار الوقت",
   "NoAvailableDays": "لا توجد أيام متاحة",
-  "NoAvailableSlots": "لا توجد مواعيد متاحة"
+  "NoAvailableSlots": "لا توجد مواعيد متاحة",
+  "Branch": "الفرع",
+  "SelectBranch": "اختر الفرع",
+  "Branches": "الفروع",
+  "Warehouses": "المستودعات",
+  "AddWarehouse": "اضافه مستودع",
+  "EditWarehouse": "تعديل مستودع",
+  "WarehouseName": "اسم المستودع",
+  "WarehouseAddress": "عنوان المستودع",
+  "Phone": "رقم الهاتف",
+  "AddBranch": "اضافه فرع",
+  "EditBranch": "تعديل فرع",
+  "BranchName": "اسم الفرع",
+  "BranchAddress": "عنوان الفرع",
+  "BranchPhone": "رقم هاتف الفرع",
+  "AddNewBranch": "اضافه فرع جديد",
+  "AddNewWarehouse": "اضافه مستودع جديد",
+  "CashBox": "الخزنة",
+  "AddCashBox": "اضافه خزنه",
+  "EditCashBox": "تعديل خزنه",
+  "CashBoxName": "اسم الخزنه",
+  "CashBoxes": "الخزن",
+  "Status": "الحالة",
+  "Name": "الاسم",
+
+  
+
+
 }
