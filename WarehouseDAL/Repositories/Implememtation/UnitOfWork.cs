@@ -11,17 +11,19 @@ namespace WarehouseDAL.Repositories.Implememtation
         private readonly WarehouseDbContext _dbContext;
 
         public ICategoryRepository Categories { get; }
-        public IBranchRepository Branches { get; } // 1. تعريف الـ Property هنا
+        public IBranchRepository Branches { get; }
+        public IWarehouseRepository Warehouses { get; }
 
-        // 2. تمرير الـ IBranchRepository عبر الـ Constructor وحقنه
         public UnitOfWork(
             WarehouseDbContext dbContext,
             ICategoryRepository categories,
-            IBranchRepository branches)
+            IBranchRepository branches,
+            IWarehouseRepository warehouses)
         {
             _dbContext = dbContext;
             Categories = categories;
-            Branches = branches; // 3. إسناد القيمة الممررة للـ Property
+            Branches = branches;
+            Warehouses = warehouses;
         }
 
         public int SaveChanges()

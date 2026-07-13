@@ -1,0 +1,44 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models.Warehouse
+@using WarehouseBLL.Const
+@model IEnumerable<WarehouseViewModel>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
+
+@{
+    ViewBag.Title = _localization["Warehouses"];
+}
+
+<div class="card">
+    <div class="card-datatable text-nowrap">
+        <table class="js-table datatables-basic table table-bordered table-responsive">
+            <thead>
+                <tr>
+                    <th>@_localization[DisplayNames.Name]</th>
+                    <th>@_localization[DisplayNames.Branch]</th>
+                    <th>@_localization[DisplayNames.Status]</th>
+                    <th class="js-no-export" data-i18n="Edit"></th>
+                    <th class="js-no-export" data-i18n="DeleteOrRestore"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var warehouse in Model)
+                {
+                    <partial name="_Row" model="@warehouse" />
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="create-button-data"
+     data-address="@_localization["Warehouses"]"
+     data-title="@_localization["AddNew"]"
+     data-url="@Url.Action("Create", "Warehouses")"
+     data-label="@_localization["AddWarehouse"]"
+     data-mode="modal"></div>
+
+<input type="hidden" id="RequestVerificationToken" name="__RequestVerificationToken" value="@antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

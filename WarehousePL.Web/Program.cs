@@ -30,8 +30,6 @@ namespace WarehousePL.Web
                     sql => sql.MigrationsAssembly("WarehouseDAL"));
             });
 
-            // AutoMapper
-            //builder.Services.AddAutoMapper(typeof(MappingProfile));
             //mapester
             MappingConfig.RegisterMappings();
             // Identity
@@ -46,6 +44,7 @@ namespace WarehousePL.Web
             builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<IBranchRepository, BranchRepository>();
+            builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();

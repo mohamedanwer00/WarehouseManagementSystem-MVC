@@ -5,9 +5,11 @@ using System.Text;
 using WarehouseBLL.BusinessServices.View_Models;
 using WarehouseBLL.BusinessServices.View_Models.Branch;
 using WarehouseBLL.BusinessServices.View_Models.Users;
+using WarehouseBLL.BusinessServices.View_Models.Warehouse;
 using WarehouseBLL.FormViewModels.Branch;
 using WarehouseBLL.FormViewModels.Category;
 using WarehouseBLL.FormViewModels.User;
+using WarehouseBLL.FormViewModels.Warehouse;
 using WarehouseDAL.Entities;
 using WarehouseDAL.Entities.Entities;
 using WarehouseDAL.Entities.Identity;
@@ -71,6 +73,23 @@ namespace WarehouseBLL.Mapping
 
             TypeAdapterConfig<Branch, BranchFormViewModel>
                 .NewConfig();
+
+            #endregion
+
+            // Warehouse
+            #region Warehouse
+            TypeAdapterConfig<Warehouse, WarehouseViewModel>
+                .NewConfig()
+                .Map(dest => dest.BranchName, src => src.Branch != null ? src.Branch.Name : string.Empty);
+
+            TypeAdapterConfig<WarehouseFormViewModel, Warehouse>
+                .NewConfig()
+                .Map(dest => dest.BranchId, src => src.SelectedBranch);
+
+            TypeAdapterConfig<Warehouse, WarehouseFormViewModel>
+                .NewConfig()
+                .Map(dest => dest.SelectedBranch, src => src.BranchId);
+
             #endregion
         }
     }

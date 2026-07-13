@@ -9,6 +9,7 @@ namespace WarehouseDAL.Repositories.Interfaces
     {
         ICategoryRepository Categories { get; }
         IBranchRepository Branches { get; }
+        IWarehouseRepository Warehouses { get; }
         int SaveChanges();
     }
 }
