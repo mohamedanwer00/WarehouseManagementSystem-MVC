@@ -12,9 +12,9 @@
 
     var labelKey = Model switch
     {
-        LastActionName.Insert => DisplayNames.LastActionAdded,
-        LastActionName.Update => DisplayNames.LastActionUpdated,
-        LastActionName.Delete => DisplayNames.LastActionDeleted,
+        LastActionName.Insert => DisplayNames.Added,
+        LastActionName.Update => DisplayNames.Updated,
+        LastActionName.Delete => DisplayNames.Deleted,
         _ => DisplayNames.Status
     };
 }

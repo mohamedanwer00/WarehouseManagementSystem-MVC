@@ -88,4 +88,7 @@ public class DisplayNames
     public const string TotalAmount = "TotalAmount";
     public const string Address = "Address";
     public const string Branch = "Branch";
+    public const string Added= "Added";
+    public const string Updated = "Updated";
+    public const string Deleted = "Deleted";
 }
