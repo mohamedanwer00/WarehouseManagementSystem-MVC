@@ -52,7 +52,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         {
             var isNameExists = _unitOfWork.CashBoxes
                 .GetAll()
-                .Any(c => c.Name.Trim().ToLower() == model.Name.Trim().ToLower() && !c.IsDeleted);
+                .Any(c => c.Name.Trim().ToLower() == model.Name.Trim().ToLower() && c.LastAction != LastActionName.Delete);
 
             if (isNameExists)
             {
@@ -115,7 +115,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
 
             var isNameExists = _unitOfWork.CashBoxes
                 .GetAll()
-                .Any(c => c.Id != model.Id && c.Name.Trim().ToLower() == model.Name.Trim().ToLower() && !c.IsDeleted);
+                .Any(c => c.Id != model.Id && c.Name.Trim().ToLower() == model.Name.Trim().ToLower() && c.LastAction != LastActionName.Delete);
 
             if (isNameExists)
             {
@@ -155,7 +155,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         public IActionResult Deposit(int id)
         {
             var cashBox = _unitOfWork.CashBoxes.GetById(id);
-            if (cashBox == null || cashBox.IsDeleted) return NotFound();
+            if (cashBox == null || cashBox.LastAction != LastActionName.Delete) return NotFound();
 
             var model = new CashBoxTransactionFormViewModel
             {
@@ -170,7 +170,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         public IActionResult Deposit(CashBoxTransactionFormViewModel model)
         {
             var cashBox = _unitOfWork.CashBoxes.GetById(model.Id);
-            if (cashBox == null || cashBox.IsDeleted) return NotFound();
+            if (cashBox == null || cashBox.LastAction != LastActionName.Delete) return NotFound();
             model.Name = cashBox.Name;
 
             if (!ModelState.IsValid)
@@ -197,7 +197,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         public IActionResult Withdraw(int id)
         {
             var cashBox = _unitOfWork.CashBoxes.GetById(id);
-            if (cashBox == null || cashBox.IsDeleted) 
+            if (cashBox == null || cashBox.LastAction != LastActionName.Delete) 
                 return NotFound();
             var model = new CashBoxTransactionFormViewModel
             {
@@ -212,7 +212,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         public IActionResult Withdraw(CashBoxTransactionFormViewModel model)
         {
             var cashBox = _unitOfWork.CashBoxes.GetById(model.Id);
-            if (cashBox == null || cashBox.IsDeleted) return NotFound();
+            if (cashBox == null || cashBox.LastAction != LastActionName.Delete) return NotFound();
             model.Name = cashBox.Name;
             if (!ModelState.IsValid)
             {
@@ -242,7 +242,6 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             var cashBox = _unitOfWork.CashBoxes.GetById(id);
             if (cashBox == null) return NotFound();
 
-            cashBox.IsDeleted = true;
             cashBox.LastAction = LastActionName.Delete;
             _unitOfWork.CashBoxes.Update(cashBox);
             _unitOfWork.SaveChanges();
@@ -261,7 +260,6 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             var cashBox = _unitOfWork.CashBoxes.GetById(id);
             if (cashBox == null) return NotFound();
 
-            cashBox.IsDeleted = false;
             cashBox.LastAction = LastActionName.Update;
             _unitOfWork.CashBoxes.Update(cashBox);
             _unitOfWork.SaveChanges();

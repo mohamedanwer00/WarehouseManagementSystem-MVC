@@ -32,6 +32,6 @@ namespace WarehouseBLL.FormViewModels.Product
         public IEnumerable<SelectListItem>? Categories { get; set; }
         public IEnumerable<SelectListItem>? AllAvailableUnits { get; set; } 
 
-        public List<ProductUnitFormViewModel> ProductUnits { get; set; } = new();
+        public List<ProductUnitFormViewModel> ProductUnits { get; set; } = [];
     }
 }

@@ -1,4 +1,5 @@
 ﻿using WarehouseBLL.BusinessServices.View_Models.Warehouse;
+using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Warehouse;
 using WarehouseDAL.Entities;
 
@@ -50,7 +51,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
         {
             var isNameExists = _unitOfWork.Warehouses
                 .GetAll()
-                .Any(w => w.Name.Trim().ToLower() == model.Name.Trim().ToLower() && !w.IsDeleted);
+                .Any(w => w.Name.Trim().ToLower() == model.Name.Trim().ToLower() && w.LastAction != LastActionName.Delete);
 
             if (isNameExists)
             {
@@ -73,6 +74,8 @@ namespace WarehousePL.Web.Controllers.Warehouses
             var warehouse = model.Adapt<Warehouse>();
             warehouse.Address = "Default Address";
             warehouse.LastAction = LastActionName.Insert;
+            warehouse.CreatedById = User.GetUserId();
+            warehouse.CreatedOn = DateTime.Now;
 
             _unitOfWork.Warehouses.Add(warehouse);
             _unitOfWork.SaveChanges();
@@ -112,7 +115,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
         {
             var isNameExists = _unitOfWork.Warehouses
                 .GetAll()
-                .Any(w => w.Id != model.Id && w.Name.Trim().ToLower() == model.Name.Trim().ToLower() && !w.IsDeleted);
+                .Any(w => w.Id != model.Id && w.Name.Trim().ToLower() == model.Name.Trim().ToLower() && w.LastAction != LastActionName.Delete);
             if (isNameExists)
             {
                 ModelState.AddModelError(nameof(model.Name), "اسم المخزن موجود بالفعل.");
@@ -155,7 +158,6 @@ namespace WarehousePL.Web.Controllers.Warehouses
             {
                 return NotFound();
             }
-            warehouse.IsDeleted = true;
             warehouse.LastAction = LastActionName.Delete;
             _unitOfWork.Warehouses.Update(warehouse);
             _unitOfWork.SaveChanges();
@@ -180,8 +182,6 @@ namespace WarehousePL.Web.Controllers.Warehouses
             {
                 return NotFound();
             }
-            warehouse.IsDeleted = false;
-
             warehouse.LastAction = LastActionName.Update; 
 
             _unitOfWork.Warehouses.Update(warehouse);

@@ -37,7 +37,7 @@ namespace WarehousePL.Web.Controllers.Products
         [ValidateAntiForgeryToken]
         public IActionResult Create(ProductFormViewModel model)
         {
-            var isCodeExists = _unitOfWork.Products.GetAll().Any(p => p.Code.Trim() == model.Code.Trim() && !p.IsDeleted);
+            var isCodeExists = _unitOfWork.Products.GetAll().Any(p => p.Code.Trim() == model.Code.Trim() && p.LastAction != LastActionName.Delete);
             if (isCodeExists)
                 ModelState.AddModelError(nameof(model.Code), "كود المنتج مسجل بالفعل لمنتج آخر.");
 
@@ -52,6 +52,8 @@ namespace WarehousePL.Web.Controllers.Products
 
             var product = model.Adapt<Product>();
             product.LastAction = LastActionName.Insert;
+            //product.CreatedById = User.
+            product.CreatedOn = DateTime.Now;
 
             _unitOfWork.Products.Add(product);
             _unitOfWork.SaveChanges();
@@ -62,18 +64,6 @@ namespace WarehousePL.Web.Controllers.Products
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            //var product = _unitOfWork.Products.GetTableNoTracking()
-            //   .Include(p => p.ProductUnits)
-            //   .FirstOrDefault(p => p.Id == id);
-
-            //if (product == null)
-            //    return NotFound();
-
-            //var model = product.Adapt<ProductFormViewModel>();
-            //PopulateDropdowns(model);
-
-            //return View(model);
-
             var product = _unitOfWork.Products.GetTableNoTracking()
                 .Include(p => p.ProductUnits)
                     .ThenInclude(pu => pu.Unit)
@@ -120,11 +110,10 @@ namespace WarehousePL.Web.Controllers.Products
             product.MaximumQuantity = model.MaximumQuantity;
             product.CategoryId = model.CategoryId;
             product.LastAction = LastActionName.Update;
+            product.UpdatedOn = DateTime.Now;
 
-            // الوحدات القادمة من الفورم
             var incomingIds = model.ProductUnits.Where(u => u.Id > 0).Select(u => u.Id).ToHashSet();
 
-            // احذف الوحدات اللي اتشالت من الفورم فقط
             var oldUnits = _unitOfWork.ProductUnits.GetAll(pu => pu.ProductId == product.Id).ToList();
             foreach (var ou in oldUnits)
             {
@@ -132,12 +121,10 @@ namespace WarehousePL.Web.Controllers.Products
                     _unitOfWork.ProductUnits.Delete(ou);
             }
 
-            // حدّث الموجودة وأضف الجديدة
             foreach (var pu in model.ProductUnits)
             {
                 if (pu.Id > 0)
                 {
-                    // وحدة موجودة — حدّثها
                     var existing = _unitOfWork.ProductUnits.GetById(pu.Id);
                     if (existing != null)
                     {
@@ -151,7 +138,6 @@ namespace WarehousePL.Web.Controllers.Products
                 }
                 else
                 {
-                    // وحدة جديدة — أضفها
                     var newUnit = pu.Adapt<ProductUnit>();
                     newUnit.ProductId = product.Id;
                     _unitOfWork.ProductUnits.Add(newUnit);
@@ -163,12 +149,13 @@ namespace WarehousePL.Web.Controllers.Products
 
             return RedirectToAction(nameof(Index));
         }
+
         private void PopulateDropdowns(ProductFormViewModel model)
         {
-            model.Categories = _unitOfWork.Categories.GetAll()
+            model.Categories = _unitOfWork.Categories.GetAll().Where(c => c.LastAction != LastActionName.Delete)
                 .Select(c => new SelectListItem { Text = c.Name, Value = c.Id.ToString() });
 
-            model.AllAvailableUnits = _unitOfWork.Units.GetAll()
+            model.AllAvailableUnits = _unitOfWork.Units.GetAll(c => c.LastAction != LastActionName.Delete)
                 .Select(u => new SelectListItem { Text = u.Name, Value = u.Id.ToString() });
         }
     }

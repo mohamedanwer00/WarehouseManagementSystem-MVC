@@ -101,7 +101,6 @@ namespace WarehousePL.Web.Controllers.Categories
             if (category is null)
                 return NotFound();
 
-            category.IsDeleted = true;
             category.LastAction = LastActionName.Delete;
 
             _unitOfWork.Categories.Update(category);
@@ -122,8 +121,7 @@ namespace WarehousePL.Web.Controllers.Categories
             if (category is null)
                 return NotFound();
 
-            category.IsDeleted = false;
-            category.LastAction = LastActionName.Insert;
+            category.LastAction = LastActionName.Update;
 
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();

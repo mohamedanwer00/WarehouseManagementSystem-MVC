@@ -34,7 +34,7 @@ namespace WarehousePL.Web.Controllers.Units
         {
             var isNameExists = _unitOfWork.Units
                 .GetAll()
-                .Any(u => u.Name.Trim().ToLower() == model.Name.Trim().ToLower() && !u.IsDeleted);
+                .Any(u => u.Name.Trim().ToLower() == model.Name.Trim().ToLower() && u.LastAction != LastActionName.Delete);
 
             if (isNameExists)
             {
@@ -76,7 +76,7 @@ namespace WarehousePL.Web.Controllers.Units
 
             var isNameExists = _unitOfWork.Units
                 .GetAll()
-                .Any(u => u.Id != model.Id && u.Name.Trim().ToLower() == model.Name.Trim().ToLower() && !u.IsDeleted);
+                .Any(u => u.Id != model.Id && u.Name.Trim().ToLower() == model.Name.Trim().ToLower() && u.LastAction != LastActionName.Delete);
 
             if (isNameExists)
             {
@@ -107,7 +107,6 @@ namespace WarehousePL.Web.Controllers.Units
             if (unit is null)
                 return NotFound();
 
-            unit.IsDeleted = true;
             unit.LastAction = LastActionName.Delete;
             _unitOfWork.Units.Update(unit);
             _unitOfWork.SaveChanges();
@@ -124,7 +123,6 @@ namespace WarehousePL.Web.Controllers.Units
             var unit = _unitOfWork.Units.GetById(id);
             if (unit == null) return NotFound();
 
-            unit.IsDeleted = false;
             unit.LastAction = LastActionName.Update;
             _unitOfWork.Units.Update(unit);
             _unitOfWork.SaveChanges();

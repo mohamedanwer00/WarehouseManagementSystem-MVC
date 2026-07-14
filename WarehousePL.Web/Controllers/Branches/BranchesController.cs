@@ -79,7 +79,6 @@ namespace WarehousePL.Web.Controllers.Branches
             if (branch is null)
                 return NotFound();
 
-            branch.IsDeleted = true;
             branch.LastAction = LastActionName.Delete;
 
             _unitOfWork.Branches.Update(branch);
@@ -99,7 +98,6 @@ namespace WarehousePL.Web.Controllers.Branches
             if (branch is null)
                 return NotFound();
 
-            branch.IsDeleted = false;
             branch.LastAction = LastActionName.Update;
 
             _unitOfWork.Branches.Update(branch);
