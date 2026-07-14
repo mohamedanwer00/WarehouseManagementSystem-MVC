@@ -9,3 +9,8 @@ global using WarehouseBLL.Const;
 global using WarehouseBLL.FormViewModels.User;
 global using WarehouseDAL.Entities.Identity;
 global using WarehouseDAL.Repositories.Interfaces;
+global using WarehouseDAL.Data.Contexts;
+global using WarehouseBLL.Mapping;
+global using WarehouseDAL.Repositories.Implememtation;
+global using WarehouseDAL.Entities;
+global using WarehousePL.Web.Extensions;

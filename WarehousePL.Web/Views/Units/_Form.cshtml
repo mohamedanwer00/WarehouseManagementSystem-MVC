@@ -1,0 +1,31 @@
+﻿@using WarehouseBLL.FormViewModels.Unit
+@model UnitFormViewModel
+
+<form asp-action="@(Model.Id == null ? "Create" : "Edit")"
+      asp-controller="Units"
+      method="post"
+      class="js-form-element row g-3"
+      data-modal="true">
+
+    @if (Model.Id != null)
+    {
+        <input type="hidden" asp-for="Id" />
+    }
+
+    <div class="col-md-12">
+        <label asp-for="Name" class="form-label">اسم الوحدة</label>
+        <input asp-for="Name" class="form-control" placeholder="مثال: قطعة، كرتونة، علبة" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-12">
+        <label asp-for="Symbol" class="form-label">الرمز / الاختصار</label>
+        <input asp-for="Symbol" class="form-control" placeholder="مثال: ق، كرت، علبة" />
+        <span asp-validation-for="Symbol" class="text-danger"></span>
+    </div>
+
+    <div class="col-12 text-center demo-vertical-spacing">
+        <button type="submit" class="btn btn-primary me-sm-3 me-1">حفظ البيانات</button>
+        <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">إلغاء</button>
+    </div>
+</form>

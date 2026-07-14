@@ -11,6 +11,7 @@ namespace WarehouseDAL.Repositories.Interfaces
         IBranchRepository Branches { get; }
         IWarehouseRepository Warehouses { get; }
         ICashBoxRepository CashBoxes { get; }
+        IUnitRepository Units { get; }
 
         int SaveChanges();
     }

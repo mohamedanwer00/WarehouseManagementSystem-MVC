@@ -91,4 +91,12 @@ public class DisplayNames
     public const string Added= "Added";
     public const string Updated = "Updated";
     public const string Deleted = "Deleted";
+    public const string CashTransactions = "CashTransactions";
+    public const string CashBoxTransactions = "CashBoxTransactions";
+    public const string CashBox = "CashBox";
+    public const string Unit = "Unit";
+    public const string CashBoxName = "CashBoxName";
+    public const string CashBoxBalance = "CashBoxBalance";
+    public const string CurrentBalance = "CurrentBalance";
+    public const string Symbol = "Symbol";
 }

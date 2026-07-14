@@ -1,97 +1,88 @@
-﻿using Microsoft.Extensions.FileProviders;
-using WarehouseDAL.Data.Contexts;
-using WarehouseBLL.Mapping;
-using Microsoft.AspNetCore.Identity;
-using WarehouseDAL.Entities.Identity;
-using WarehouseDAL.Repositories.Interfaces;
-using WarehouseDAL.Repositories.Implememtation;
-using Microsoft.EntityFrameworkCore;
-using WarehouseDAL.Entities;
+﻿namespace WarehousePL.Web;
 
-
-
-namespace WarehousePL.Web
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add services
+        builder.Services.AddDistributedMemoryCache();
+        builder.Services.AddJsonLocalization();
+        builder.Services.AddControllersWithViews()
+                        .AddViewLocalization();
+
+        // DbContext
+        builder.Services.AddDbContext<WarehouseDbContext>(options =>
         {
-            var builder = WebApplication.CreateBuilder(args);
+            options.UseSqlServer(
+                builder.Configuration.GetConnectionString("DefaultConnection"),
+                sql => sql.MigrationsAssembly("WarehouseDAL"));
+        });
 
-            // Add services
-            builder.Services.AddControllersWithViews()
-                            .AddViewLocalization();
+        //mapester
+        MappingConfig.RegisterMappings();
+        // Identity
+        builder.Services.AddIdentity<User, Role>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = false;
+        })
+        .AddEntityFrameworkStores<WarehouseDbContext>()
+        .AddDefaultTokenProviders();
 
-            // DbContext
-            builder.Services.AddDbContext<WarehouseDbContext>(options =>
-            {
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    sql => sql.MigrationsAssembly("WarehouseDAL"));
-            });
+        // Repositories
+        builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
+        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+        builder.Services.AddScoped<IBranchRepository, BranchRepository>();
+        builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+        builder.Services.AddScoped<ICashBoxRepository, CashBoxRepository>();
+        builder.Services.AddScoped<IUnitRepository, UnitRepository>();
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            //mapester
-            MappingConfig.RegisterMappings();
-            // Identity
-            builder.Services.AddIdentity<User, Role>(options =>
-            {
-                options.SignIn.RequireConfirmedAccount = false;
-            })
-            .AddEntityFrameworkStores<WarehouseDbContext>()
-            .AddDefaultTokenProviders();
+        var app = builder.Build();
 
-            // Repositories
-            builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
-            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-            builder.Services.AddScoped<IBranchRepository, BranchRepository>();
-            builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
-            builder.Services.AddScoped<ICashBoxRepository, CashBoxRepository>();
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        // إنشاء قاعدة البيانات وتطبيق الـ Migrations
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
 
-            var app = builder.Build();
+            var context = services.GetRequiredService<WarehouseDbContext>();
 
-            // إنشاء قاعدة البيانات وتطبيق الـ Migrations
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
+            var roleManager = services.GetRequiredService<RoleManager<Role>>();
+            var userManager = services.GetRequiredService<UserManager<User>>();
 
-                var context = services.GetRequiredService<WarehouseDbContext>();
+            WarehouseDAL.Data.SeedData.DefalutRoles
+                .SeedAsync(roleManager)
+                .GetAwaiter()
+                .GetResult();
 
-                var roleManager = services.GetRequiredService<RoleManager<Role>>();
-                var userManager = services.GetRequiredService<UserManager<User>>();
-
-                WarehouseDAL.Data.SeedData.DefalutRoles
-                    .SeedAsync(roleManager)
-                    .GetAwaiter()
-                    .GetResult();
-
-                WarehouseDAL.Data.SeedData.DefalutUsers
-                    .SeedSuperAdminUserAsync(userManager, roleManager)
-                    .GetAwaiter()
-                    .GetResult();
-            }
-
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapStaticAssets();
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}")
-                .WithStaticAssets();
-
-            app.Run();
+            WarehouseDAL.Data.SeedData.DefalutUsers
+                .SeedSuperAdminUserAsync(userManager, roleManager)
+                .GetAwaiter()
+                .GetResult();
         }
+
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Home/Error");
+            app.UseHsts();
+        }
+        app.UseRequestLocalization(Localization.localizationOptions());
+
+        app.UseHttpsRedirection();
+
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapStaticAssets();
+
+        app.MapControllerRoute(
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}")
+            .WithStaticAssets();
+
+        app.Run();
     }
 }

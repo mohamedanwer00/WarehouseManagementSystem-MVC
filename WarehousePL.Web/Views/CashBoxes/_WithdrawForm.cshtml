@@ -2,10 +2,10 @@
 @model CashBoxTransactionFormViewModel
 
 <form asp-action="Withdraw" asp-controller="CashBoxes" method="post" class="js-form-element row g-3" data-modal="true">
-    <input type="hidden" asp-for="CashBoxId" />
+    <input type="hidden" asp-for="Id" />
 
     <div class="col-md-12 text-center mb-2">
-        <h5 class="text-danger">سحب نقدي من: @Model.CashBoxName</h5>
+        <h5 class="text-danger">سحب نقدي من: @Model.Name</h5>
     </div>
 
     <div class="col-md-12">
@@ -25,3 +25,30 @@
         <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal">إلغاء</button>
     </div>
 </form>
+<script>
+    $('.js-form-element').off('submit').on('submit', function (e) {
+        e.preventDefault();
+
+        var form = $(this);
+        if (!form.valid()) return false;
+
+        $.ajax({
+            url: form.attr('action'),
+            type: form.attr('method'),
+            data: form.serialize(),
+            success: function (response) {
+                var modalEl = form.closest('.modal');
+                if(modalEl.length > 0) {
+                     var modalInstance = bootstrap.Modal.getInstance(modalEl[0]) || new bootstrap.Modal(modalEl[0]);
+                     modalInstance.hide();
+                }
+
+                var cashBoxId = "@Model.Id";
+                $('tr[data-id="' + cashBoxId + '"]').replaceWith(response);
+            },
+            error: function (xhr) {
+                alert('حدث خطأ أثناء حفظ البيانات.');
+            }
+        });
+    });
+</script>

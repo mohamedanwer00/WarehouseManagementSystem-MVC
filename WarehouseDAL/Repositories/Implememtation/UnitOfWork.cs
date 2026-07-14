@@ -14,19 +14,21 @@ namespace WarehouseDAL.Repositories.Implememtation
         public IBranchRepository Branches { get; }
         public IWarehouseRepository Warehouses { get; }
         public ICashBoxRepository CashBoxes { get; }
-
+        public IUnitRepository Units { get; }
         public UnitOfWork(
             WarehouseDbContext dbContext,
             ICategoryRepository categories,
             IBranchRepository branches,
             IWarehouseRepository warehouses,
-            ICashBoxRepository cashBoxes)
+            ICashBoxRepository cashBoxes,
+            IUnitRepository units)
         {
             _dbContext = dbContext;
             Categories = categories;
             Branches = branches;
             Warehouses = warehouses;
             CashBoxes = cashBoxes;
+            Units = units;
         }
 
         public int SaveChanges()

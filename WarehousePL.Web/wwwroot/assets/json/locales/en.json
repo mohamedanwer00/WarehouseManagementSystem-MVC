@@ -374,5 +374,9 @@
   "ToDate": "To Date",
   "FilterByDoctor": "Filter by Doctor",
   "FilterByStatus": "Filter by Status",
-  "All": "All"
+  "All": "All",
+  "InsufficientBalance": "Insufficient balance",
+  "Symbol": "Symbol",
+  "Deleted": "Deleted",
+  "Added": "Added"
 }

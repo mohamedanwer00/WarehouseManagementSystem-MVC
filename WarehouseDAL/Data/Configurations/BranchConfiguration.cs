@@ -28,11 +28,10 @@ namespace WarehouseDAL.Data.Configurations
 
             builder.HasData(new Branch
             {
-                Id = 1, // يجب تحديد الـ Id يدوياً في الـ Seed Data
+                Id = 1,
                 Name = "الفرع الرئيسي",
                 Address = "القاهرة - وسط البلد",
                 PhoneNumber = "01146613992",
-                // ملاحظة: لا نضع الـ Navigation Properties (مثل Warehouses) هنا، فقط البيانات الأساسية للجدول
                 CreatedOn = new DateTime(2026, 1, 1),
                 UpdatedOn = new DateTime(2026, 1, 1)
             });

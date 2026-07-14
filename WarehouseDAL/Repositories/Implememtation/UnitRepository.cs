@@ -7,9 +7,9 @@ using WarehouseDAL.Repositories.Interfaces;
 
 namespace WarehouseDAL.Repositories.Implememtation
 {
-    public class CategoryRepository : GenericRepository<Category>, ICategoryRepository
-    {
-        public CategoryRepository(WarehouseDbContext context)
+        public class UnitRepository : GenericRepository<Unit>, IUnitRepository
+        {
+        public UnitRepository(WarehouseDbContext context)
         : base(context)
         {
         }
