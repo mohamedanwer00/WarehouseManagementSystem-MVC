@@ -1,0 +1,57 @@
+﻿@model WarehouseBLL.FormViewModels.Product.ProductFormViewModel
+@{
+    ViewBag.Title = "إضافة منتج جديد";
+}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">إضافة منتج جديد للسيستم</h5>
+        <a asp-action="Index" class="btn btn-label-secondary"><i class="ti ti-arrow-right me-1"></i> العودة للجدول</a>
+    </div>
+    <div class="card-body">
+        <partial name="_Form" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+            $('#btn-add-unit').click(function () {
+                var index = $('#tbl-product-units tbody tr').length;
+                var template = $('#unit-row-template table tbody').html().replaceAll('{index}', index);
+                $('#tbl-product-units tbody').append(template);
+            });
+
+            $(document).on('click', '.btn-remove-row', function () {
+                $(this).closest('tr').remove();
+                reIndexTable();
+            });
+
+            // إدارة الـ Radio Button للوحدة الأساسية ليكون خيار واحد فقط مفعل في الجدول كله
+            $(document).on('change', '.base-unit-radio', function () {
+                // تصفير كل المدخلات المخفية
+                $('.base-unit-hidden').val('false');
+                $('.base-unit-radio').prop('checked', false);
+
+                // تفعيل السطر المختار فقط
+                $(this).prop('checked', true);
+                $(this).closest('tr').find('.base-unit-hidden').val('true');
+            });
+
+            // دالة إعادة الترتيب حتى لا يفقد الـ Model Binder البيانات بعد عمليات المسح والترتيب
+            function reIndexTable() {
+                $('#tbl-product-units tbody tr').each(function (index, tr) {
+                    $(tr).find('select, input').each(function (i, el) {
+                        var name = $(el).attr('name');
+                        if (name && name.startsWith('ProductUnits[')) {
+                            var newName = name.replace(/\[\d+\]/, '[' + index + ']');
+                            $(el).attr('name', newName);
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+}

@@ -86,7 +86,8 @@ namespace WarehousePL.Web.Controllers.CashBoxes
                 viewModel.BranchName = selectedBranch.Name;
             }
 
-            return PartialView("_Row", viewModel);
+            //return PartialView("_Row", viewModel);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
@@ -147,8 +148,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             {
                 viewModel.BranchName = selectedBranch.Name;
             }
-
-            return PartialView("_Row", viewModel);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]

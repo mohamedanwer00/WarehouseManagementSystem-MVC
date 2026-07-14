@@ -7,10 +7,13 @@ using WarehouseDAL.Repositories.Interfaces;
 
 namespace WarehouseDAL.Repositories.Implememtation
 {
-    public class CategoryRepository : GenericRepository<Category>, ICategoryRepository
+    public class ProductRepository:GenericRepository<Product>,IProductRepository
     {
-        public CategoryRepository(WarehouseDbContext context): base(context)
+        private readonly WarehouseDbContext _dbContext;
+
+        public ProductRepository(WarehouseDbContext dbContext):base(dbContext)
         {
+            _dbContext = dbContext;
         }
     }
 }

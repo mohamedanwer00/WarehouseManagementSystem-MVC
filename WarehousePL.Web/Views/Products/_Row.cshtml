@@ -1,0 +1,36 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models.Product
+@using WarehouseBLL.Const
+@model ProductViewModel
+
+<tr id="row-@Model.Id" data-id="@Model.Id">
+    <td class="fw-bold text-primary">@Model.Code</td>
+    <td>@Model.Name</td>
+    <td>@Model.CategoryName</td>
+    <td>@Model.BaseUnitName</td>
+    <td class="fw-bold text-success">@Model.BaseUnitSellingPrice.ToString("N2")</td>
+    <td>@Model.MinimumQuantity.ToString("N0")</td>
+    <td>
+        <partial name="_LastActionBadge" model="Model.LastAction" />
+    </td>
+    <td>
+        <a asp-action="Edit" asp-controller="Products" asp-route-id="@Model.Id" class="btn btn-sm btn-label-primary">
+            @_localization[DisplayNames.Edit]
+        </a>
+    </td>
+    <td>
+        @if (Model.LastAction != LastActionName.Delete)
+        {
+            <a href="javascript:;" data-url="/Products/Delete/@Model.Id"
+               class="btn btn-sm btn-label-danger item-edit js-toggle-status" data-id="@Model.Id">
+                @_localization[DisplayNames.Delete]
+            </a>
+        }
+        else
+        {
+            <a href="javascript:;" data-url="/Products/Restore/@Model.Id"
+               class="btn btn-sm btn-label-success item-edit js-toggle-status" data-id="@Model.Id">
+                @_localization[DisplayNames.Restore]
+            </a>
+        }
+    </td>
+</tr>

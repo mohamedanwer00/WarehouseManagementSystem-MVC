@@ -15,13 +15,17 @@ namespace WarehouseDAL.Repositories.Implememtation
         public IWarehouseRepository Warehouses { get; }
         public ICashBoxRepository CashBoxes { get; }
         public IUnitRepository Units { get; }
+        public IProductRepository Products { get; }
+        public IProductUnitRepository ProductUnits { get; }
         public UnitOfWork(
             WarehouseDbContext dbContext,
             ICategoryRepository categories,
             IBranchRepository branches,
             IWarehouseRepository warehouses,
             ICashBoxRepository cashBoxes,
-            IUnitRepository units)
+            IUnitRepository units,
+            IProductRepository products,
+            IProductUnitRepository productsUnits)
         {
             _dbContext = dbContext;
             Categories = categories;
@@ -29,6 +33,8 @@ namespace WarehouseDAL.Repositories.Implememtation
             Warehouses = warehouses;
             CashBoxes = cashBoxes;
             Units = units;
+            Products = products;
+            ProductUnits = productsUnits;
         }
 
         public int SaveChanges()

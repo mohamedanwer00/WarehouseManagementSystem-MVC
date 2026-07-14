@@ -378,5 +378,10 @@
   "InsufficientBalance": "Insufficient balance",
   "Symbol": "Symbol",
   "Deleted": "Deleted",
-  "Added": "Added"
+  "Added": "Added",
+  "Address": "Address",
+  "Branch": "Branch",
+  "CashTransactions": "Cash Transactions",
+  "CurrentBalance": "Current Balance"
+
 }

@@ -369,8 +369,12 @@
   "Symbol": "الرمز",
   "Units": "الوحدات",
   "Added": "مضاف",
-  "Deleted": "محذوف"
-
-
-
+  "Deleted": "محذوف",
+  "Address": "العنوان",
+  "CashTransactions": "العملية النقدية",
+  "CurrentBalance": "الرصيد الحالى ",
+  "ProductCode": "كود الصنف",
+  "BaseUnit": "الوحدة الأساسية",
+  "SellingPrice": "سعر البيع",
+  "MinQty": "اقل كمية"
 }

@@ -5,12 +5,14 @@ using System.Text;
 using WarehouseBLL.BusinessServices.View_Models;
 using WarehouseBLL.BusinessServices.View_Models.Branch;
 using WarehouseBLL.BusinessServices.View_Models.CashBox;
+using WarehouseBLL.BusinessServices.View_Models.Product;
 using WarehouseBLL.BusinessServices.View_Models.Unit;
 using WarehouseBLL.BusinessServices.View_Models.Users;
 using WarehouseBLL.BusinessServices.View_Models.Warehouse;
 using WarehouseBLL.FormViewModels.Branch;
 using WarehouseBLL.FormViewModels.CashBox;
 using WarehouseBLL.FormViewModels.Category;
+using WarehouseBLL.FormViewModels.Product;
 using WarehouseBLL.FormViewModels.Unit;
 using WarehouseBLL.FormViewModels.User;
 using WarehouseBLL.FormViewModels.Warehouse;
@@ -121,6 +123,23 @@ namespace WarehouseBLL.Mapping
             TypeAdapterConfig<Unit, UnitViewModel>.NewConfig();
             TypeAdapterConfig<UnitFormViewModel, Unit>.NewConfig();
             TypeAdapterConfig<Unit, UnitFormViewModel>.NewConfig();
+            #endregion
+
+            //Product
+            #region Product
+            TypeAdapterConfig<Product, ProductViewModel>
+                .NewConfig()
+                .Map(dest => dest.CategoryName, src => src.Category != null ? src.Category.Name : string.Empty)
+                .Map(dest => dest.BaseUnitName, src => src.ProductUnits.FirstOrDefault(pu => pu.IsBaseUnit) != null
+                    ? src.ProductUnits.FirstOrDefault(pu => pu.IsBaseUnit)!.Unit.Name : string.Empty)
+                .Map(dest => dest.BaseUnitSellingPrice, src => src.ProductUnits.FirstOrDefault(pu => pu.IsBaseUnit) != null
+                    ? src.ProductUnits.FirstOrDefault(pu => pu.IsBaseUnit)!.SellingPrice : 0);
+
+            TypeAdapterConfig<ProductFormViewModel, Product>.NewConfig();
+            TypeAdapterConfig<ProductUnitFormViewModel, ProductUnit>.NewConfig();
+
+            TypeAdapterConfig<Product, ProductFormViewModel>.NewConfig();
+            TypeAdapterConfig<ProductUnit, ProductUnitFormViewModel>.NewConfig();
             #endregion
         }
     }

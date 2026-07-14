@@ -37,6 +37,8 @@ public class Program
         builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         builder.Services.AddScoped<ICashBoxRepository, CashBoxRepository>();
         builder.Services.AddScoped<IUnitRepository, UnitRepository>();
+        builder.Services.AddScoped<IProductRepository, ProductRepository>();
+        builder.Services.AddScoped<IProductUnitRepository, ProductUnitRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         var app = builder.Build();
