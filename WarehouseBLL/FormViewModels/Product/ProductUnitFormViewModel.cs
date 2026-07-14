@@ -7,6 +7,7 @@ namespace WarehouseBLL.FormViewModels.Product
 {
     public class ProductUnitFormViewModel
     {
+        public int Id { get; set; }  // 0 للوحدات الجديدة، > 0 للوحدات الموجودة
 
         [Required(ErrorMessage = "يجب اختيار الوحدة")]
         public int UnitId { get; set; }

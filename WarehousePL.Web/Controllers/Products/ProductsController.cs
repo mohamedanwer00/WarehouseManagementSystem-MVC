@@ -76,6 +76,7 @@ namespace WarehousePL.Web.Controllers.Products
 
             var product = _unitOfWork.Products.GetTableNoTracking()
                 .Include(p => p.ProductUnits)
+                    .ThenInclude(pu => pu.Unit)
                 .FirstOrDefault(p => p.Id == id);
 
             if (product == null) return NotFound();
@@ -84,6 +85,7 @@ namespace WarehousePL.Web.Controllers.Products
 
             model.ProductUnits = product.ProductUnits.Select(pu => new ProductUnitFormViewModel
             {
+                Id = pu.Id,
                 UnitId = pu.UnitId,
                 Factor = pu.Factor,
                 IsBaseUnit = pu.IsBaseUnit,
@@ -119,13 +121,42 @@ namespace WarehousePL.Web.Controllers.Products
             product.CategoryId = model.CategoryId;
             product.LastAction = LastActionName.Update;
 
-            var oldUnits = _unitOfWork.ProductUnits.GetAll().Where(pu => pu.ProductId == product.Id).ToList();
+            // الوحدات القادمة من الفورم
+            var incomingIds = model.ProductUnits.Where(u => u.Id > 0).Select(u => u.Id).ToHashSet();
+
+            // احذف الوحدات اللي اتشالت من الفورم فقط
+            var oldUnits = _unitOfWork.ProductUnits.GetAll(pu => pu.ProductId == product.Id).ToList();
             foreach (var ou in oldUnits)
             {
-                _unitOfWork.ProductUnits.Delete(ou);
+                if (!incomingIds.Contains(ou.Id))
+                    _unitOfWork.ProductUnits.Delete(ou);
             }
 
-            product.ProductUnits = model.ProductUnits.Adapt<ICollection<ProductUnit>>();
+            // حدّث الموجودة وأضف الجديدة
+            foreach (var pu in model.ProductUnits)
+            {
+                if (pu.Id > 0)
+                {
+                    // وحدة موجودة — حدّثها
+                    var existing = _unitOfWork.ProductUnits.GetById(pu.Id);
+                    if (existing != null)
+                    {
+                        existing.UnitId = pu.UnitId;
+                        existing.Factor = pu.Factor;
+                        existing.IsBaseUnit = pu.IsBaseUnit;
+                        existing.PurchasePrice = pu.PurchasePrice;
+                        existing.SellingPrice = pu.SellingPrice;
+                        _unitOfWork.ProductUnits.Update(existing);
+                    }
+                }
+                else
+                {
+                    // وحدة جديدة — أضفها
+                    var newUnit = pu.Adapt<ProductUnit>();
+                    newUnit.ProductId = product.Id;
+                    _unitOfWork.ProductUnits.Add(newUnit);
+                }
+            }
 
             _unitOfWork.Products.Update(product);
             _unitOfWork.SaveChanges();

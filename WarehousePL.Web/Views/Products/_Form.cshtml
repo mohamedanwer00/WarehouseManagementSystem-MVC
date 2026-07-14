@@ -64,8 +64,20 @@
                     {
                         <tr class="unit-row">
                             <td>
-                                <select name="ProductUnits[@i].UnitId" class="form-select form-select-sm select-unit-id" asp-items="Model.AllAvailableUnits" value="@Model.ProductUnits[i].UnitId">
+                                <input type="hidden" name="ProductUnits[@i].Id" value="@Model.ProductUnits[i].Id" />
+                                <select name="ProductUnits[@i].UnitId" class="form-select form-select-sm select-unit-id">
                                     <option value="">اختر</option>
+                                    @foreach (var unit in Model.AllAvailableUnits!)
+                                    {
+                                        if (unit.Value == Model.ProductUnits[i].UnitId.ToString())
+                                        {
+                                            <option value="@unit.Value" selected>@unit.Text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@unit.Value">@unit.Text</option>
+                                        }
+                                    }
                                 </select>
                             </td>
                             <td>

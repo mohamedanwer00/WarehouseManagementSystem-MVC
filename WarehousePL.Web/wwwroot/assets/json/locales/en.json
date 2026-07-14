@@ -382,6 +382,10 @@
   "Address": "Address",
   "Branch": "Branch",
   "CashTransactions": "Cash Transactions",
-  "CurrentBalance": "Current Balance"
+  "CurrentBalance": "Current Balance",
+  "ProductCode": "Product Code",
+  "BaseUnit": "Base Unit",
+  "SellingPrice": "Selling Price",
+  "MinQty": "Min Qty"
 
 }
