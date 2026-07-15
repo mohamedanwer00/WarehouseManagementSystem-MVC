@@ -8,14 +8,7 @@
     <td>@Model.BranchName</td>
 
     <td>
-        @if (Model.LastAction == LastActionName.Delete)
-        {
-            <span class="badge bg-label-danger">@_localization["Deleted"]</span>
-        }
-        else
-        {
-            <span class="badge bg-label-success">@_localization["Active"]</span>
-        }
+        <partial name="_LastActionBadge" model="Model.LastAction" />
     </td>
 
     <td>

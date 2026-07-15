@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseBLL.BusinessServices.View_Models.Product;
+using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Product;
 
 namespace WarehousePL.Web.Controllers.Products
@@ -52,7 +53,7 @@ namespace WarehousePL.Web.Controllers.Products
 
             var product = model.Adapt<Product>();
             product.LastAction = LastActionName.Insert;
-            //product.CreatedById = User.
+            product.CreatedById = User.GetUserId();
             product.CreatedOn = DateTime.Now;
 
             _unitOfWork.Products.Add(product);
@@ -110,11 +111,12 @@ namespace WarehousePL.Web.Controllers.Products
             product.MaximumQuantity = model.MaximumQuantity;
             product.CategoryId = model.CategoryId;
             product.LastAction = LastActionName.Update;
+            product.UpdatedById = User.GetUserId();
             product.UpdatedOn = DateTime.Now;
 
             var incomingIds = model.ProductUnits.Where(u => u.Id > 0).Select(u => u.Id).ToHashSet();
 
-            var oldUnits = _unitOfWork.ProductUnits.GetAll(pu => pu.ProductId == product.Id).ToList();
+            var oldUnits = _unitOfWork.ProductUnits.GetAll(pu => pu.ProductId == product.Id && pu.LastAction != LastActionName.Delete).ToList();
             foreach (var ou in oldUnits)
             {
                 if (!incomingIds.Contains(ou.Id))

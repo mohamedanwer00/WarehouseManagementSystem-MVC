@@ -57,12 +57,12 @@ public class AuthenticationController : Controller
     public IActionResult Register(string returnUrl = null)
     {
         ViewData["ReturnUrl"] = returnUrl;
-        return View("Register", new WarehouseBLL.BusinessServices.View_Models.RegisterViewModel());
+        return View("Register", new RegisterViewModel());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(WarehouseBLL.BusinessServices.View_Models.RegisterViewModel model, string returnUrl = null)
+    public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
     {
         ViewData["ReturnUrl"] = returnUrl;
         if (!ModelState.IsValid)

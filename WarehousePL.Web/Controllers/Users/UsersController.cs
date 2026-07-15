@@ -1,4 +1,6 @@
-﻿namespace WarehousePL.Web.Controllers.Users
+﻿using WarehouseBLL.Extensions;
+
+namespace WarehousePL.Web.Controllers.Users
 {
     public class UsersController : Controller
     {
@@ -80,7 +82,6 @@
 
             user.CreateDate = DateTime.Now;
             user.LastAction = LastActionName.Insert;
-
             IdentityResult result = await _userManager.CreateAsync(user, viewModel.Password);
 
             if (!result.Succeeded)

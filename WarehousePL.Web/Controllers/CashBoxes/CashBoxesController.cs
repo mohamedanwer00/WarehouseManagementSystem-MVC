@@ -1,7 +1,8 @@
 ﻿
 using WarehouseBLL.BusinessServices.View_Models.CashBox;
-using WarehouseBLL.FormViewModels.CashBox;
 using WarehouseBLL.Const;
+using WarehouseBLL.Extensions;
+using WarehouseBLL.FormViewModels.CashBox;
 using WarehouseDAL.Entities;
 
 namespace WarehousePL.Web.Controllers.CashBoxes
@@ -73,7 +74,8 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             var cashBox = model.Adapt<CashBox>();
             cashBox.CurrentBalance = model.OpeningBalance;
             cashBox.LastAction = LastActionName.Insert;
-
+            cashBox.CreatedById = User.GetUserId();
+            cashBox.CreatedOn = DateTime.Now;
             _unitOfWork.CashBoxes.Add(cashBox);
             _unitOfWork.SaveChanges();
 
@@ -136,7 +138,8 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             cashBox.BranchId = model.SelectedBranch;
             cashBox.OpeningBalance = model.OpeningBalance;
             cashBox.LastAction = LastActionName.Update;
-
+            cashBox.UpdatedById=User.GetUserId();
+            cashBox.UpdatedOn= DateTime.Now;
             _unitOfWork.CashBoxes.Update(cashBox);
             _unitOfWork.SaveChanges();
 
@@ -155,7 +158,8 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         public IActionResult Deposit(int id)
         {
             var cashBox = _unitOfWork.CashBoxes.GetById(id);
-            if (cashBox == null || cashBox.LastAction != LastActionName.Delete) return NotFound();
+            if (cashBox == null || cashBox.LastAction != LastActionName.Delete)
+                return NotFound();
 
             var model = new CashBoxTransactionFormViewModel
             {
@@ -181,6 +185,8 @@ namespace WarehousePL.Web.Controllers.CashBoxes
 
             cashBox.CurrentBalance += model.Amount;
             cashBox.LastAction = LastActionName.Update;
+            cashBox.UpdatedById = User.GetUserId();
+            cashBox.UpdatedOn = DateTime.Now;
             _unitOfWork.CashBoxes.Update(cashBox);
             _unitOfWork.SaveChanges();
 
@@ -227,6 +233,8 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             }
             cashBox.CurrentBalance -= model.Amount;
             cashBox.LastAction = LastActionName.Update;
+            cashBox.UpdatedById = User.GetUserId();
+            cashBox.UpdatedOn = DateTime.Now;
             _unitOfWork.CashBoxes.Update(cashBox);
             _unitOfWork.SaveChanges();
             var viewModel = cashBox.Adapt<CashBoxViewModel>();
@@ -243,6 +251,8 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             if (cashBox == null) return NotFound();
 
             cashBox.LastAction = LastActionName.Delete;
+            cashBox.UpdatedById = User.GetUserId();
+            cashBox.UpdatedOn = DateTime.Now;
             _unitOfWork.CashBoxes.Update(cashBox);
             _unitOfWork.SaveChanges();
 
@@ -261,6 +271,8 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             if (cashBox == null) return NotFound();
 
             cashBox.LastAction = LastActionName.Update;
+            cashBox.UpdatedById = User.GetUserId();
+            cashBox.UpdatedOn = DateTime.Now;
             _unitOfWork.CashBoxes.Update(cashBox);
             _unitOfWork.SaveChanges();
 

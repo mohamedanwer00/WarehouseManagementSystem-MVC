@@ -2,6 +2,7 @@ using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using WarehouseBLL.BusinessServices.View_Models;
 using WarehouseBLL.Const;
+using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Category;
 using WarehouseDAL.Entities;
 using WarehouseDAL.Repositories.Interfaces;
@@ -44,6 +45,9 @@ namespace WarehousePL.Web.Controllers.Categories
 
             category.LastAction = LastActionName.Insert;
 
+            category.CreatedById = User.GetUserId();
+            category.CreatedOn = DateTime.Now;
+
             _unitOfWork.Categories.Add(category);
             _unitOfWork.SaveChanges();
 
@@ -80,9 +84,9 @@ namespace WarehousePL.Web.Controllers.Categories
 
             model.Adapt(category);
 
-            category.UpdatedOn = DateTime.Now;
             category.LastAction = LastActionName.Update;
-
+            category.UpdatedById = User.GetUserId();
+            category.UpdatedOn = DateTime.Now;
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 
@@ -102,7 +106,8 @@ namespace WarehousePL.Web.Controllers.Categories
                 return NotFound();
 
             category.LastAction = LastActionName.Delete;
-
+            category.UpdatedById = User.GetUserId();
+            category.UpdatedOn = DateTime.Now;
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 
@@ -122,7 +127,8 @@ namespace WarehousePL.Web.Controllers.Categories
                 return NotFound();
 
             category.LastAction = LastActionName.Update;
-
+            category.UpdatedById = User.GetUserId();
+            category.UpdatedOn = DateTime.Now;
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 

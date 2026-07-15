@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseBLL.BusinessServices.View_Models.Unit;
+using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Unit;
 
 namespace WarehousePL.Web.Controllers.Units
@@ -48,7 +49,8 @@ namespace WarehousePL.Web.Controllers.Units
 
             var unit = model.Adapt<Unit>();
             unit.LastAction = LastActionName.Insert;
-
+            unit.CreatedById = User.GetUserId();
+            unit.CreatedOn= DateTime.Now;
             _unitOfWork.Units.Add(unit);
             _unitOfWork.SaveChanges();
 
@@ -91,7 +93,8 @@ namespace WarehousePL.Web.Controllers.Units
             unit.Name = model.Name;
             unit.Symbol = model.Symbol;
             unit.LastAction = LastActionName.Update;
-
+            unit.UpdatedById = User.GetUserId();
+            unit.UpdatedOn= DateTime.Now;
             _unitOfWork.Units.Update(unit);
             _unitOfWork.SaveChanges();
 
@@ -108,6 +111,8 @@ namespace WarehousePL.Web.Controllers.Units
                 return NotFound();
 
             unit.LastAction = LastActionName.Delete;
+            unit.UpdatedById = User.GetUserId();
+            unit.UpdatedOn = DateTime.Now;
             _unitOfWork.Units.Update(unit);
             _unitOfWork.SaveChanges();
 
@@ -124,6 +129,8 @@ namespace WarehousePL.Web.Controllers.Units
             if (unit == null) return NotFound();
 
             unit.LastAction = LastActionName.Update;
+            unit.UpdatedById = User.GetUserId();
+            unit.UpdatedOn = DateTime.Now;
             _unitOfWork.Units.Update(unit);
             _unitOfWork.SaveChanges();
 

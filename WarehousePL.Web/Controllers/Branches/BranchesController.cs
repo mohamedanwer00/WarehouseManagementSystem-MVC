@@ -1,5 +1,6 @@
 ﻿using WarehouseBLL.BusinessServices.View_Models;
 using WarehouseBLL.BusinessServices.View_Models.Branch;
+using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Branch;
 using WarehouseDAL.Entities.Entities;
 using WarehouseDAL.Repositories.Implememtation;
@@ -38,6 +39,8 @@ namespace WarehousePL.Web.Controllers.Branches
                 return PartialView("_Form", model);
             var branch = model.Adapt<Branch>();
             branch.LastAction = LastActionName.Insert;
+            branch.CreatedById=User.GetUserId();
+            branch.CreatedOn = DateTime.Now;
             _unitOfWork.Branches.Add(branch);
             _unitOfWork.SaveChanges();
             var viewModel = branch.Adapt<BranchViewModel>();
@@ -64,6 +67,8 @@ namespace WarehousePL.Web.Controllers.Branches
                 return NotFound();
             branch = model.Adapt(branch);
             branch.LastAction = LastActionName.Update;
+            branch.UpdatedById=User.GetUserId();
+            branch.UpdatedOn=DateTime.Now;
             _unitOfWork.Branches.Update(branch);
             _unitOfWork.SaveChanges();
             var viewModel = branch.Adapt<BranchViewModel>();
@@ -80,7 +85,8 @@ namespace WarehousePL.Web.Controllers.Branches
                 return NotFound();
 
             branch.LastAction = LastActionName.Delete;
-
+            branch.UpdatedById = User.GetUserId();
+            branch.UpdatedOn = DateTime.Now;
             _unitOfWork.Branches.Update(branch);
             _unitOfWork.SaveChanges();
 
@@ -99,7 +105,8 @@ namespace WarehousePL.Web.Controllers.Branches
                 return NotFound();
 
             branch.LastAction = LastActionName.Update;
-
+            branch.UpdatedById = User.GetUserId();
+            branch.UpdatedOn = DateTime.Now;
             _unitOfWork.Branches.Update(branch);
             _unitOfWork.SaveChanges();
 

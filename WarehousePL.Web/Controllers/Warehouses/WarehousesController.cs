@@ -56,6 +56,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             if (isNameExists)
             {
                 ModelState.AddModelError(nameof(model.Name), "اسم المخزن موجود بالفعل.");
+                return PartialView("_Form",model);
             }
 
 
@@ -88,8 +89,8 @@ namespace WarehousePL.Web.Controllers.Warehouses
             {
                 viewModel.BranchName = selectedBranch.Name;
             }
-            return PartialView("_Row", viewModel);
-            //return RedirectToAction(nameof(Index));
+            //return PartialView("_Row", viewModel);
+            return RedirectToAction(nameof(Index));
 
         }
         [HttpGet]
@@ -138,6 +139,8 @@ namespace WarehousePL.Web.Controllers.Warehouses
             warehouse.Name = model.Name;
             warehouse.BranchId = model.SelectedBranch;
             warehouse.LastAction = LastActionName.Update;
+            warehouse.UpdatedById = User.GetUserId();
+            warehouse.UpdatedOn = DateTime.Now;
             _unitOfWork.Warehouses.Update(warehouse);
             _unitOfWork.SaveChanges();
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
@@ -159,6 +162,8 @@ namespace WarehousePL.Web.Controllers.Warehouses
                 return NotFound();
             }
             warehouse.LastAction = LastActionName.Delete;
+            warehouse.UpdatedById = User.GetUserId();
+            warehouse.UpdatedOn = DateTime.Now;
             _unitOfWork.Warehouses.Update(warehouse);
             _unitOfWork.SaveChanges();
 
@@ -182,8 +187,9 @@ namespace WarehousePL.Web.Controllers.Warehouses
             {
                 return NotFound();
             }
-            warehouse.LastAction = LastActionName.Update; 
-
+            warehouse.LastAction = LastActionName.Update;
+            warehouse.UpdatedById = User.GetUserId();
+            warehouse.UpdatedOn = DateTime.Now;
             _unitOfWork.Warehouses.Update(warehouse);
             _unitOfWork.SaveChanges();
 
