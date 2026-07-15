@@ -44,7 +44,15 @@ namespace WarehousePL.Web.Controllers.Products
 
             if (model.ProductUnits.Count(pu => pu.IsBaseUnit) != 1)
                 ModelState.AddModelError("", "يجب اختيار وحدة أساسية واحدة فقط للمنتج.");
-
+            
+            if (model.ProductUnits != null)
+            {
+                var unitIds = model.ProductUnits.Select(pu => pu.UnitId).ToList();
+                if (unitIds.Count != unitIds.Distinct().Count())
+                {
+                    ModelState.AddModelError("", "لا يمكن تكرار نفس الوحدة للمنتج الواحد.");
+                }
+            }
             if (!ModelState.IsValid)
             {
                 PopulateDropdowns(model);
@@ -130,11 +138,17 @@ namespace WarehousePL.Web.Controllers.Products
                     var existing = _unitOfWork.ProductUnits.GetById(pu.Id);
                     if (existing != null)
                     {
+
                         existing.UnitId = pu.UnitId;
                         existing.Factor = pu.Factor;
                         existing.IsBaseUnit = pu.IsBaseUnit;
-                        existing.PurchasePrice = pu.PurchasePrice;
-                        existing.SellingPrice = pu.SellingPrice;
+
+                        if (pu.PurchasePrice > 0)
+                            existing.PurchasePrice = pu.PurchasePrice;
+
+                        if (pu.SellingPrice > 0)
+                            existing.SellingPrice = pu.SellingPrice;
+
                         _unitOfWork.ProductUnits.Update(existing);
                     }
                 }
@@ -150,6 +164,45 @@ namespace WarehousePL.Web.Controllers.Products
             _unitOfWork.SaveChanges();
 
             return RedirectToAction(nameof(Index));
+        }
+
+
+        [HttpGet]
+        public IActionResult Details(int id)
+        {
+            var product = _unitOfWork.Products.GetTableNoTracking()
+                .Include(p => p.Category)
+                .Include(p => p.ProductUnits)
+                    .ThenInclude(pu => pu.Unit)
+                .FirstOrDefault(p => p.Id == id);
+
+            if (product is null)
+            {
+                return NotFound();
+            }
+
+            // عمل الـ Mapping صراحة وبدقة لمنع أي أخطاء تحويل تلقائي
+            var viewModel = new ProductViewModel
+            {
+                Id = product.Id,
+                Code = product.Code,
+                Name = product.Name,
+                CategoryName = product.Category?.Name ?? "غير مصنف",
+                MinimumQuantity = product.MinimumQuantity,
+                MaximumQuantity = product.MaximumQuantity,
+                LastAction = product.LastAction,
+                ProductUnits = product.ProductUnits.Select(pu => new ProductUnitViewModel
+                {
+                    UnitId = pu.UnitId,
+                    UnitName = pu.Unit?.Name ?? "وحدة غير معروفة",
+                    Factor = pu.Factor,
+                    IsBaseUnit = pu.IsBaseUnit,
+                    PurchasePrice = pu.PurchasePrice,
+                    SellingPrice = pu.SellingPrice
+                }).ToList()
+            };
+
+            return View(viewModel);
         }
 
         private void PopulateDropdowns(ProductFormViewModel model)

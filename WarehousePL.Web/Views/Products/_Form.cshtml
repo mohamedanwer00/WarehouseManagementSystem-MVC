@@ -1,7 +1,9 @@
 ﻿@using WarehouseBLL.FormViewModels.Product
+@using System.Globalization
 @model ProductFormViewModel
 
 <form asp-action="@(Model.Id == null ? "Create" : "Edit")" asp-controller="Products" method="post" class="row g-3">
+
     @if (Model.Id != null)
     {
         <input type="hidden" asp-for="Id" />
@@ -9,26 +11,26 @@
 
     <div class="col-md-6">
         <label asp-for="Name" class="form-label">اسم المنتج</label>
-        <input asp-for="Name" class="form-control" placeholder="اسم المنتج بالكامل" />
+        <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="Code" class="form-label">كود الصنف / الباركود</label>
-        <input asp-for="Code" class="form-control" placeholder="مثال: PRD-101" />
+        <input asp-for="Code" class="form-control" />
         <span asp-validation-for="Code" class="text-danger"></span>
     </div>
 
     <div class="col-md-4">
         <label asp-for="CategoryId" class="form-label">القسم / الفئة</label>
-        <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select select2">
-            <option value="">-- اختر القسم --</option>
+        <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select">
+            <option value="">اختر القسم</option>
         </select>
         <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
 
     <div class="col-md-4">
-        <label asp-for="MinimumQuantity" class="form-label">حد الطلب (الأدنى)</label>
+        <label asp-for="MinimumQuantity" class="form-label">الحد الادنى للمخزون</label>
         <input asp-for="MinimumQuantity" type="number" class="form-control" />
         <span asp-validation-for="MinimumQuantity" class="text-danger"></span>
     </div>
@@ -39,104 +41,179 @@
         <span asp-validation-for="MaximumQuantity" class="text-danger"></span>
     </div>
 
-    <hr class="my-4" />
+    <hr />
 
-    <div class="col-md-12 d-flex justify-content-between align-items-center">
-        <h5 class="text-primary mb-0"><i class="ti ti-settings me-1"></i> وحدات القياس والأسعار للقرين</h5>
-        <button type="button" id="btn-add-unit" class="btn btn-sm btn-primary"><i class="ti ti-plus me-1"></i> إضافة وحدة جديدة</button>
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h5>وحدات القياس والأسعار للصنف</h5>
+
+        <button type="button" id="btn-add-unit" class="btn btn-primary btn-sm">
+            إضافة وحدة جديدة
+        </button>
     </div>
 
-    <div class="col-md-12">
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle" id="tbl-product-units">
-                <thead class="table-light">
+    <div class="col-12">
+        <table class="table table-bordered" id="tbl-product-units">
+            <thead>
+                <tr>
+                    <th>الوحدة</th>
+                    <th>معامل التحويل</th>
+                    <th>وحدة أساسية؟</th>
+                    <th>سعر الشراء</th>
+                    <th>سعر البيع</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @for (int i = 0; i < Model.ProductUnits.Count; i++)
+                {
                     <tr>
-                        <th style="width: 25%;">الوحدة</th>
-                        <th>معامل التحويل (Factor)</th>
-                        <th>وحدة أساسية؟</th>
-                        <th>سعر الشراء</th>
-                        <th>سعر البيع</th>
-                        <th style="width: 80px;">إجراء</th>
+
+                        <!-- مهم جداً -->
+                        <input type="hidden"
+                               asp-for="ProductUnits[i].Id" />
+
+                        <td>
+                            <select asp-for="ProductUnits[i].UnitId"
+                                    asp-items="Model.AllAvailableUnits"
+                                    class="form-select form-select-sm select-unit-id">
+                                <option value="">اختر</option>
+                            </select>
+                        </td>
+
+                        <td>
+                            <input asp-for="ProductUnits[i].Factor"
+                                   class="form-control form-control-sm" />
+                        </td>
+
+                        <td class="text-center">
+
+                            <input type="radio"
+                                   class="base-unit-radio"
+                                   name="IsBaseUnitRadio"
+                                   @(Model.ProductUnits[i].IsBaseUnit ? "checked" : "") />
+
+                            <input type="hidden"
+                                   class="base-unit-hidden"
+                                   name="ProductUnits[@i].IsBaseUnit"
+                                   value="@(Model.ProductUnits[i].IsBaseUnit ? "true" : "false")" />
+
+                        </td>
+
+                        <td>
+                            <input asp-for="ProductUnits[i].PurchasePrice"
+                                   type="number"
+                                   step="0.01"
+                                   class="form-control form-control-sm" />
+                        </td>
+
+                        <td>
+                            <input asp-for="ProductUnits[i].SellingPrice"
+                                   type="number"
+                                   step="0.01"
+                                   class="form-control form-control-sm" />
+                        </td>
+
+                        <td>
+
+                            <button type="button"
+                                    class="btn btn-danger btn-remove-row">
+                                حذف
+                            </button>
+
+                        </td>
+
                     </tr>
-                </thead>
-                <tbody>
-                    @for (int i = 0; i < Model.ProductUnits.Count; i++)
-                    {
-                        <tr class="unit-row">
-                            <td>
-                                <input type="hidden" name="ProductUnits[@i].Id" value="@Model.ProductUnits[i].Id" />
-                                <select name="ProductUnits[@i].UnitId" class="form-select form-select-sm select-unit-id">
-                                    <option value="">اختر</option>
-                                    @foreach (var unit in Model.AllAvailableUnits!)
-                                    {
-                                        if (unit.Value == Model.ProductUnits[i].UnitId.ToString())
-                                        {
-                                            <option value="@unit.Value" selected>@unit.Text</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@unit.Value">@unit.Text</option>
-                                        }
-                                    }
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" name="ProductUnits[@i].Factor" class="form-control form-control-sm" value="@Model.ProductUnits[i].Factor" />
-                            </td>
-                            <td class="text-center">
-                                <input type="radio" name="IsBaseUnitRadio" class="form-check-input base-unit-radio" @(Model.ProductUnits[i].IsBaseUnit ? "checked" : "") />
-                                <input type="hidden" name="ProductUnits[@i].IsBaseUnit" class="base-unit-hidden" value="@(Model.ProductUnits[i].IsBaseUnit ? "true" : "false")" />
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" name="ProductUnits[@i].PurchasePrice" class="form-control form-control-sm" value="@Model.ProductUnits[i].PurchasePrice" />
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" name="ProductUnits[@i].SellingPrice" class="form-control form-control-sm" value="@Model.ProductUnits[i].SellingPrice" />
-                            </td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-label-danger btn-remove-row"><i class="ti ti-trash"></i></button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+
+            </tbody>
+        </table>
     </div>
 
-    <div class="col-12 text-center demo-vertical-spacing mt-4">
-        <button type="submit" class="btn btn-primary me-sm-3 me-1">حفظ الصنف</button>
-        <a asp-action="Index" class="btn btn-label-secondary">إلغاء</a>
+    <div class="col-12 text-center">
+
+        <button type="submit" class="btn btn-primary">
+            حفظ الصنف
+        </button>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            إلغاء
+        </a>
+
     </div>
+
 </form>
 
 <div id="unit-row-template" style="display:none;">
     <table>
-        <tr class="unit-row">
-            <td>
-                <select name="ProductUnits[{index}].UnitId" class="form-select form-select-sm select-unit-id">
-                    <option value="">اختر الوحدة</option>
-                    @foreach (var item in Model.AllAvailableUnits!)
-                    {
-                        <option value="@item.Value">@item.Text</option>
-                    }
-                </select>
-            </td>
-            <td>
-                <input type="number" name="ProductUnits[{index}].Factor" class="form-control form-control-sm" value="1" />
-            </td>
-            <td class="text-center">
-                <input type="radio" name="IsBaseUnitRadio" class="form-check-input base-unit-radio" />
-                <input type="hidden" name="ProductUnits[{index}].IsBaseUnit" class="base-unit-hidden" value="false" />
-            </td>
-            <td>
-                <input type="number" step="0.01" name="ProductUnits[{index}].PurchasePrice" class="form-control form-control-sm" value="0.00" />
-            </td>
-            <td>
-                <input type="number" step="0.01" name="ProductUnits[{index}].SellingPrice" class="form-control form-control-sm" value="0.00" />
-            </td>
-            <td class="text-center">
-                <button type="button" class="btn btn-sm btn-label-danger btn-remove-row"><i class="ti ti-trash"></i></button>
-            </td>
-        </tr>
+        <tbody>
+            <tr>
+
+                <input type="hidden"
+                       name="ProductUnits[{index}].Id"
+                       value="0" />
+
+                <td>
+                    <select name="ProductUnits[{index}].UnitId"
+                            class="form-select select-unit-id">
+
+                        <option value="">اختر الوحدة</option>
+
+                        @foreach (var item in Model.AllAvailableUnits!)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+
+                    </select>
+                </td>
+
+                <td>
+                    <input type="number"
+                           name="ProductUnits[{index}].Factor"
+                           class="form-control"
+                           value="1" />
+                </td>
+
+                <td class="text-center">
+
+                    <input type="radio"
+                           class="base-unit-radio"
+                           name="IsBaseUnitRadio" />
+
+                    <input type="hidden"
+                           class="base-unit-hidden"
+                           name="ProductUnits[{index}].IsBaseUnit"
+                           value="false" />
+
+                </td>
+
+                <td>
+                    <input type="number"
+                           step="0.01"
+                           name="ProductUnits[{index}].PurchasePrice"
+                           class="form-control"
+                           value="0" />
+                </td>
+
+                <td>
+                    <input type="number"
+                           step="0.01"
+                           name="ProductUnits[{index}].SellingPrice"
+                           class="form-control"
+                           value="0" />
+                </td>
+
+                <td>
+
+                    <button type="button"
+                            class="btn btn-danger btn-remove-row">
+                        حذف
+                    </button>
+
+                </td>
+
+            </tr>
+        </tbody>
     </table>
 </div>

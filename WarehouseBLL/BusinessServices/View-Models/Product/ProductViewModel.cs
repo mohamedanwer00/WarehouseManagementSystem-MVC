@@ -17,5 +17,7 @@ namespace WarehouseBLL.BusinessServices.View_Models.Product
         public decimal BaseUnitSellingPrice { get; set; }
 
         public string? LastAction { get; set; }
+
+        public ICollection<ProductUnitViewModel> ProductUnits { get; set; } = new List<ProductUnitViewModel>();
     }
 }

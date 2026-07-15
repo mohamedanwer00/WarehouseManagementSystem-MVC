@@ -242,7 +242,7 @@ namespace WarehousePL.Web.Controllers.Users
             if (user == null)
                 return NotFound();
 
-            user.LastAction = LastActionName.Insert;
+            user.LastAction = LastActionName.Update;
 
             var result = await _userManager.UpdateAsync(user);
 

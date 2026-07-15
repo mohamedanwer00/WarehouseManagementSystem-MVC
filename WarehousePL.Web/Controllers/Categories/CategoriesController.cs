@@ -22,9 +22,7 @@ namespace WarehousePL.Web.Controllers.Categories
         public IActionResult Index()
         {
             var categories = _unitOfWork.Categories.GetAll();
-
             var viewModel = categories.Adapt<IEnumerable<CategoryViewModel>>();
-
             return View(viewModel);
         }
 
@@ -38,13 +36,20 @@ namespace WarehousePL.Web.Controllers.Categories
         [ValidateAntiForgeryToken]
         public IActionResult Create(CategoryFormViewModel model)
         {
+            // تحقق من تكرار الاسم
+            var isDuplicate = _unitOfWork.Categories
+                .GetAll(c => c.Name.Trim().ToLower() == model.Name.Trim().ToLower()
+                          && c.LastAction != LastActionName.Delete)
+                .Any();
+
+            if (isDuplicate)
+                ModelState.AddModelError(nameof(model.Name), "هذا الاسم مستخدم بالفعل.");
+
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
 
             var category = model.Adapt<Category>();
-
             category.LastAction = LastActionName.Insert;
-
             category.CreatedById = User.GetUserId();
             category.CreatedOn = DateTime.Now;
 
@@ -54,7 +59,7 @@ namespace WarehousePL.Web.Controllers.Categories
             var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;
 
-            return RedirectToAction(nameof(Index));
+            return PartialView("_Row", viewModel);
         }
 
         [HttpGet]
@@ -66,7 +71,6 @@ namespace WarehousePL.Web.Controllers.Categories
                 return NotFound();
 
             var form = category.Adapt<CategoryFormViewModel>();
-
             return PartialView("_Form", form);
         }
 
@@ -74,6 +78,16 @@ namespace WarehousePL.Web.Controllers.Categories
         [ValidateAntiForgeryToken]
         public IActionResult Edit(CategoryFormViewModel model)
         {
+            // تحقق من تكرار الاسم (ما عدا نفس العنصر)
+            var isDuplicate = _unitOfWork.Categories
+                .GetAll(c => c.Name.Trim().ToLower() == model.Name.Trim().ToLower()
+                          && c.Id != model.Id
+                          && c.LastAction != LastActionName.Delete)
+                .Any();
+
+            if (isDuplicate)
+                ModelState.AddModelError(nameof(model.Name), "هذا الاسم مستخدم بالفعل.");
+
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
 
@@ -83,17 +97,17 @@ namespace WarehousePL.Web.Controllers.Categories
                 return NotFound();
 
             model.Adapt(category);
-
             category.LastAction = LastActionName.Update;
             category.UpdatedById = User.GetUserId();
             category.UpdatedOn = DateTime.Now;
+
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 
             var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;
 
-            return RedirectToAction(nameof(Index));
+            return PartialView("_Row", viewModel);
         }
 
         [HttpPost]
@@ -105,9 +119,21 @@ namespace WarehousePL.Web.Controllers.Categories
             if (category is null)
                 return NotFound();
 
+            // منع الحذف لو الكاتيجوري مرتبطة بمنتج نشط
+            var hasProducts = _unitOfWork.Products
+                .GetAll(p => p.CategoryId == id && p.LastAction != LastActionName.Delete)
+                .Any();
+
+            if (hasProducts)
+            {
+                Response.StatusCode = 400;
+                return Content("لا يمكن حذف هذه الفئة لأنها مرتبطة بمنتجات نشطة.");
+            }
+
             category.LastAction = LastActionName.Delete;
             category.UpdatedById = User.GetUserId();
             category.UpdatedOn = DateTime.Now;
+
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 
@@ -129,6 +155,7 @@ namespace WarehousePL.Web.Controllers.Categories
             category.LastAction = LastActionName.Update;
             category.UpdatedById = User.GetUserId();
             category.UpdatedOn = DateTime.Now;
+
             _unitOfWork.Categories.Update(category);
             _unitOfWork.SaveChanges();
 

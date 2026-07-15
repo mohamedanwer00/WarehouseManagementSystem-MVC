@@ -1,0 +1,133 @@
+﻿@using System.Globalization
+@model WarehouseBLL.BusinessServices.View_Models.Product.ProductViewModel
+
+@{
+    ViewData["Title"] = "تفاصيل الصنف: " + Model.Name;
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-2">
+            <div class="avatar avatar-md bg-label-primary rounded">
+                <i class="ti ti-box ti-md"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-0">تفاصيل المنتج: <span class="text-primary">@Model.Name</span></h4>
+                <small class="text-muted">مراجعة البيانات العامة ووحدات الأسعار المسجلة</small>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="ti ti-edit me-1"></i> تعديل الصنف
+            </a>
+            <a asp-action="Index" class="btn btn-label-secondary">
+                <i class="ti ti-arrow-left me-1"></i> العودة للقائمة
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-4 col-lg-5 col-md-12 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header border-bottom d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0"><i class="ti ti-info-circle me-1 text-primary"></i> معلومات الصنف</h5>
+                </div>
+                <div class="card-body pt-4">
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                            <span class="text-muted fw-medium">كود الصنف:</span>
+                            <span class="badge bg-label-primary fs-6">@Model.Code</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                            <span class="text-muted fw-medium">القسم الحالي:</span>
+                            <span class="fw-bold">@Model.CategoryName</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                            <span class="text-muted fw-medium">الحد الادنى للمخزون:</span>
+                            <span class="text-danger fw-bold">@Model.MinimumQuantity.ToString("N0")</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                            <span class="text-muted fw-medium">الحد الأقصى للمخزون:</span>
+                            <span class="text-warning fw-bold">@Model.MaximumQuantity.ToString("N0")</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-0 pt-2">
+                            <span class="text-muted fw-medium">آخر إجراء تم بالصنف:</span>
+                            <span class="badge bg-label-info">@Model.LastAction</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8 col-lg-7 col-md-12 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header border-bottom d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0"><i class="ti ti-settings-automation me-1 text-primary"></i> تسعيرة وحدات الصنف والمعاملات</h5>
+                </div>
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>اسم الوحدة</th>
+                                <th class="text-center">المعامل (Factor)</th>
+                                <th class="text-center">الوحدة الأساسية؟</th>
+                                <th>سعر الشراء</th>
+                                <th>سعر البيع</th>
+                                <th>صافي الربح المتوقع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.ProductUnits != null && Model.ProductUnits.Any())
+                            {
+                                foreach (var unit in Model.ProductUnits)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="fw-bold text-heading">@unit.UnitName</span>
+                                        </td>
+                                        <td class="text-center fw-bold text-secondary">
+                                            @unit.Factor.ToString("G29")
+                                        </td>
+                                        <td class="text-center">
+                                            @if (unit.IsBaseUnit)
+                                            {
+                                                <span class="badge bg-success rounded-pill px-2">نعم (الأساسية)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-label-secondary rounded-pill px-2">لا</span>
+                                            }
+                                        </td>
+                                        <td class="fw-semibold text-danger">
+                                            @unit.PurchasePrice.ToString("C2", new CultureInfo("ar-EG"))
+                                        </td>
+                                        <td class="fw-semibold text-success">
+                                            @unit.SellingPrice.ToString("C2", new CultureInfo("ar-EG"))
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <span class="text-primary fw-bold mb-0">
+                                                    @unit.ProfitMargin.ToString("C2", new CultureInfo("ar-EG"))
+                                                </span>
+                                                <small class="text-muted fs-7">(@unit.ProfitPercentage.ToString("0.0")%) ربح</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="ti ti-alert-circle ti-lg mb-2 d-block"></i>
+                                        لا توجد أي وحدات قياس مسجلة لهذا المنتج حتى الآن.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

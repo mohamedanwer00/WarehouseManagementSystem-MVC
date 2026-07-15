@@ -17,30 +17,90 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        $(document).ready(function () {
+                $(document).ready(function () {
+            // دالة للتحقق من منع تكرار الوحدات وتحديث الـ Dropdowns
+            function checkDuplicateUnits() {
+                var selectedUnits = [];
+
+                // تجميع كل الوحدات المختارة حالياً
+                $('.select-unit-id').each(function () {
+                    var val = $(this).val();
+                    if (val) {
+                        selectedUnits.push(val);
+                    }
+                });
+
+                // إظهار/إخفاء الخيارات بناءً على الاختيارات السابقة
+                $('.select-unit-id').each(function () {
+                    var currentSelect = $(this);
+                    var currentVal = currentSelect.val();
+
+                    currentSelect.find('option').each(function () {
+                        var optionVal = $(this).val();
+                        if (optionVal && optionVal !== currentVal) {
+                            if (selectedUnits.includes(optionVal)) {
+                                $(this).hide(); // إخفاء الوحدة لو مختارة في سطر تاني
+                            } else {
+                                $(this).show(); // إظهارها لو مش مختارة
+                            }
+                        }
+                    });
+                });
+            }
+
+            // إضافة سطر جديد عند الضغط على الزر
             $('#btn-add-unit').click(function () {
                 var index = $('#tbl-product-units tbody tr').length;
                 var template = $('#unit-row-template table tbody').html().replaceAll('{index}', index);
                 $('#tbl-product-units tbody').append(template);
+
+                // تشغيل التحقق فور إضافة سطر جديد لإخفاء الوحدات المختارة مسبقاً
+                checkDuplicateUnits();
             });
 
+            // عند تغيير اختيار الوحدة في أي سطر
+            $(document).on('change', '.select-unit-id', function () {
+                var currentSelect = $(this);
+                var currentVal = currentSelect.val();
+                var duplicates = 0;
+
+                // التأكد إذا كانت مختارة في سطر آخر
+                $('.select-unit-id').each(function () {
+                    if ($(this).val() === currentVal && currentVal !== "") {
+                        duplicates++;
+                    }
+                });
+
+                if (duplicates > 1) {
+                    Swal.fire({
+                        title: 'تنبيه!',
+                        text: 'عذراً، لا يمكنك اختيار نفس الوحدة مرتين للمنتج الواحد.',
+                        icon: 'warning',
+                        confirmButtonText: 'تمام'
+                    });
+                    currentSelect.val(''); // تصفير الاختيار المكرر
+                }
+
+                // تحديث القوائم بعد التغيير
+                checkDuplicateUnits();
+            });
+
+            // حذف سطر وإعادة ترتيب الـ Indexes وتحديث القوائم
             $(document).on('click', '.btn-remove-row', function () {
                 $(this).closest('tr').remove();
                 reIndexTable();
+                checkDuplicateUnits(); // إعادة إظهار الوحدات التي تم حذف سطرها
             });
 
-            // إدارة الـ Radio Button للوحدة الأساسية ليكون خيار واحد فقط مفعل في الجدول كله
+            // إدارة الـ Radio Button للوحدة الأساسية
             $(document).on('change', '.base-unit-radio', function () {
-                // تصفير كل المدخلات المخفية
                 $('.base-unit-hidden').val('false');
                 $('.base-unit-radio').prop('checked', false);
 
-                // تفعيل السطر المختار فقط
                 $(this).prop('checked', true);
                 $(this).closest('tr').find('.base-unit-hidden').val('true');
             });
 
-            // دالة إعادة الترتيب حتى لا يفقد الـ Model Binder البيانات بعد عمليات المسح والترتيب
             function reIndexTable() {
                 $('#tbl-product-units tbody tr').each(function (index, tr) {
                     $(tr).find('select, input').each(function (i, el) {
@@ -52,6 +112,9 @@
                     });
                 });
             }
+
+            // تشغيل الدالة لأول مرة عند فتح الصفحة (مفيد جداً في شاشة الـ Edit لعرض الوحدات القديمة بشكل صحيح)
+            checkDuplicateUnits();
         });
     </script>
 }
