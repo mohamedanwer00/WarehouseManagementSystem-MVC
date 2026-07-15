@@ -1,6 +1,4 @@
-﻿@using WarehouseBLL.BusinessServices.View_Models
-@using WarehouseBLL.Const
-@model IEnumerable<CategoryViewModel>
+﻿@model IEnumerable<CategoryViewModel>
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
 
 @{
@@ -13,7 +11,7 @@
             <thead>
                 <tr>
                     <th>@_localization[@DisplayNames.Name]</th>
-                    <th>@_localization[@DisplayNames.Status]</th>
+                    @* <th>@_localization[@DisplayNames.Status]</th> *@
                     <th class="js-no-export" data-i18n="Edit"></th>
                     <th class="js-no-export" data-i18n="DeleteOrRestore"></th>
                 </tr>

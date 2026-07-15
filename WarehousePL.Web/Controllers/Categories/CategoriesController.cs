@@ -1,12 +1,3 @@
-using Mapster;
-using Microsoft.AspNetCore.Mvc;
-using WarehouseBLL.BusinessServices.View_Models;
-using WarehouseBLL.Const;
-using WarehouseBLL.Extensions;
-using WarehouseBLL.FormViewModels.Category;
-using WarehouseDAL.Entities;
-using WarehouseDAL.Repositories.Interfaces;
-
 namespace WarehousePL.Web.Controllers.Categories
 {
     public class CategoriesController : Controller

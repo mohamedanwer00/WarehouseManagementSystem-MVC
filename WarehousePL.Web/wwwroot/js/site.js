@@ -361,8 +361,11 @@ $(document).ready(function () {
 
                             showSuccessMessage(successMsg);
                         },
-                        error: function () {
-                            showErrorMessage(errorMsg);
+                        error: function (xhr) {
+                            var msg = (xhr && xhr.responseText && xhr.responseText.trim() !== '')
+                                ? xhr.responseText.trim()
+                                : (errorMsg || localization.errorMessage);
+                            showErrorMessage(msg);
                         }
                     });
                 }

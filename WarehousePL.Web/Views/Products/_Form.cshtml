@@ -2,6 +2,30 @@
 @using System.Globalization
 @model ProductFormViewModel
 
+@* عرض أخطاء الـ ModelState كـ alert *@
+@if (!ViewData.ModelState.IsValid)
+{
+    var errors = ViewData.ModelState.Values
+        .SelectMany(v => v.Errors)
+        .Select(e => e.ErrorMessage)
+        .Where(m => !string.IsNullOrEmpty(m))
+        .ToList();
+
+    if (errors.Any())
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <strong><i class="ti ti-alert-circle me-1"></i> يوجد أخطاء، يرجى مراجعة:</strong>
+            <ul class="mb-0 mt-1">
+                @foreach (var err in errors)
+                {
+                    <li>@err</li>
+                }
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+}
+
 <form asp-action="@(Model.Id == null ? "Create" : "Edit")" asp-controller="Products" method="post" class="row g-3">
 
     @if (Model.Id != null)
@@ -69,12 +93,8 @@
                 @for (int i = 0; i < Model.ProductUnits.Count; i++)
                 {
                     <tr>
-
-                        <!-- مهم جداً -->
-                        <input type="hidden"
-                               asp-for="ProductUnits[i].Id" />
-
                         <td>
+                            <input type="hidden" asp-for="ProductUnits[i].Id" />
                             <select asp-for="ProductUnits[i].UnitId"
                                     asp-items="Model.AllAvailableUnits"
                                     class="form-select form-select-sm select-unit-id">

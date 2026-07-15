@@ -42,16 +42,19 @@ namespace WarehousePL.Web.Controllers.Products
             if (isCodeExists)
                 ModelState.AddModelError(nameof(model.Code), "كود المنتج مسجل بالفعل لمنتج آخر.");
 
-            if (model.ProductUnits.Count(pu => pu.IsBaseUnit) != 1)
-                ModelState.AddModelError("", "يجب اختيار وحدة أساسية واحدة فقط للمنتج.");
-            
-            if (model.ProductUnits != null)
+            if (model.ProductUnits == null || model.ProductUnits.Count == 0)
+                ModelState.AddModelError("", "يجب إضافة وحدة قياس واحدة على الأقل للمنتج.");
+            else
             {
+                if (model.ProductUnits.Any(pu => pu.UnitId == 0))
+                    ModelState.AddModelError("", "يوجد سطر وحدة بدون اختيار — يرجى اختيار الوحدة أو حذف السطر.");
+
+                if (model.ProductUnits.Count(pu => pu.IsBaseUnit) != 1)
+                    ModelState.AddModelError("", "يجب تحديد وحدة أساسية واحدة فقط للمنتج.");
+
                 var unitIds = model.ProductUnits.Select(pu => pu.UnitId).ToList();
                 if (unitIds.Count != unitIds.Distinct().Count())
-                {
                     ModelState.AddModelError("", "لا يمكن تكرار نفس الوحدة للمنتج الواحد.");
-                }
             }
             if (!ModelState.IsValid)
             {
@@ -104,8 +107,20 @@ namespace WarehousePL.Web.Controllers.Products
             var product = _unitOfWork.Products.GetById(model.Id.Value);
             if (product == null) return NotFound();
 
-            if (model.ProductUnits.Count(pu => pu.IsBaseUnit) != 1)
-                ModelState.AddModelError("", "يجب اختيار وحدة أساسية واحدة فقط للمنتج.");
+            if (model.ProductUnits == null || model.ProductUnits.Count == 0)
+                ModelState.AddModelError("", "يجب إضافة وحدة قياس واحدة على الأقل للمنتج.");
+            else
+            {
+                if (model.ProductUnits.Any(pu => pu.UnitId == 0))
+                    ModelState.AddModelError("", "يوجد سطر وحدة بدون اختيار — يرجى اختيار الوحدة أو حذف السطر.");
+
+                if (model.ProductUnits.Count(pu => pu.IsBaseUnit) != 1)
+                    ModelState.AddModelError("", "يجب تحديد وحدة أساسية واحدة فقط للمنتج.");
+
+                var unitIds = model.ProductUnits.Select(pu => pu.UnitId).ToList();
+                if (unitIds.Count != unitIds.Distinct().Count())
+                    ModelState.AddModelError("", "لا يمكن تكرار نفس الوحدة للمنتج الواحد.");
+            }
 
             if (!ModelState.IsValid)
             {
@@ -122,7 +137,7 @@ namespace WarehousePL.Web.Controllers.Products
             product.UpdatedById = User.GetUserId();
             product.UpdatedOn = DateTime.Now;
 
-            var incomingIds = model.ProductUnits.Where(u => u.Id > 0).Select(u => u.Id).ToHashSet();
+            var incomingIds = model.ProductUnits?.Where(u => u.Id > 0).Select(u => u.Id).ToHashSet() ?? new HashSet<int>();
 
             var oldUnits = _unitOfWork.ProductUnits.GetAll(pu => pu.ProductId == product.Id && pu.LastAction != LastActionName.Delete).ToList();
             foreach (var ou in oldUnits)

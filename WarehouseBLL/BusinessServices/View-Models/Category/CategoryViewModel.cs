@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using WarehouseBLL.Const;
 
 namespace WarehouseBLL.BusinessServices.View_Models
 {

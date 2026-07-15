@@ -14,3 +14,7 @@ global using WarehouseBLL.Mapping;
 global using WarehouseDAL.Repositories.Implememtation;
 global using WarehouseDAL.Entities;
 global using WarehousePL.Web.Extensions;
+global using WarehouseBLL.BusinessServices.View_Models.Unit;
+global using WarehouseBLL.BusinessServices.View_Models;
+global using WarehouseBLL.FormViewModels.Category;
+global using WarehouseBLL.Extensions;
