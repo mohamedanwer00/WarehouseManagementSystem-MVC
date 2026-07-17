@@ -18,3 +18,6 @@ global using WarehouseBLL.BusinessServices.View_Models.Unit;
 global using WarehouseBLL.BusinessServices.View_Models;
 global using WarehouseBLL.FormViewModels.Category;
 global using WarehouseBLL.Extensions;
+global using WarehouseBLL.BusinessServices.View_Models.Supplier;
+global using WarehouseDAL.Entities.Enums;
+global using WarehouseBLL.FormViewModels.Supplier;

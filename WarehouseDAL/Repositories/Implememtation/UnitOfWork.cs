@@ -17,6 +17,7 @@ namespace WarehouseDAL.Repositories.Implememtation
         public IUnitRepository Units { get; }
         public IProductRepository Products { get; }
         public IProductUnitRepository ProductUnits { get; }
+        public ISupplierRepository Suppliers { get; }
         public UnitOfWork(
             WarehouseDbContext dbContext,
             ICategoryRepository categories,
@@ -25,7 +26,8 @@ namespace WarehouseDAL.Repositories.Implememtation
             ICashBoxRepository cashBoxes,
             IUnitRepository units,
             IProductRepository products,
-            IProductUnitRepository productsUnits)
+            IProductUnitRepository productsUnits,
+            ISupplierRepository suppliers)
         {
             _dbContext = dbContext;
             Categories = categories;
@@ -35,6 +37,7 @@ namespace WarehouseDAL.Repositories.Implememtation
             Units = units;
             Products = products;
             ProductUnits = productsUnits;
+            Suppliers = suppliers;
         }
 
         public int SaveChanges()

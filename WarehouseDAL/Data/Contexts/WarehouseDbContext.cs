@@ -30,6 +30,7 @@ namespace WarehouseDAL.Data.Contexts
         public DbSet<Branch> Branches { get; set; } = null!;
         public DbSet<CashBox> CashBoxes { get; set; } = null!;
         public DbSet<Warehouse> Warehouses { get; set; } = null!;
+        public DbSet<Supplier> Suppliers { get; set; } = null!;
 
     }
 }

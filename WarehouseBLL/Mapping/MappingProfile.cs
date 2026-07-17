@@ -16,6 +16,8 @@ using WarehouseBLL.FormViewModels.Product;
 using WarehouseBLL.FormViewModels.Unit;
 using WarehouseBLL.FormViewModels.User;
 using WarehouseBLL.FormViewModels.Warehouse;
+using WarehouseBLL.BusinessServices.View_Models.Supplier;
+using WarehouseBLL.FormViewModels.Supplier;
 using WarehouseDAL.Entities;
 using WarehouseDAL.Entities.Entities;
 using WarehouseDAL.Entities.Identity;
@@ -140,6 +142,26 @@ namespace WarehouseBLL.Mapping
 
             TypeAdapterConfig<Product, ProductFormViewModel>.NewConfig();
             TypeAdapterConfig<ProductUnit, ProductUnitFormViewModel>.NewConfig();
+            #endregion
+
+            // Supplier
+            #region Supplier
+            // 1. تحويل المورد من الداتابيز لعرضه في جدول الـ Index أو صفحة التفاصيل
+            TypeAdapterConfig<Supplier, SupplierViewModel>
+                .NewConfig();
+
+            // 2. تحويل الـ ViewModel العادي إلى كائن الداتابيز (في حالة الاحتياج)
+            TypeAdapterConfig<SupplierViewModel, Supplier>
+                .NewConfig();
+
+            // 3. تحويل من FormViewModel إلى Entity (عند الـ Create والـ Edit)
+            TypeAdapterConfig<SupplierFormViewModel, Supplier>
+                .NewConfig()
+                .Ignore(dest => dest.Id); // تجاهل الـ Id لأن الداتابيز بتنشئه تلقائياً في الـ Create
+
+            // 4. تحويل من Entity إلى FormViewModel (عشان شاشة الـ Edit تفتح بالبيانات القديمة)
+            TypeAdapterConfig<Supplier, SupplierFormViewModel>
+                .NewConfig();
             #endregion
         }
     }

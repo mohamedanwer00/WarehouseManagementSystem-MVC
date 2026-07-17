@@ -1,0 +1,46 @@
+﻿@model IEnumerable<SupplierViewModel>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
+
+@{
+    ViewBag.Title = _localization["Suppliers"];
+}
+
+<div class="card">
+    <div class="card-datatable text-nowrap">
+        <table class="js-table datatables-basic table table-bordered table-responsive">
+            <thead>
+                <tr>
+                    <th>@_localization[DisplayNames.Name]</th>
+                    <th>@_localization["PhoneNumber"]</th> <!-- أو حسب ثوابت DisplayNames عندك للـ Phone -->
+                    <th>@_localization["Address"]</th>
+                    <th>@_localization["CurrentBalance"]</th>
+                    <th>@_localization[DisplayNames.Status]</th>
+                    <th class="js-no-export" data-i18n="Edit">@_localization[DisplayNames.Edit]</th>
+                    <th class="js-no-export" data-i18n="DeleteOrRestore">@_localization[DisplayNames.DeleteOrRestore]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var supplier in Model)
+                {
+                    <partial name="_Row" model="@supplier" />
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- الزرار السحري اللي بيشغل سكريبت الـ Modal المشترك في السيستم عندك -->
+<div id="create-button-data"
+     data-address="@_localization["Suppliers"]"
+     data-title="@_localization[DisplayNames.Add]"
+     data-url="@Url.Action("Create", "Suppliers")"
+     data-label="@_localization[DisplayNames.Add]"
+     data-mode="modal"></div>
+
+<!-- توكن الحماية عشان يلقطه سكريبت الحذف والـ Repost الموحد عندك -->
+<input type="hidden" id="RequestVerificationToken" name="__RequestVerificationToken" value="@antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}
