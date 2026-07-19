@@ -388,6 +388,7 @@
   "SellingPrice": "Selling Price",
   "MinQty": "Min Qty",
   "Suppliers": "Suppliers",
-  "Customers": "Customers"
+  "Customers": "Customers",
+  "CustomerType": "CustomerType"
 
 }

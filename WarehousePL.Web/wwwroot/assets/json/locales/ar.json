@@ -378,5 +378,6 @@
   "SellingPrice": "سعر البيع",
   "MinQty": "اقل كمية",
   "Suppliers": "الموردين",
-  "Customers": "العملاء"
+  "Customers": "العملاء",
+  "CustomerType": "نوع المعاملة"
 }

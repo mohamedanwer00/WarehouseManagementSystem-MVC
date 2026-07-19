@@ -1,1 +1,25 @@
-﻿
+﻿global using Mapster;
+global using System;
+global using System.Collections.Generic;
+global using System.Text;
+global using WarehouseBLL.BusinessServices.View_Models;
+global using WarehouseBLL.BusinessServices.View_Models.Branch;
+global using WarehouseBLL.BusinessServices.View_Models.CashBox;
+global using WarehouseBLL.BusinessServices.View_Models.Customer;
+global using WarehouseBLL.BusinessServices.View_Models.Product;
+global using WarehouseBLL.BusinessServices.View_Models.Supplier;
+global using WarehouseBLL.BusinessServices.View_Models.Unit;
+global using WarehouseBLL.BusinessServices.View_Models.Users;
+global using WarehouseBLL.BusinessServices.View_Models.Warehouse;
+global using WarehouseBLL.FormViewModels.Branch;
+global using WarehouseBLL.FormViewModels.CashBox;
+global using WarehouseBLL.FormViewModels.Category;
+global using WarehouseBLL.FormViewModels.Customer;
+global using WarehouseBLL.FormViewModels.Product;
+global using WarehouseBLL.FormViewModels.Supplier;
+global using WarehouseBLL.FormViewModels.Unit;
+global using WarehouseBLL.FormViewModels.User;
+global using WarehouseBLL.FormViewModels.Warehouse;
+global using WarehouseDAL.Entities;
+global using WarehouseDAL.Entities.Entities;
+global using WarehouseDAL.Entities.Identity;
