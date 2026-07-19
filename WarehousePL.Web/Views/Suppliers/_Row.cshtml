@@ -1,8 +1,8 @@
-﻿@model SupplierViewModel
+﻿@using WarehouseBLL.BusinessServices.View_Models.Supplier
+@using WarehouseBLL.Const
+@model SupplierViewModel
 
-
-<tr id="row-@Model.Id" class="supplier-row">
-    @* 👈 تأكد إن الـ id ده هو اللي الـ Script بيدور عليه *@
+<tr id="row-@Model.Id" data-id="@Model.Id">
     <td class="fw-bold text-heading">@Model.Name</td>
     <td>@Model.PhoneNumber</td>
     <td class="text-muted">@Model.Address</td>
@@ -17,42 +17,35 @@
         }
     </td>
     <td>
-        @if (Model.LastAction == "Create")
-        {
-            <span class="badge bg-label-success px-3 py-2 fs-7 rounded">مضاف</span>
-        }
-        else
-        {
-            <span class="badge bg-label-warning px-3 py-2 fs-7 rounded">تم تحديثها</span>
-        }
+        <partial name="_LastActionBadge" model="@Model.LastAction" />
     </td>
-
-    <!-- 🟢 زرار التعديل -->
     <td>
-        <a href="javascript:;" data-url="/Suppliers/Edit/@Model.Id"
-           class="btn btn-sm btn-label-primary item-edit js-render-modal"
+        <a href="javascript:;"
+           data-url="/Suppliers/Edit/@Model.Id"
+           class="btn btn-sm btn-label-primary js-render-modal"
            data-title="@_localization[DisplayNames.Edit]"
-           data-update="true"
-           data-id="@Model.Id">
-            @* 👈 ضفنا data-id هنا عشان الـ Script يلقطه عند التحديث *@
+           data-update="true">
             @_localization[DisplayNames.Edit]
         </a>
     </td>
-
-    <!-- 🔴 زرار الحذف أو الاسترجاع -->
     <td>
         @if (Model.LastAction != LastActionName.Delete)
         {
-            <a href="javascript:;" data-url="/Suppliers/Delete/@Model.Id"
-               class="btn btn-sm btn-label-danger item-edit js-toggle-status" data-id="@Model.Id">
+            <a href="javascript:;"
+               data-url="/Suppliers/Delete/@Model.Id"
+               class="btn btn-sm btn-label-danger js-toggle-status"
+               data-id="@Model.Id"
+               data-confirm-message="@_localization["confirmText"]">
                 @_localization[DisplayNames.Delete]
             </a>
         }
         else
         {
-            @* 👈 صلحنا مسار الـ Url هنا عشان كان مكتوب Units بالخطأ وخليناه يروح للـ Repost بتاع الموردين *@
-            <a href="javascript:;" data-url="/Suppliers/Repost/@Model.Id"
-               class="btn btn-sm btn-label-success item-edit js-toggle-status" data-id="@Model.Id">
+            <a href="javascript:;"
+               data-url="/Suppliers/Restore/@Model.Id"
+               class="btn btn-sm btn-label-success js-toggle-status"
+               data-id="@Model.Id"
+               data-confirm-message="@_localization["confirmText"]">
                 @_localization[DisplayNames.Restore]
             </a>
         }

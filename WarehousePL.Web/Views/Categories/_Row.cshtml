@@ -3,7 +3,8 @@
 @model CategoryViewModel
 
 <tr id="row-@Model.Id" data-id="@Model.Id">
-    <td>@Model.Name</td>
+
+    <td class="fw-bold text-heading">@Model.Name</td>
 
     <td>
         <partial name="_LastActionBadge" model="@Model.LastAction" />
@@ -20,17 +21,7 @@
     </td>
 
     <td>
-        @if (Model.LastAction == LastActionName.Delete)
-        {
-            <a href="javascript:;"
-               data-url="/Categories/Restore/@Model.Id"
-               class="btn btn-sm btn-label-success js-toggle-status"
-               data-id="@Model.Id"
-               data-confirm-message="@_localization["confirmText"]">
-                @_localization[DisplayNames.Restore]
-            </a>
-        }
-        else
+        @if (Model.LastAction != LastActionName.Delete)
         {
             <a href="javascript:;"
                data-url="/Categories/Delete/@Model.Id"
@@ -38,6 +29,16 @@
                data-id="@Model.Id"
                data-confirm-message="@_localization["confirmText"]">
                 @_localization[DisplayNames.Delete]
+            </a>
+        }
+        else
+        {
+            <a href="javascript:;"
+               data-url="/Categories/Restore/@Model.Id"
+               class="btn btn-sm btn-label-success js-toggle-status"
+               data-id="@Model.Id"
+               data-confirm-message="@_localization["confirmText"]">
+                @_localization[DisplayNames.Restore]
             </a>
         }
     </td>

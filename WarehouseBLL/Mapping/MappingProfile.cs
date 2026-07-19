@@ -34,17 +34,19 @@ namespace WarehouseBLL.Mapping
 
             #region Category
             TypeAdapterConfig<Category, CategoryViewModel>
-    .NewConfig()
-    .Ignore(dest => dest.LastAction);
+                .NewConfig();
 
             TypeAdapterConfig<CategoryViewModel, Category>
                 .NewConfig();
 
+            TypeAdapterConfig<CategoryFormViewModel, Category>
+                .NewConfig()
+                .Ignore(dest => dest.Id);
+
             TypeAdapterConfig<Category, CategoryFormViewModel>
                 .NewConfig();
 
-            TypeAdapterConfig<CategoryFormViewModel, Category>
-                .NewConfig();
+
             #endregion
 
             // User
@@ -91,7 +93,8 @@ namespace WarehouseBLL.Mapping
             TypeAdapterConfig<Warehouse, WarehouseViewModel>
                 .NewConfig()
                 .Map(dest => dest.BranchName, src => src.Branch != null ? src.Branch.Name : string.Empty);
-
+            TypeAdapterConfig<WarehouseViewModel, Warehouse>
+                .NewConfig();
             TypeAdapterConfig<WarehouseFormViewModel, Warehouse>
                 .NewConfig()
                 .Map(dest => dest.BranchId, src => src.SelectedBranch);
@@ -125,6 +128,7 @@ namespace WarehouseBLL.Mapping
             // Unit
             #region Unit
             TypeAdapterConfig<Unit, UnitViewModel>.NewConfig();
+            TypeAdapterConfig<UnitViewModel, Unit>.NewConfig();
             TypeAdapterConfig<UnitFormViewModel, Unit>.NewConfig();
             TypeAdapterConfig<Unit, UnitFormViewModel>.NewConfig();
             #endregion
@@ -166,18 +170,17 @@ namespace WarehouseBLL.Mapping
             #region Customer
 
             TypeAdapterConfig<Customer, CustomerViewModel>
-                .NewConfig()
-                .Ignore(dest => dest.LastAction);
-
-            TypeAdapterConfig<Customer, CustomerFormViewModel>
                 .NewConfig();
 
+            TypeAdapterConfig< CustomerViewModel,Customer>
+                .NewConfig();
 
             TypeAdapterConfig<CustomerFormViewModel, Customer>
                 .NewConfig()
                 .Ignore(dest => dest.Id) 
                 .Map(dest => dest.CurrentBalance, src => src.OpeningBalance);
-
+            TypeAdapterConfig<Customer, CustomerFormViewModel>
+                .NewConfig();
             #endregion
         }
     }

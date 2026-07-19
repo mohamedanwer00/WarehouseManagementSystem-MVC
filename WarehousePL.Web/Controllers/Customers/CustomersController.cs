@@ -115,6 +115,8 @@ namespace WarehousePL.Web.Controllers.Customers
             return PartialView("_Row", viewModel);
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
+
         public IActionResult Delete(int id)
         {
             var customer = _unitOfWork.Customers.GetById(id);
@@ -138,23 +140,23 @@ namespace WarehousePL.Web.Controllers.Customers
         }
 
         [HttpPost]
-        public IActionResult Repost(int id)
+        [ValidateAntiForgeryToken]
+
+        public IActionResult Restore(int id)
         {
             var customer = _unitOfWork.Customers.GetById(id);
-
-            if (customer == null)
+            if (customer is null)
                 return NotFound();
 
             customer.LastAction = LastActionName.Update;
             customer.UpdatedById = User.GetUserId();
             customer.UpdatedOn = DateTime.Now;
-
             _unitOfWork.Customers.Update(customer);
             _unitOfWork.SaveChanges();
 
-            var viewModel = customer.Adapt<CustomerViewModel>();
-
-            return PartialView("_Row", viewModel);
+            var ViewModel = customer.Adapt<CustomerViewModel>();
+            ViewModel.LastAction = customer.LastAction;
+            return PartialView("_Row", ViewModel);
         }
     }
 }

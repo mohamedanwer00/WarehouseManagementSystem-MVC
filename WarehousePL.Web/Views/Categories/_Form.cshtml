@@ -11,9 +11,13 @@
     {
         <input type="hidden" asp-for="Id" />
     }
-    <div class="mb-5">
-        <label asp-for="Name"></label>
-        <input type="text" class="form-control" placeholder="@_localization[DisplayNames.Name]" asp-for="Name" />
+    <div class="col-12">
+        <label asp-for="Name" class="form-label fw-bold">
+            اسم العميل <span class="text-danger">*</span>
+        </label>
+        <input asp-for="Name"
+               class="form-control"
+               placeholder="اسم العميل أو الشركة" />
         <span asp-validation-for="Name" class="text-danger d-block"></span>
     </div>
 
