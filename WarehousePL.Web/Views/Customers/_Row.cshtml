@@ -1,0 +1,100 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models.Customer
+@using WarehouseBLL.Const
+@model CustomerViewModel
+
+<tr id="row-@Model.Id" class="customer-row">
+
+    <td class="fw-bold text-heading">@Model.Name</td>
+
+    <td>@Model.PhoneNumber</td>
+
+    <td class="text-muted">@Model.Address</td>
+
+    <td>
+        @if (Model.CustomerType == CustomerType.Wholesale)
+        {
+            <span class="badge bg-label-info px-2 py-1 rounded">جملة</span>
+        }
+        else
+        {
+            <span class="badge bg-label-secondary px-2 py-1 rounded">قطاعي</span>
+        }
+    </td>
+
+    <td>
+        @if (Model.CurrentBalance >= 0)
+        {
+            <span class="text-success fw-bold">
+                @Model.CurrentBalance.ToString("N2") (دائن)
+            </span>
+        }
+        else
+        {
+            <span class="text-danger fw-bold">
+                @Math.Abs(Model.CurrentBalance).ToString("N2") (مدين)
+            </span>
+        }
+    </td>
+
+    <td>
+        @if (Model.LastAction == LastActionName.Insert)
+        {
+            <span class="badge bg-label-success px-3 py-2 fs-7 rounded">
+                مضاف
+            </span>
+        }
+        else if (Model.LastAction == LastActionName.Update)
+        {
+            <span class="badge bg-label-warning px-3 py-2 fs-7 rounded">
+                تم تحديثه
+            </span>
+        }
+        else if (Model.LastAction == LastActionName.Delete)
+        {
+            <span class="badge bg-label-danger px-3 py-2 fs-7 rounded">
+                محذوف
+            </span>
+        }
+    </td>
+
+    <td>
+        <a href="javascript:;"
+           data-url="@Url.Action("Edit", "Customers", new { id = Model.Id })"
+           class="btn btn-sm btn-label-primary js-render-modal"
+           data-title="@_localization[DisplayNames.Edit]"
+           data-update="true">
+
+            @_localization[DisplayNames.Edit]
+        </a>
+    </td>
+
+    <td>
+
+        @if (Model.LastAction != LastActionName.Delete)
+        {
+            <a href="javascript:;"
+               data-url="@Url.Action("Delete", "Customers", new { id = Model.Id })"
+               class="btn btn-sm btn-label-danger js-toggle-status"
+               data-confirm-message="هل تريد حذف العميل؟"
+               data-success-message="تم حذف العميل بنجاح"
+               data-error-message="تعذر حذف العميل">
+
+                @_localization[DisplayNames.Delete]
+            </a>
+        }
+        else
+        {
+            <a href="javascript:;"
+               data-url="@Url.Action("Repost", "Customers", new { id = Model.Id })"
+               class="btn btn-sm btn-label-success js-toggle-status"
+               data-confirm-message="هل تريد استرجاع العميل؟"
+               data-success-message="تم استرجاع العميل بنجاح"
+               data-error-message="تعذر استرجاع العميل">
+
+                @_localization[DisplayNames.Restore]
+            </a>
+        }
+
+    </td>
+
+</tr>

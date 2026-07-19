@@ -376,5 +376,7 @@
   "ProductCode": "كود الصنف",
   "BaseUnit": "الوحدة الأساسية",
   "SellingPrice": "سعر البيع",
-  "MinQty": "اقل كمية"
+  "MinQty": "اقل كمية",
+  "Suppliers": "الموردين",
+  "Customers": "العملاء"
 }

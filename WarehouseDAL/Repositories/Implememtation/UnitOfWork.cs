@@ -18,6 +18,7 @@ namespace WarehouseDAL.Repositories.Implememtation
         public IProductRepository Products { get; }
         public IProductUnitRepository ProductUnits { get; }
         public ISupplierRepository Suppliers { get; }
+        public ICustomerRepository Customers { get; }
         public UnitOfWork(
             WarehouseDbContext dbContext,
             ICategoryRepository categories,
@@ -27,7 +28,8 @@ namespace WarehouseDAL.Repositories.Implememtation
             IUnitRepository units,
             IProductRepository products,
             IProductUnitRepository productsUnits,
-            ISupplierRepository suppliers)
+            ISupplierRepository suppliers,
+            ICustomerRepository customers)
         {
             _dbContext = dbContext;
             Categories = categories;
@@ -38,6 +40,7 @@ namespace WarehouseDAL.Repositories.Implememtation
             Products = products;
             ProductUnits = productsUnits;
             Suppliers = suppliers;
+            Customers = customers;
         }
 
         public int SaveChanges()

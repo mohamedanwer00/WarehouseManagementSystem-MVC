@@ -1,4 +1,6 @@
-﻿namespace WarehousePL.Web.Controllers.Suppliers
+﻿using WarehouseBLL.FormViewModels.Supplier;
+
+namespace WarehousePL.Web.Controllers.Suppliers
 {
     public class SuppliersController : Controller
     {
@@ -112,6 +114,8 @@
             var supplier = _unitOfWork.Suppliers.GetById(id);
             if (supplier is null)
                 return NotFound();
+            if (supplier.CurrentBalance != 0)
+                return BadRequest("لا يمكن حذف المورد إلا إذا كان الرصيد الحالي يساوي صفر.");
 
             supplier.LastAction = LastActionName.Delete;
             supplier.UpdatedById = User.GetUserId();

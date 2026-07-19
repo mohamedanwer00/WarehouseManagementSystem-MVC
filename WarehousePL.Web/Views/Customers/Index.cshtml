@@ -1,0 +1,46 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models.Customer
+@model IEnumerable<CustomerViewModel>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
+
+@{
+    ViewBag.Title = _localization["Customers"];
+}
+
+<div class="card">
+    <div class="card-datatable text-nowrap">
+        <table class="js-table datatables-basic table table-bordered table-responsive">
+            <thead>
+                <tr>
+                    <th>@_localization[DisplayNames.Name]</th>
+                    <th>@_localization[DisplayNames.PhoneNumber]</th>
+                    <th>@_localization[DisplayNames.Address]</th>
+                    <th>@_localization[DisplayNames.CustomerType]</th>
+                    <th>@_localization[DisplayNames.CurrentBalance]</th>
+                    <th>@_localization[DisplayNames.Status]</th>
+                    <th class="js-no-export" data-i18n="Edit">@_localization[DisplayNames.Edit]</th>
+                    <th class="js-no-export" data-i18n="DeleteOrRestore">@_localization[DisplayNames.DeleteOrRestore]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model)
+                {
+                    <partial name="_Row" model="@customer" />
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="create-button-data"
+     data-address="@_localization["Customers"]"
+     data-title="@_localization[DisplayNames.Add]"
+     data-url="@Url.Action("Create", "Customers")"
+     data-label="@_localization[DisplayNames.Add]"
+     data-mode="modal"></div>
+
+<input type="hidden" id="RequestVerificationToken" name="__RequestVerificationToken" value="@antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

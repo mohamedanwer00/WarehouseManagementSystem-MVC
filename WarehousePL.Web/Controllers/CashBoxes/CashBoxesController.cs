@@ -218,7 +218,9 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         public IActionResult Withdraw(CashBoxTransactionFormViewModel model)
         {
             var cashBox = _unitOfWork.CashBoxes.GetById(model.Id);
-            if (cashBox == null || cashBox.LastAction != LastActionName.Delete) return NotFound();
+            if (cashBox == null || cashBox.LastAction != LastActionName.Delete)
+                return NotFound();
+
             model.Name = cashBox.Name;
             if (!ModelState.IsValid)
             {
@@ -248,7 +250,10 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         public IActionResult Delete(int id)
         {
             var cashBox = _unitOfWork.CashBoxes.GetById(id);
-            if (cashBox == null) return NotFound();
+            if (cashBox == null)
+                return NotFound();
+            if (cashBox.CurrentBalance != 0)
+                return BadRequest("لا يمكن حذف الخزنه إلا إذا كان الرصيد الحالي يساوي صفر.");
 
             cashBox.LastAction = LastActionName.Delete;
             cashBox.UpdatedById = User.GetUserId();

@@ -99,4 +99,8 @@ public class DisplayNames
     public const string CashBoxBalance = "CashBoxBalance";
     public const string CurrentBalance = "CurrentBalance";
     public const string Symbol = "Symbol";
+    public const string Suppliers = "Suppliers";
+    public const string Customers = "Customers";
+    public const string CustomerType = "CustomerType";
+
 }

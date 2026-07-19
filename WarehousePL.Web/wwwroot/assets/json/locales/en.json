@@ -386,6 +386,8 @@
   "ProductCode": "Product Code",
   "BaseUnit": "Base Unit",
   "SellingPrice": "Selling Price",
-  "MinQty": "Min Qty"
+  "MinQty": "Min Qty",
+  "Suppliers": "Suppliers",
+  "Customers": "Customers"
 
 }
