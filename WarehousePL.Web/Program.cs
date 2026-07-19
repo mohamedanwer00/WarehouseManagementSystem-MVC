@@ -1,5 +1,4 @@
 ﻿namespace WarehousePL.Web;
-
 public class Program
 {
     public static void Main(string[] args)
@@ -41,6 +40,8 @@ public class Program
         builder.Services.AddScoped<IProductUnitRepository, ProductUnitRepository>();
         builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
         builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+        builder.Services.AddScoped<IPurchaseInvoiceRepository, PurchaseInvoiceRepository>();
+        builder.Services.AddScoped<IProductWarehouseRepository, ProductWarehouseRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         var app = builder.Build();

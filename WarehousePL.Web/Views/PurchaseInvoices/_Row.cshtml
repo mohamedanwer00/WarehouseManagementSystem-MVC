@@ -1,0 +1,48 @@
+﻿@using WarehouseDAL.Entities.Enums
+@model WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice.PurchaseInvoiceViewModel
+
+<tr id="row-@Model.Id">
+    <td class="fw-bold text-primary">@Model.InvoiceNumber</td>
+    <td>@Model.InvoiceDate.ToString("yyyy-MM-dd")</td>
+    <td class="fw-bold">@Model.SupplierName</td>
+    <td>@Model.WarehouseName</td>
+    <td>
+        @if (Model.PaymentMethod == PaymentMethod.Cash)
+        {
+            <span class="badge bg-label-success px-2 py-1 rounded">كاش</span>
+        }
+        else if (Model.PaymentMethod == PaymentMethod.Credit)
+        {
+            <span class="badge bg-label-warning px-2 py-1 rounded">آجل</span>
+        }
+        else
+        {
+            <span class="badge bg-label-info px-2 py-1 rounded">بنكي</span>
+        }
+    </td>
+    <td class="fw-bold text-end">@Model.Net.ToString("N2")</td>
+    <td class="text-success fw-bold text-end">@Model.Paid.ToString("N2")</td>
+    <td class="text-end">
+        @if (Model.Remaining > 0)
+        {
+            <span class="text-danger fw-bold">@Model.Remaining.ToString("N2")</span>
+        }
+        else
+        {
+            <span class="text-muted">0.00</span>
+        }
+    </td>
+    <td>
+        <div class="d-inline-flex gap-1">
+            <a asp-action="Details" asp-controller="PurchaseInvoices" asp-route-id="@Model.Id"
+               class="btn btn-sm btn-label-primary" title="عرض التفاصيل">
+                <i class="ti ti-eye me-1"></i> عرض
+            </a>
+            <a asp-action="Details" asp-controller="PurchaseInvoices" asp-route-id="@Model.Id"
+               class="btn btn-sm btn-label-secondary js-print-invoice"
+               data-id="@Model.Id" title="طباعة الفاتورة" target="_blank">
+                <i class="ti ti-printer me-1"></i> طباعة
+            </a>
+        </div>
+    </td>
+</tr>

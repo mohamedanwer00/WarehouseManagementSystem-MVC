@@ -32,6 +32,9 @@ namespace WarehouseDAL.Data.Contexts
         public DbSet<Warehouse> Warehouses { get; set; } = null!;
         public DbSet<Supplier> Suppliers { get; set; } = null!;
         public DbSet<Customer> Customers { get; set; } = null!;
+        public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; } = null!;
+        public DbSet<PurchaseInvoiceItem> PurchaseInvoicesItem { get; set; } = null!;
+        public DbSet<ProductWarehouse> ProductWarehouses { get; set;} = null!;
 
     }
 }

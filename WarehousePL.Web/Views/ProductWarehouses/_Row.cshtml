@@ -1,0 +1,42 @@
+﻿@model WarehouseBLL.BusinessServices.View_Models.ProductWarehouse.ProductWarehouseViewModel
+
+<tr id="row-@Model.Id">
+    <!-- كود المنتج -->
+    <td class="fw-bold text-primary">@Model.ProductCode</td>
+
+    <!-- اسم المنتج -->
+    <td class="fw-bold text-heading">@Model.ProductName</td>
+
+    <!-- اسم المخزن المتواجد فيه الكمية -->
+    <td>
+        <span class="badge bg-label-info px-2 py-1 rounded">
+            <i class="bx bx-store-alt me-1"></i> @Model.WarehouseName
+        </span>
+    </td>
+
+    <!-- الكمية الحالية بدقة 3 أرقام عشرية -->
+    <td class="fw-bold @(Model.Quantity <= 0 ? "text-danger" : (Model.Quantity <= 5 ? "text-warning" : "text-success"))">
+        @Model.Quantity.ToString("N3")
+    </td>
+
+    <!-- الوحدة الخاصة بالكمية دي -->
+    <td>
+        <span class="text-muted">@Model.UnitName</span>
+    </td>
+
+    <!-- مؤشر حالة المخزون السريع -->
+    <td>
+        @if (Model.Quantity <= 0)
+        {
+            <span class="badge bg-label-danger">منتهي الصنف</span>
+        }
+        else if (Model.Quantity <= 5)
+        {
+            <span class="badge bg-label-warning">حد الطلب</span>
+        }
+        else
+        {
+            <span class="badge bg-label-success">متوفر</span>
+        }
+    </td>
+</tr>

@@ -109,6 +109,13 @@
                 <div data-i18n="Products"></div>
             </a>
         </li>
+        <!-- ProductWarehouses -->
+        <li class="menu-item" active-when="Stock">
+            <a asp-controller="ProductWarehouses" asp-action="Index" class="menu-link">
+                <i class="menu-icon icon-base bx bx-box"></i>
+                <div data-i18n="ProductWarehouses"></div>
+            </a>
+        </li>
         <!-- Suppliers -->
         <li class="menu-item" active-when="Suppliers">
             <a asp-controller="Suppliers" asp-action="Index" class="menu-link">
@@ -123,6 +130,15 @@
                 <div data-i18n="Customers"></div>
             </a>
         </li>
+        <!-- PurchaseInvoices -->
+        <li class="menu-item" active-when="PurchaseInvoices">
+            <a asp-controller="PurchaseInvoices" asp-action="Index" class="menu-link">
+                <i class="menu-icon icon-base bx bx-import"></i>
+                <div data-i18n="PurchaseInvoices"></div>
+            </a>
+        </li>
+
+
 		
     </ul>
 </aside>
