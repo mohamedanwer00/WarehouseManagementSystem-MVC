@@ -5,7 +5,6 @@
 <tr id="row-@Model.Id" data-id="@Model.Id">
     <td class="fw-bold text-primary">@Model.Code</td>
 
-    <!-- الاسم عادي بدون رابط بناءً على اختيارك النهائي -->
     <td class="fw-bold text-heading">@Model.Name</td>
 
     <td>@Model.CategoryName</td>
@@ -16,15 +15,12 @@
         <partial name="_LastActionBadge" model="Model.LastAction" />
     </td>
 
-    <!-- أزرار التحكم: عرض زر "التفاصيل" ككلمة بجانب زر التعديل -->
     <td>
         <div class="d-flex align-items-center gap-1">
-            <!-- زر التفاصيل صريح ككلمة -->
             <a asp-action="Details" asp-controller="Products" asp-route-id="@Model.Id" class="btn btn-sm btn-label-info">
                 @_localization[DisplayNames.Details]
             </a>
 
-            <!-- زر التعديل -->
             <a asp-action="Edit" asp-controller="Products" asp-route-id="@Model.Id" class="btn btn-sm btn-label-primary">
                 @_localization[DisplayNames.Edit]
             </a>

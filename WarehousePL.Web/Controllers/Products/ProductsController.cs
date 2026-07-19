@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WarehouseBLL.BusinessServices.View_Models.Product;
-using WarehouseBLL.Extensions;
-using WarehouseBLL.FormViewModels.Product;
-
-namespace WarehousePL.Web.Controllers.Products
+﻿namespace WarehousePL.Web.Controllers.Products
 {
     public class ProductsController : Controller
     {

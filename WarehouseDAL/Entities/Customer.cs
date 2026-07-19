@@ -9,8 +9,7 @@ namespace WarehouseDAL.Entities
         public string Name { get; set; } = null!;
         public string Address { get; set; }=null!;
         public string PhoneNumber { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public decimal OpeningBalance { get; set; }//الرصيد الافتتاحي
-        public string? Note { get; set; }
+        public decimal OpeningBalance { get; set; }
+        public decimal CurrentBalance { get; set; }
     }
 }

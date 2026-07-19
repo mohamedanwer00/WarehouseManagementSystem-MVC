@@ -11,7 +11,7 @@
             <thead>
                 <tr>
                     <th>@_localization[DisplayNames.Name]</th>
-                    <th>@_localization["PhoneNumber"]</th> <!-- أو حسب ثوابت DisplayNames عندك للـ Phone -->
+                    <th>@_localization["PhoneNumber"]</th> 
                     <th>@_localization["Address"]</th>
                     <th>@_localization["CurrentBalance"]</th>
                     <th>@_localization[DisplayNames.Status]</th>
@@ -29,7 +29,6 @@
     </div>
 </div>
 
-<!-- الزرار السحري اللي بيشغل سكريبت الـ Modal المشترك في السيستم عندك -->
 <div id="create-button-data"
      data-address="@_localization["Suppliers"]"
      data-title="@_localization[DisplayNames.Add]"
@@ -37,7 +36,6 @@
      data-label="@_localization[DisplayNames.Add]"
      data-mode="modal"></div>
 
-<!-- توكن الحماية عشان يلقطه سكريبت الحذف والـ Repost الموحد عندك -->
 <input type="hidden" id="RequestVerificationToken" name="__RequestVerificationToken" value="@antiforgery.GetAndStoreTokens(Context).RequestToken" />
 
 @section Scripts

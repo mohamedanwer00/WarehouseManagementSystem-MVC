@@ -20,4 +20,6 @@ global using WarehouseBLL.FormViewModels.Category;
 global using WarehouseBLL.Extensions;
 global using WarehouseBLL.BusinessServices.View_Models.Supplier;
 global using WarehouseDAL.Entities.Enums;
-global using WarehouseBLL.FormViewModels.Supplier;
+global using WarehouseBLL.BusinessServices.View_Models.Product;
+global using WarehouseBLL.FormViewModels.Product;
+

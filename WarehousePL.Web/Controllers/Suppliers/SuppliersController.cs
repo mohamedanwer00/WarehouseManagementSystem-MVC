@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace WarehousePL.Web.Controllers.Suppliers
+﻿namespace WarehousePL.Web.Controllers.Suppliers
 {
     public class SuppliersController : Controller
     {

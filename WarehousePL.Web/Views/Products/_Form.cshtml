@@ -2,7 +2,6 @@
 @using System.Globalization
 @model ProductFormViewModel
 
-@* عرض أخطاء الـ ModelState كـ alert *@
 @if (!ViewData.ModelState.IsValid)
 {
     var errors = ViewData.ModelState.Values
