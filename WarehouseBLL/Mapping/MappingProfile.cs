@@ -1,11 +1,4 @@
-﻿using WarehouseBLL.BusinessServices.View_Models.ProductWarehouse;
-using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice;
-using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoiceItem;
-using WarehouseBLL.FormViewModels.ProductWarehouse;
-using WarehouseBLL.FormViewModels.PurchaseInvoice;
-using WarehouseBLL.FormViewModels.PurchaseInvoiceItem;
-
-namespace WarehouseBLL.Mapping
+﻿namespace WarehouseBLL.Mapping
 {
     public static class MappingConfig
     {
@@ -162,45 +155,6 @@ namespace WarehouseBLL.Mapping
                 .Map(dest => dest.CurrentBalance, src => src.OpeningBalance);
             TypeAdapterConfig<Customer, CustomerFormViewModel>
                 .NewConfig();
-            #endregion
-
-
-            #region PurchaseInvoice
-
-            TypeAdapterConfig<PurchaseInvoice, PurchaseInvoiceViewModel>
-                .NewConfig()
-                .Map(dest => dest.SupplierName, src => src.Supplier != null ? src.Supplier.Name : "")
-                .Map(dest => dest.BranchName, src => src.Branch != null ? src.Branch.Name : "")
-                .Map(dest => dest.WarehouseName, src => src.Warehouse != null ? src.Warehouse.Name : "")
-                .Map(dest => dest.CashBoxName, src => src.CashBox != null ? src.CashBox.Name : "لا يوجد (آجل)");
-
-            TypeAdapterConfig<PurchaseInvoiceFormViewModel, PurchaseInvoice>
-                .NewConfig()
-                .Ignore(dest => dest.Id) 
-                .Map(dest => dest.PurchaseInvoiceItems, src => src.Items); 
-
-
-            TypeAdapterConfig<PurchaseInvoiceItemFormViewModel, PurchaseInvoiceItem>
-                .NewConfig();
-
-            TypeAdapterConfig<PurchaseInvoiceItem, PurchaseInvoiceItemViewModel>
-                .NewConfig()
-                .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : "");
-
-            #endregion
-
-            #region ProductWarehouse
-
-            TypeAdapterConfig<ProductWarehouse, ProductWarehouseViewModel>
-                .NewConfig()
-                .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : "")
-                .Map(dest => dest.ProductCode, src => src.Product != null ? src.Product.Code : "")
-                .Map(dest => dest.WarehouseName, src => src.Warehouse != null ? src.Warehouse.Name : "");
-
-            TypeAdapterConfig<ProductWarehouseFormViewModel, ProductWarehouse>
-                .NewConfig()
-                .Ignore(dest => dest.Id);
-
             #endregion
         }
     }

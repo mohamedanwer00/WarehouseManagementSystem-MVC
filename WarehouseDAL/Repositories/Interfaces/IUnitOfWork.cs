@@ -16,8 +16,6 @@ namespace WarehouseDAL.Repositories.Interfaces
         IProductUnitRepository ProductUnits { get; }
         ISupplierRepository Suppliers { get; }
         ICustomerRepository Customers { get; }
-        IPurchaseInvoiceRepository PurchaseInvoices { get; }
-        IProductWarehouseRepository ProductWarehouse { get; }
         int SaveChanges();
     }
 }
