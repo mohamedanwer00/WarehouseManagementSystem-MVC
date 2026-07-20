@@ -19,9 +19,9 @@ namespace WarehouseDAL.Repositories.Implememtation
             _dbContext = dbContext;
         }
 
-        public void Add(TEntity entity)
+        public async Task AddAsync(TEntity entity)
         {
-            _dbContext.Set<TEntity>().Add(entity);
+            await _dbContext.Set<TEntity>().AddAsync(entity);
         }
 
         public void Delete(TEntity entity)
@@ -29,13 +29,14 @@ namespace WarehouseDAL.Repositories.Implememtation
             _dbContext.Set<TEntity>().Remove(entity);
         }
 
-        // 1. الدالة الأساسية المعدلة: ترجع IEnumerable مع إمكانية التصفية (Filter)
-        public IEnumerable<TEntity> GetAll(Func<TEntity, bool>? condition = null)
+        public IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>>? condition = null)
         {
-            if (condition is null)
-                return _dbContext.Set<TEntity>().AsNoTracking().ToList();
-            else
-                return _dbContext.Set<TEntity>().AsNoTracking().Where(condition).ToList();
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>().AsNoTracking();
+
+            if (condition != null)
+                query = query.Where(condition);
+
+            return query;
         }
 
         // 2. الدالة السحرية الجديدة: تتيح لك عمل Include و Querying مرن ومباشر من الـ Controller
@@ -44,11 +45,16 @@ namespace WarehouseDAL.Repositories.Implememtation
             return _dbContext.Set<TEntity>().AsNoTracking();
         }
 
-        public TEntity? GetById(int id) => _dbContext.Set<TEntity>().Find(id);
+        public async Task<TEntity?> GetById(int id) => await _dbContext.Set<TEntity>().FindAsync(id);
 
         public void Update(TEntity entity)
         {
             _dbContext.Set<TEntity>().Update(entity);
+        }
+
+        public IQueryable<TEntity> AsQueryable()
+        {
+            return _dbContext.Set<TEntity>().AsQueryable();
         }
     }
 }

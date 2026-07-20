@@ -14,16 +14,12 @@ namespace WarehousePL.Web.Controllers.Warehouses
             _unitOfWork = unitOfWork;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var warehouses = _unitOfWork.Warehouses.GetAll();
-            foreach (var w in warehouses)
-            {
-                if (w.Branch == null)
-                {
-                    w.Branch = _unitOfWork.Branches.GetById(w.BranchId);
-                }
-            }
+            var warehouses = await _unitOfWork.Warehouses.AsQueryable()
+                .Include(w => w.Branch)
+                .ToListAsync();
+            
             var viewModel = warehouses.Adapt<IEnumerable<WarehouseViewModel>>();
             return View(viewModel);
         }
@@ -47,7 +43,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(WarehouseFormViewModel model)
+        public async Task<IActionResult> Create(WarehouseFormViewModel model)
         {
             var isNameExists = _unitOfWork.Warehouses
                 .GetAll()
@@ -56,7 +52,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             if (isNameExists)
             {
                 ModelState.AddModelError(nameof(model.Name), "اسم المخزن موجود بالفعل.");
-                return PartialView("_Form",model);
+                return PartialView("_Form", model);
             }
 
 
@@ -78,13 +74,13 @@ namespace WarehousePL.Web.Controllers.Warehouses
             warehouse.CreatedById = User.GetUserId();
             warehouse.CreatedOn = DateTime.Now;
 
-            _unitOfWork.Warehouses.Add(warehouse);
+            await _unitOfWork.Warehouses.AddAsync(warehouse);
             _unitOfWork.SaveChanges();
 
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
 
-            var selectedBranch = _unitOfWork.Branches.GetById(model.SelectedBranch);
+            var selectedBranch = await _unitOfWork.Branches.GetById(model.SelectedBranch);
             if (selectedBranch != null)
             {
                 viewModel.BranchName = selectedBranch.Name;
@@ -112,7 +108,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(WarehouseFormViewModel model)
+        public async Task<IActionResult> Edit(WarehouseFormViewModel model)
         {
             var isNameExists = _unitOfWork.Warehouses
                 .GetAll()
@@ -131,7 +127,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
                 });
                 return PartialView("_Form", model);
             }
-            var warehouse = _unitOfWork.Warehouses.GetById(model.Id.Value);
+            var warehouse = await _unitOfWork.Warehouses.GetById(model.Id.Value);
             if (warehouse == null)
             {
                 return NotFound();
@@ -145,7 +141,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             _unitOfWork.SaveChanges();
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
-            var selectedBranch = _unitOfWork.Branches.GetById(model.SelectedBranch);
+            var selectedBranch = await _unitOfWork.Branches.GetById(model.SelectedBranch);
             if (selectedBranch != null)
             {
                 viewModel.BranchName = selectedBranch.Name; // إسناد الاسم يدوياً للـ View Model
@@ -154,9 +150,9 @@ namespace WarehousePL.Web.Controllers.Warehouses
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var warehouse = _unitOfWork.Warehouses.GetById(id);
+            var warehouse = await _unitOfWork.Warehouses.GetById(id);
             if (warehouse == null)
             {
                 return NotFound();
@@ -170,7 +166,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
 
-            var selectedBranch = _unitOfWork.Branches.GetById(warehouse.BranchId);
+            var selectedBranch = await _unitOfWork.Branches.GetById(warehouse.BranchId);
             if (selectedBranch != null)
             {
                 viewModel.BranchName = selectedBranch.Name;
@@ -180,9 +176,9 @@ namespace WarehousePL.Web.Controllers.Warehouses
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Restore(int id)
+        public async Task<IActionResult> Restore(int id)
         {
-            var warehouse = _unitOfWork.Warehouses.GetById(id);
+            var warehouse = await _unitOfWork.Warehouses.GetById(id);
             if (warehouse == null)
             {
                 return NotFound();
@@ -196,7 +192,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
 
-            var selectedBranch = _unitOfWork.Branches.GetById(warehouse.BranchId);
+            var selectedBranch = await _unitOfWork.Branches.GetById(warehouse.BranchId);
             if (selectedBranch != null)
             {
                 viewModel.BranchName = selectedBranch.Name;

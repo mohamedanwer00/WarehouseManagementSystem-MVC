@@ -12,7 +12,7 @@ namespace WarehouseDAL.Entities
         public Unit? Unit { get; set; }
         public int Factor { get; set; }
         public bool IsBaseUnit { get; set; }
-        public decimal PurchasePrice { get; set; }
+        public decimal PurchasePrice { get; set; } // آخر سعر شراء للمنتج، ويتم تحديثه مع آخر فاتورة مشتريات.
         public decimal SellingPrice { get; set; }
 
     }

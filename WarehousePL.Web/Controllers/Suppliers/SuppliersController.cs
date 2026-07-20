@@ -25,7 +25,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(SupplierFormViewModel model)
+        public async Task<IActionResult> Create(SupplierFormViewModel model)
         {
             if (_unitOfWork.Suppliers.GetTableNoTracking()
                 .Any(x => x.Name == model.Name && x.LastAction != LastActionName.Delete))
@@ -46,7 +46,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
                 ? model.OpeningBalance
                 : -model.OpeningBalance;
 
-            _unitOfWork.Suppliers.Add(supplier);
+            await _unitOfWork.Suppliers.AddAsync(supplier);
             _unitOfWork.SaveChanges();
 
             var viewModel = supplier.Adapt<SupplierViewModel>();
@@ -66,7 +66,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(SupplierFormViewModel model)
+        public async Task<IActionResult> Edit(SupplierFormViewModel model)
         {
             if (_unitOfWork.Suppliers.GetTableNoTracking()
                 .Any(x => x.Name == model.Name && x.Id != model.Id && x.LastAction != LastActionName.Delete))
@@ -79,7 +79,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
 
-            var supplier = _unitOfWork.Suppliers.GetById(model.Id!.Value);
+            var supplier = await _unitOfWork.Suppliers.GetById(model.Id!.Value);
             if (supplier == null)
                 return NotFound();
 
@@ -106,9 +106,9 @@ namespace WarehousePL.Web.Controllers.Suppliers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var supplier = _unitOfWork.Suppliers.GetById(id);
+            var supplier = await _unitOfWork.Suppliers.GetById(id);
             if (supplier is null)
                 return NotFound();
             if (supplier.CurrentBalance != 0)
@@ -130,9 +130,9 @@ namespace WarehousePL.Web.Controllers.Suppliers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Restore(int id)
+        public async Task<IActionResult> Restore(int id)
         {
-            var supplier = _unitOfWork.Suppliers.GetById(id);
+            var supplier = await _unitOfWork.Suppliers.GetById(id);
             if (supplier is null)
                 return NotFound();
 
@@ -146,7 +146,5 @@ namespace WarehousePL.Web.Controllers.Suppliers
             rowViewModel.LastAction = supplier.LastAction;
             return PartialView("_Row", rowViewModel);
         }
-
-        
     }
 }

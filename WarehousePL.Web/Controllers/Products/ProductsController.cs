@@ -31,7 +31,7 @@
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ProductFormViewModel model)
+        public async Task<IActionResult> Create(ProductFormViewModel model)
         {
             var isCodeExists = _unitOfWork.Products.GetAll().Any(p => p.Code.Trim() == model.Code.Trim() && p.LastAction != LastActionName.Delete);
             if (isCodeExists)
@@ -62,7 +62,7 @@
             product.CreatedById = User.GetUserId();
             product.CreatedOn = DateTime.Now;
 
-            _unitOfWork.Products.Add(product);
+            await _unitOfWork.Products.AddAsync(product);
             _unitOfWork.SaveChanges();
 
             return RedirectToAction(nameof(Index));
@@ -97,9 +97,9 @@
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(ProductFormViewModel model)
+        public async Task<IActionResult> Edit(ProductFormViewModel model)
         {
-            var product = _unitOfWork.Products.GetById(model.Id.Value);
+            var product = await _unitOfWork.Products.GetById(model.Id.Value);
             if (product == null) return NotFound();
 
             if (model.ProductUnits == null || model.ProductUnits.Count == 0)
@@ -145,7 +145,7 @@
             {
                 if (pu.Id > 0)
                 {
-                    var existing = _unitOfWork.ProductUnits.GetById(pu.Id);
+                    var existing = await _unitOfWork.ProductUnits.GetById(pu.Id);
                     if (existing != null)
                     {
 
@@ -166,7 +166,7 @@
                 {
                     var newUnit = pu.Adapt<ProductUnit>();
                     newUnit.ProductId = product.Id;
-                    _unitOfWork.ProductUnits.Add(newUnit);
+                    await _unitOfWork.ProductUnits.AddAsync(newUnit);
                 }
             }
 

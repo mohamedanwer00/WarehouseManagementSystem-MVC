@@ -25,7 +25,7 @@ namespace WarehousePL.Web.Controllers.Categories
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CategoryFormViewModel model)
+        public async Task<IActionResult> Create(CategoryFormViewModel model)
         {
             // تحقق من تكرار الاسم
             var isDuplicate = _unitOfWork.Categories
@@ -44,7 +44,7 @@ namespace WarehousePL.Web.Controllers.Categories
             category.CreatedById = User.GetUserId();
             category.CreatedOn = DateTime.Now;
 
-            _unitOfWork.Categories.Add(category);
+             await _unitOfWork.Categories.AddAsync(category);
             _unitOfWork.SaveChanges();
 
             var viewModel = category.Adapt<CategoryViewModel>();
@@ -67,7 +67,7 @@ namespace WarehousePL.Web.Controllers.Categories
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(CategoryFormViewModel model)
+        public async Task<IActionResult> Edit(CategoryFormViewModel model)
         {
             // تحقق من تكرار الاسم (ما عدا نفس العنصر)
             var isDuplicate = _unitOfWork.Categories
@@ -82,7 +82,7 @@ namespace WarehousePL.Web.Controllers.Categories
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
 
-            var category = _unitOfWork.Categories.GetById(model.Id!.Value);
+            var category = await _unitOfWork.Categories.GetById(model.Id!.Value);
 
             if (category is null)
                 return NotFound();
@@ -103,9 +103,9 @@ namespace WarehousePL.Web.Controllers.Categories
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var category = _unitOfWork.Categories.GetById(id);
+            var category = await _unitOfWork.Categories.GetById(id);
 
             if (category is null)
                 return NotFound();
@@ -136,9 +136,9 @@ namespace WarehousePL.Web.Controllers.Categories
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Restore(int id)
+        public async Task<IActionResult> Restore(int id)
         {
-            var category = _unitOfWork.Categories.GetById(id);
+            var category = await _unitOfWork.Categories.GetById(id);
 
             if (category is null)
                 return NotFound();

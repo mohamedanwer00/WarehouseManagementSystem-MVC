@@ -17,14 +17,13 @@ namespace WarehousePL.Web.Controllers.Branches
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var branches = _unitOfWork.Branches.GetAll();
+            var viewModel = await _unitOfWork.Branches.AsQueryable()
+                .ProjectToType<BranchViewModel>()
+                .ToListAsync();
 
-            var viewModel = branches.Adapt<IEnumerable<BranchViewModel>>();
-
-            //return View(viewModel);
-            return View("~/Views/Branches/Index.cshtml", viewModel);
+            return View(viewModel);
         }
         [HttpGet]
         public IActionResult Create()
@@ -33,7 +32,7 @@ namespace WarehousePL.Web.Controllers.Branches
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(BranchViewModel model)
+        public async Task<IActionResult> Create(BranchViewModel model)
         {
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
@@ -41,7 +40,7 @@ namespace WarehousePL.Web.Controllers.Branches
             branch.LastAction = LastActionName.Insert;
             branch.CreatedById=User.GetUserId();
             branch.CreatedOn = DateTime.Now;
-            _unitOfWork.Branches.Add(branch);
+            await _unitOfWork.Branches.AddAsync(branch);
             _unitOfWork.SaveChanges();
             var viewModel = branch.Adapt<BranchViewModel>();
             viewModel.LastAction = branch.LastAction;
@@ -58,11 +57,11 @@ namespace WarehousePL.Web.Controllers.Branches
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(BranchFormViewModel model)
+        public async Task<IActionResult> Edit(BranchFormViewModel model)
         {
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
-            var branch = _unitOfWork.Branches.GetById(model.Id!.Value);
+            var branch = await _unitOfWork.Branches.GetById(model.Id!.Value);
             if (branch is null)
                 return NotFound();
             branch = model.Adapt(branch);
@@ -77,9 +76,9 @@ namespace WarehousePL.Web.Controllers.Branches
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var branch = _unitOfWork.Branches.GetById(id);
+            var branch = await _unitOfWork.Branches.GetById(id);
 
             if (branch is null)
                 return NotFound();
@@ -97,9 +96,9 @@ namespace WarehousePL.Web.Controllers.Branches
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Restore(int id)
+        public async Task<IActionResult> Restore(int id)
         {
-            var branch = _unitOfWork.Branches.GetById(id);
+            var branch = await _unitOfWork.Branches.GetById(id);
 
             if (branch is null)
                 return NotFound();

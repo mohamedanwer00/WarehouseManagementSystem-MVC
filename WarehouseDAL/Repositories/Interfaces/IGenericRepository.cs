@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using WarehouseDAL.Entities;
 
@@ -7,14 +8,13 @@ namespace WarehouseDAL.Repositories.Interfaces
 {
     public interface IGenericRepository<TEntity> where TEntity : BaseEntity, new()
     {
-        TEntity? GetById(int id);
+        Task<TEntity?> GetById(int id);
 
-        void Add(TEntity entity);
+        Task AddAsync(TEntity entity);
         void Update(TEntity entity);
         void Delete(TEntity entity);
-        IEnumerable<TEntity> GetAll(Func<TEntity, bool>? condition = null);
-
+        IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>>? condition = null);
         IQueryable<TEntity> GetTableNoTracking();
-
+        IQueryable<TEntity> AsQueryable();
     }
 }

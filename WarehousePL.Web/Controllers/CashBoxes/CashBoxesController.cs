@@ -18,15 +18,9 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             _localization = localization;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var cashBoxes = _unitOfWork.CashBoxes.GetAll();
-
-            foreach (var cb in cashBoxes)
-            {
-                if (cb.Branch == null)
-                    cb.Branch = _unitOfWork.Branches.GetById(cb.BranchId);
-            }
+            var cashBoxes = await _unitOfWork.CashBoxes.AsQueryable().Include(c => c.Branch).ToListAsync();
 
             var viewModel = cashBoxes.Adapt<IEnumerable<CashBoxViewModel>>();
             return View(viewModel);
@@ -49,7 +43,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CashBoxFormViewModel model)
+        public async Task<IActionResult> Create(CashBoxFormViewModel model)
         {
             var isNameExists = _unitOfWork.CashBoxes
                 .GetAll()
@@ -76,13 +70,13 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             cashBox.LastAction = LastActionName.Insert;
             cashBox.CreatedById = User.GetUserId();
             cashBox.CreatedOn = DateTime.Now;
-            _unitOfWork.CashBoxes.Add(cashBox);
+            await _unitOfWork.CashBoxes.AddAsync(cashBox);
             _unitOfWork.SaveChanges();
 
             var viewModel = cashBox.Adapt<CashBoxViewModel>();
             viewModel.LastAction = cashBox.LastAction;
 
-            var selectedBranch = _unitOfWork.Branches.GetById(model.SelectedBranch);
+            var selectedBranch = await _unitOfWork.Branches.GetById(model.SelectedBranch);
             if (selectedBranch != null)
             {
                 viewModel.BranchName = selectedBranch.Name;
@@ -110,9 +104,9 @@ namespace WarehousePL.Web.Controllers.CashBoxes
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(CashBoxFormViewModel model)
+        public async Task<IActionResult> Edit(CashBoxFormViewModel model)
         {
-            var cashBox = _unitOfWork.CashBoxes.GetById(model.Id.Value);
+            var cashBox = await _unitOfWork.CashBoxes.GetById(model.Id.Value);
             if (cashBox == null) return NotFound();
 
             var isNameExists = _unitOfWork.CashBoxes
@@ -146,7 +140,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             var viewModel = cashBox.Adapt<CashBoxViewModel>();
             viewModel.LastAction = cashBox.LastAction;
 
-            var selectedBranch = _unitOfWork.Branches.GetById(model.SelectedBranch);
+            var selectedBranch = await _unitOfWork.Branches.GetById(model.SelectedBranch);
             if (selectedBranch != null)
             {
                 viewModel.BranchName = selectedBranch.Name;
@@ -155,9 +149,9 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         }
 
         [HttpGet]
-        public IActionResult Deposit(int id)
+        public async Task<IActionResult> Deposit(int id)
         {
-            var cashBox = _unitOfWork.CashBoxes.GetById(id);
+            var cashBox = await _unitOfWork.CashBoxes.GetById(id);
             if (cashBox == null || cashBox.LastAction != LastActionName.Delete)
                 return NotFound();
 
@@ -171,9 +165,9 @@ namespace WarehousePL.Web.Controllers.CashBoxes
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Deposit(CashBoxTransactionFormViewModel model)
+        public async Task<IActionResult> Deposit(CashBoxTransactionFormViewModel model)
         {
-            var cashBox = _unitOfWork.CashBoxes.GetById(model.Id);
+            var cashBox = await _unitOfWork.CashBoxes.GetById(model.Id);
             if (cashBox == null || cashBox.LastAction != LastActionName.Delete) return NotFound();
             model.Name = cashBox.Name;
 
@@ -193,16 +187,16 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             var viewModel = cashBox.Adapt<CashBoxViewModel>();
             viewModel.LastAction = cashBox.LastAction;
 
-            var branch = _unitOfWork.Branches.GetById(cashBox.BranchId);
+            var branch = await _unitOfWork.Branches.GetById(cashBox.BranchId);
             if (branch != null) viewModel.BranchName = branch.Name;
 
             return PartialView("_Row", viewModel);
         }
 
         [HttpGet]
-        public IActionResult Withdraw(int id)
+        public async Task<IActionResult> Withdraw(int id)
         {
-            var cashBox = _unitOfWork.CashBoxes.GetById(id);
+            var cashBox = await _unitOfWork.CashBoxes.GetById(id);
             if (cashBox == null || cashBox.LastAction != LastActionName.Delete) 
                 return NotFound();
             var model = new CashBoxTransactionFormViewModel
@@ -215,9 +209,9 @@ namespace WarehousePL.Web.Controllers.CashBoxes
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Withdraw(CashBoxTransactionFormViewModel model)
+        public async Task<IActionResult> Withdraw(CashBoxTransactionFormViewModel model)
         {
-            var cashBox = _unitOfWork.CashBoxes.GetById(model.Id);
+            var cashBox = await _unitOfWork.CashBoxes.GetById(model.Id);
             if (cashBox == null || cashBox.LastAction != LastActionName.Delete)
                 return NotFound();
 
@@ -241,15 +235,15 @@ namespace WarehousePL.Web.Controllers.CashBoxes
             _unitOfWork.SaveChanges();
             var viewModel = cashBox.Adapt<CashBoxViewModel>();
             viewModel.LastAction = cashBox.LastAction;
-            var branch = _unitOfWork.Branches.GetById(cashBox.BranchId);
+            var branch = await _unitOfWork.Branches.GetById(cashBox.BranchId);
             if (branch != null) viewModel.BranchName = branch.Name;
             return PartialView("_Row", viewModel);
         }
 
         [HttpPost]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var cashBox = _unitOfWork.CashBoxes.GetById(id);
+            var cashBox = await _unitOfWork.CashBoxes.GetById(id);
             if (cashBox == null)
                 return NotFound();
             if (cashBox.CurrentBalance != 0)
@@ -263,16 +257,16 @@ namespace WarehousePL.Web.Controllers.CashBoxes
 
             var viewModel = cashBox.Adapt<CashBoxViewModel>();
             viewModel.LastAction = cashBox.LastAction;
-            var branch = _unitOfWork.Branches.GetById(cashBox.BranchId);
+            var branch = await _unitOfWork.Branches.GetById(cashBox.BranchId);
             if (branch != null) viewModel.BranchName = branch.Name;
 
             return PartialView("_Row", viewModel);
         }
 
         [HttpPost]
-        public IActionResult Restore(int id)
+        public async Task<IActionResult> Restore(int id)
         {
-            var cashBox = _unitOfWork.CashBoxes.GetById(id);
+            var cashBox = await _unitOfWork.CashBoxes.GetById(id);
             if (cashBox == null) return NotFound();
 
             cashBox.LastAction = LastActionName.Update;
@@ -283,7 +277,7 @@ namespace WarehousePL.Web.Controllers.CashBoxes
 
             var viewModel = cashBox.Adapt<CashBoxViewModel>();
             viewModel.LastAction = cashBox.LastAction;
-            var branch = _unitOfWork.Branches.GetById(cashBox.BranchId);
+            var branch = await _unitOfWork.Branches.GetById(cashBox.BranchId);
             if (branch != null) viewModel.BranchName = branch.Name;
 
             return PartialView("_Row", viewModel);

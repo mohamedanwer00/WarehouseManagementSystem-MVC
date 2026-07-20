@@ -27,7 +27,7 @@ namespace WarehousePL.Web.Controllers.Customers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CustomerFormViewModel model)
+        public async Task<IActionResult> Create(CustomerFormViewModel model)
         {
             if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.Name == model.Name))
             {
@@ -51,7 +51,7 @@ namespace WarehousePL.Web.Controllers.Customers
                 ? -model.OpeningBalance
                 : model.OpeningBalance;
 
-            _unitOfWork.Customers.Add(customer);
+            await _unitOfWork.Customers.AddAsync(customer);
             _unitOfWork.SaveChanges();
 
             var viewModel = customer.Adapt<CustomerViewModel>();
@@ -71,7 +71,7 @@ namespace WarehousePL.Web.Controllers.Customers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(CustomerFormViewModel model)
+        public async Task<IActionResult> Edit(CustomerFormViewModel model)
         {
             // فحص تكرار الاسم مع استثناء العميل الحالي نفسه عند التعديل
             if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.Name == model.Name && x.Id != model.Id))
@@ -88,7 +88,7 @@ namespace WarehousePL.Web.Controllers.Customers
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
 
-            var customer = _unitOfWork.Customers.GetById(model.Id.Value);
+            var customer = await _unitOfWork.Customers.GetById(model.Id.Value);
             if (customer == null)
                 return NotFound();
 
@@ -117,9 +117,9 @@ namespace WarehousePL.Web.Controllers.Customers
         [HttpPost]
         [ValidateAntiForgeryToken]
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var customer = _unitOfWork.Customers.GetById(id);
+            var customer = await _unitOfWork.Customers.GetById(id);
 
             if (customer is null)
                 return NotFound();
@@ -142,9 +142,9 @@ namespace WarehousePL.Web.Controllers.Customers
         [HttpPost]
         [ValidateAntiForgeryToken]
 
-        public IActionResult Restore(int id)
+        public async Task<IActionResult> Restore(int id)
         {
-            var customer = _unitOfWork.Customers.GetById(id);
+            var customer = await _unitOfWork.Customers.GetById(id);
             if (customer is null)
                 return NotFound();
 

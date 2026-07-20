@@ -31,7 +31,7 @@ namespace WarehousePL.Web.Controllers.Units
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(UnitFormViewModel model)
+        public async Task<IActionResult> Create(UnitFormViewModel model)
         {
             var isNameExists = _unitOfWork.Units
                 .GetAll()
@@ -51,7 +51,7 @@ namespace WarehousePL.Web.Controllers.Units
             unit.LastAction = LastActionName.Insert;
             unit.CreatedById = User.GetUserId();
             unit.CreatedOn= DateTime.Now;
-            _unitOfWork.Units.Add(unit);
+            await _unitOfWork.Units.AddAsync(unit);
             _unitOfWork.SaveChanges();
 
             var viewModel = unit.Adapt<UnitViewModel>();
@@ -71,9 +71,9 @@ namespace WarehousePL.Web.Controllers.Units
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(UnitFormViewModel model)
+        public async Task<IActionResult> Edit(UnitFormViewModel model)
         {
-            var unit = _unitOfWork.Units.GetById(model.Id.Value);
+            var unit = await _unitOfWork.Units.GetById(model.Id!.Value);
             if (unit == null) return NotFound();
 
             var isNameExists = _unitOfWork.Units
@@ -104,9 +104,9 @@ namespace WarehousePL.Web.Controllers.Units
         }
 
         [HttpPost]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var unit = _unitOfWork.Units.GetById(id);
+            var unit = await _unitOfWork.Units.GetById(id);
             if (unit is null)
                 return NotFound();
 
@@ -123,9 +123,9 @@ namespace WarehousePL.Web.Controllers.Units
         }
 
         [HttpPost]
-        public IActionResult Restore(int id)
+        public async Task<IActionResult> Restore(int id)
         {
-            var unit = _unitOfWork.Units.GetById(id);
+            var unit = await _unitOfWork.Units.GetById(id);
             if (unit == null) return NotFound();
 
             unit.LastAction = LastActionName.Update;
