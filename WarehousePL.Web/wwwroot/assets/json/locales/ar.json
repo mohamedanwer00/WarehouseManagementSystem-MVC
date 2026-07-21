@@ -379,5 +379,6 @@
   "MinQty": "اقل كمية",
   "Suppliers": "الموردين",
   "Customers": "العملاء",
-  "CustomerType": "نوع المعاملة"
+  "CustomerType": "نوع المعاملة",
+  "OpeningStock": "المخزون الافتتاحى"
 }

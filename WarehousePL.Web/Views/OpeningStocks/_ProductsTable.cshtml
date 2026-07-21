@@ -1,0 +1,48 @@
+﻿@using WarehouseBLL.FormViewModels.OpeningStock
+@model List<OpeningStockItemFormViewModel>
+
+<div class="table-responsive border rounded-3 overflow-hidden shadow-sm">
+    <table class="table table-hover align-middle mb-0" id="productsTable">
+        <thead class="table-dark text-center">
+            <tr>
+                <th style="width: 70px;">#</th>
+                <th class="text-start">الصنف</th>
+                <th style="width: 220px;">الكمية الافتتاحية</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                for (int i = 0; i < Model.Count; i++)
+                {
+                    <tr>
+                        <td class="text-center fw-bold bg-light">
+                            @(i + 1)
+                        </td>
+                        <td>
+                            <input type="hidden" name="Items[@i].ProductId" value="@Model[i].ProductId" />
+                            <input type="hidden" name="Items[@i].ProductName" value="@Model[i].ProductName" />
+                            <span class="fw-semibold text-dark">@Model[i].ProductName</span>
+                        </td>
+                        <td>
+                            <input type="number"
+                                   name="Items[@i].Quantity"
+                                   value="@Model[i].Quantity.ToString("0.##")"
+                                   class="form-control text-center fw-bold fs-6"
+                                   min="0"
+                                   step="1.00" />
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-muted fs-6">
+                        لا توجد أصناف متاحة
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

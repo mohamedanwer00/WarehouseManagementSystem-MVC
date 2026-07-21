@@ -1,0 +1,151 @@
+﻿@using WarehouseBLL.FormViewModels.OpeningStock
+@model OpeningStockFormViewModel
+
+@{
+    ViewData["Title"] = "المخزون الافتتاحي";
+}
+
+<div class="container-fluid py-3">
+    <form id="openingStockForm" asp-action="Create" method="post">
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header  text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bx bx-box me-2"></i> إدخال المخزون الافتتاحى
+                </h5>
+                <button type="submit" form="openingStockForm" class="btn btn-light text-primary fw-bold shadow-sm px-4">
+                    <i class="bx bx-save me-1"></i> حفظ 
+                </button>
+            </div>
+
+            <div class="card-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bx bx-check-circle me-1"></i> @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <!-- الفرع -->
+                    <div class="col-md-4">
+                        <label asp-for="SelectedBranch" class="form-label fw-semibold">الفرع</label>
+                        <select asp-for="SelectedBranch"
+                                asp-items="Model.Branches"
+                                class="form-select border-primary"
+                                id="branchId">
+                            <option value="">-- اختر الفرع --</option>
+                        </select>
+                        <span asp-validation-for="SelectedBranch" class="text-danger small"></span>
+                    </div>
+
+                    <!-- المخزن -->
+                    <div class="col-md-4">
+                        <label asp-for="SelectedWarehouse" class="form-label fw-semibold">المخزن</label>
+                        <select asp-for="SelectedWarehouse"
+                                asp-items="Model.Warehouses"
+                                class="form-select border-primary"
+                                id="warehouseId">
+                            <option value="">-- اختر المخزن --</option>
+                        </select>
+                        <span asp-validation-for="SelectedWarehouse" class="text-danger small"></span>
+                    </div>
+
+                    <!-- البحث -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">تصفية المنتجات</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bx bx-search"></i></span>
+                            <input type="text"
+                                   id="txtSearch"
+                                   class="form-control"
+                                   placeholder="ابحث باسم المنتج..." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول المنتجات -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-3">
+                <div id="productsContainer">
+                    @if (Model.Items != null && Model.Items.Any())
+                    {
+                        <partial name="_ProductsTable" model="Model.Items" />
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5">
+                            <i class="bx bx-store-alt display-4 d-block mb-2 text-secondary"></i>
+                            <span class="fs-6">برجاء اختيار الفرع ثم المخزن لعرض الأصناف</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(function() {
+
+            // عند تغيير الفرع
+            $("#branchId").change(function() {
+                let branchId = $(this).val();
+
+                $("#warehouseId").empty().append($("<option>").val("").text("-- اختر المخزن --"));
+                $("#productsContainer").html(`
+                            <div class="text-center text-muted py-5">
+                                <i class="bx bx-store-alt display-4 d-block mb-2 text-secondary"></i>
+                                <span class="fs-6">برجاء اختيار المخزن لعرض الأصناف</span>
+                            </div>
+                        `);
+
+                if (!branchId) return;
+
+                $.get('@Url.Action("GetWarehouses")', { branchId: branchId }, function(data) {
+                    $.each(data, function(i, item) {
+                        $("#warehouseId").append(
+                            $("<option>").val(item.value).text(item.text)
+                        );
+                    });
+                });
+            });
+
+            // عند تغيير المخزن
+            $("#warehouseId").change(function() {
+                let warehouseId = $(this).val();
+
+                if (!warehouseId) {
+                    $("#productsContainer").html(`
+                                <div class="text-center text-muted py-5">
+                                    <i class="bx bx-store-alt display-4 d-block mb-2 text-secondary"></i>
+                                    <span class="fs-6">برجاء اختيار المخزن لعرض الأصناف</span>
+                                </div>
+                            `);
+                    return;
+                }
+
+                $("#productsContainer").load('@Url.Action("GetProducts")?warehouseId=' + warehouseId);
+            });
+
+            // فلترة بالبحث في الجدول
+            $(document).on("keyup", "#txtSearch", function() {
+                var value = $(this).val().toLowerCase();
+                $("#productsTable tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+
+        });
+    </script>
+}

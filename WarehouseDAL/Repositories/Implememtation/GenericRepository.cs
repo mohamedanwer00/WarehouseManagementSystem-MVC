@@ -28,6 +28,15 @@ namespace WarehouseDAL.Repositories.Implememtation
         {
             _dbContext.Set<TEntity>().Remove(entity);
         }
+        public void AddRange(IEnumerable<TEntity> entity)
+        {
+            _dbContext.Set<TEntity>().AddRange(entity);
+        }
+
+        public void UpdateRange(IEnumerable<TEntity> entity)
+        {
+            _dbContext.Set<TEntity>().UpdateRange(entity);
+        }
 
         public IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>>? condition = null)
         {

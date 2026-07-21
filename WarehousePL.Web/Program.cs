@@ -30,6 +30,9 @@ public class Program
         .AddEntityFrameworkStores<WarehouseDbContext>()
         .AddDefaultTokenProviders();
 
+
+
+
         // Repositories
         builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
         builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

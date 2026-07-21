@@ -10,13 +10,11 @@ namespace WarehouseBLL.FormViewModels.OpeningStock
     {
         public int? Id { get; set; }
 
-        [Display(Name = "الفرع")]
         [Required(ErrorMessage = "الفرع مطلوب")]
         public int SelectedBranch { get; set; }
 
         public IEnumerable<SelectListItem> Branches { get; set; } = [];
 
-        [Display(Name = "المخزن")]
         [Required(ErrorMessage = "المخزن مطلوب")]
         public int SelectedWarehouse { get; set; }
 
@@ -30,11 +28,10 @@ namespace WarehouseBLL.FormViewModels.OpeningStock
     {
         public int ProductId { get; set; }
 
-        public string ProductName { get; set; } = null!;
+        public string ProductName { get; set; } = string.Empty;
 
-        [Display(Name = "الكمية")]
         [Required(ErrorMessage = "الكمية مطلوبة")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "يجب أن تكون الكمية أكبر من صفر")]
+        [Range(0, double.MaxValue, ErrorMessage = "يجب أن تكون الكمية أكبر من أو تساوي صفر")]
         public decimal Quantity { get; set; }
     }
 }

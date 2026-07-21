@@ -13,6 +13,8 @@ namespace WarehouseDAL.Repositories.Interfaces
         Task AddAsync(TEntity entity);
         void Update(TEntity entity);
         void Delete(TEntity entity);
+        void AddRange(IEnumerable<TEntity> entity);
+        void UpdateRange(IEnumerable<TEntity> entity);
         IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>>? condition = null);
         IQueryable<TEntity> GetTableNoTracking();
         IQueryable<TEntity> AsQueryable();

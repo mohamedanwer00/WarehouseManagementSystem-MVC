@@ -389,6 +389,7 @@
   "MinQty": "Min Qty",
   "Suppliers": "Suppliers",
   "Customers": "Customers",
-  "CustomerType": "CustomerType"
+  "CustomerType": "CustomerType",
+  "OpeningStock": "OpeningStock"
 
 }
