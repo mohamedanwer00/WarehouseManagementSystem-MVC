@@ -32,6 +32,11 @@ namespace WarehouseDAL.Data.Contexts
         public DbSet<Supplier> Suppliers { get; set; } = null!;
         public DbSet<Customer> Customers { get; set; } = null!;
         public DbSet<OpeningStock> OpeningStock { get; set; } = null!;
+        public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; } = null!;
+        public DbSet<PurchaseInvoiceItem> PurchaseInvoiceItems { get; set; } = null!;
+
+        public DbSet<SalesInvoice> SalesInvoices { get; set; } = null!;
+        public DbSet<SalesInvoiceItem> SalesInvoiceItems { get; set; } = null!;
         public DbSet<CashTransaction> CashsTransactions { get; set; } = null!;
         public DbSet<CustomerTransaction> CustomerTransactions { get; set; }=null!;
         public DbSet<SupplierTransaction> SupplierTransactions { get; set; } = null!;

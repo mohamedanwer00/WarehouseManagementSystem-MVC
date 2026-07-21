@@ -1,6 +1,6 @@
 ﻿namespace WarehouseDAL.Entities.Transactions;
 
-public class CashTransaction
+public class CashTransaction : BaseEntity
 {
     public int CashBoxId { get; set; }
     public CashBox CashBox { get; set; } = null!;
@@ -19,5 +19,5 @@ public enum CashTransactionType
     Withdraw = 2,//سحب 
     Sales = 3,//بيع
     OpeningBalance = 4,//رصيد افتتاحى 
- 
+
 }

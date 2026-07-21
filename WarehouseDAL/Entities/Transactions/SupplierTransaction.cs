@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WarehouseDAL.Entities.Transactions
 {
-    public class SupplierTransaction
+    public class SupplierTransaction : BaseEntity
     {
         public int SupplierId { get; set; }
         public Supplier Supplier { get; set; } = null!;

@@ -26,8 +26,13 @@ public class SalesInvoice : BaseEntity
     public ICollection<SalesInvoiceItem> SalesInvoiceItems { get; set; } = [];
 }
 
-public class SalesInvoiceItem
+public class SalesInvoiceItem : BaseEntity
 {
+
+    public int SalesInvoiceId { get; set; }
+    public SalesInvoice SalesInvoice { get; set; } = null!;
+
+
     public int ProductId { get; set; }
     public Product Product { get; set; } = null!;
 
