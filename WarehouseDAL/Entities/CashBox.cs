@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using WarehouseDAL.Entities.Entities;
+using WarehouseDAL.Entities;
 
 namespace WarehouseDAL.Entities
 {

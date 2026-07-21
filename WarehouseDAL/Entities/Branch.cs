@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WarehouseDAL.Entities.Entities
+﻿namespace WarehouseDAL.Entities
 {
     public class Branch : BaseEntity
     {

@@ -7,11 +7,11 @@ using WarehouseDAL.Repositories.Interfaces;
 
 namespace WarehouseDAL.Repositories.Implememtation
 {
-    public class BranchRepository : GenericRepository<Branch>, IBranchRepository
+    public class OpeningStockRepository:GenericRepository<OpeningStock>,IOpeningStockRepository
     {
         private readonly WarehouseDbContext _dbContext;
 
-        public BranchRepository(WarehouseDbContext dbContext) : base(dbContext)
+        public OpeningStockRepository(WarehouseDbContext dbContext):base(dbContext)
         {
             _dbContext = dbContext;
         }

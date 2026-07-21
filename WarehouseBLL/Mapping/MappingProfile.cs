@@ -1,4 +1,7 @@
-﻿namespace WarehouseBLL.Mapping
+﻿using WarehouseBLL.BusinessServices.View_Models.OpeningStock;
+using WarehouseBLL.FormViewModels.OpeningStock;
+
+namespace WarehouseBLL.Mapping
 {
     public static class MappingConfig
     {
@@ -146,15 +149,45 @@
             TypeAdapterConfig<Customer, CustomerViewModel>
                 .NewConfig();
 
-            TypeAdapterConfig< CustomerViewModel,Customer>
+            TypeAdapterConfig<CustomerViewModel, Customer>
                 .NewConfig();
 
             TypeAdapterConfig<CustomerFormViewModel, Customer>
                 .NewConfig()
-                .Ignore(dest => dest.Id) 
+                .Ignore(dest => dest.Id)
                 .Map(dest => dest.CurrentBalance, src => src.OpeningBalance);
             TypeAdapterConfig<Customer, CustomerFormViewModel>
                 .NewConfig();
+            #endregion
+
+            //OpeningStock
+            #region OpeningStock
+            TypeAdapterConfig<OpeningStock, OpeningStockViewModel>
+                .NewConfig()
+                .Map(dest => dest.BranchName, src => src.Warehouse.Branch.Name)
+                .Map(dest => dest.WarehouseName, src => src.Warehouse.Name)
+                .Map(dest => dest.ProductName, src => src.Product.Name);
+
+            TypeAdapterConfig<OpeningStockViewModel, OpeningStock>
+                .NewConfig();
+
+            TypeAdapterConfig<OpeningStock, OpeningStockFormViewModel>
+                .NewConfig()
+                .Map(dest => dest.SelectedBranch, src => src.Warehouse.BranchId)
+                .Map(dest => dest.SelectedWarehouse, src => src.WarehouseId);
+
+
+            TypeAdapterConfig<OpeningStock, OpeningStockItemFormViewModel>
+                .NewConfig()
+                .Map(dest => dest.ProductId, src => src.ProductId)
+                .Map(dest => dest.ProductName, src => src.Product.Name)
+                .Map(dest => dest.Quantity, src => src.Quantity);
+
+            TypeAdapterConfig<OpeningStockItemFormViewModel, OpeningStock>
+                .NewConfig()
+                .Map(dest => dest.ProductId, src => src.ProductId)
+                .Map(dest => dest.Quantity, src => src.Quantity);
+
             #endregion
         }
     }

@@ -194,9 +194,9 @@ namespace WarehousePL.Web.Controllers.CashBoxes
         }
 
         [HttpGet]
-        public async Task<IActionResult> Withdraw(int id)
+        public IActionResult Withdraw(int id)
         {
-            var cashBox = await _unitOfWork.CashBoxes.GetById(id);
+            var cashBox = _unitOfWork.CashBoxes.Adapt<CashBoxViewModel>();
             if (cashBox == null || cashBox.LastAction != LastActionName.Delete) 
                 return NotFound();
             var model = new CashBoxTransactionFormViewModel

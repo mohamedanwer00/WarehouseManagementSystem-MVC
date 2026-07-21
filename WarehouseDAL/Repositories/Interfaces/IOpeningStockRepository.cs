@@ -5,8 +5,7 @@ using WarehouseDAL.Entities;
 
 namespace WarehouseDAL.Repositories.Interfaces
 {
-    public interface IBranchRepository : IGenericRepository<Branch>
+    public interface IOpeningStockRepository:IGenericRepository<OpeningStock>
     {
-
     }
 }

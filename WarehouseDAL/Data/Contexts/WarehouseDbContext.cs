@@ -6,8 +6,7 @@ using System.Reflection;
 using System.Text;
 using WarehouseDAL.Entities;
 using WarehouseDAL.Entities.Identity;
-using WarehouseDAL.Entities.Entities;
-
+using WarehouseDAL.Entities.Transactions;
 namespace WarehouseDAL.Data.Contexts
 {
     public class WarehouseDbContext : IdentityDbContext<User, Role, int>
@@ -32,6 +31,10 @@ namespace WarehouseDAL.Data.Contexts
         public DbSet<Warehouse> Warehouses { get; set; } = null!;
         public DbSet<Supplier> Suppliers { get; set; } = null!;
         public DbSet<Customer> Customers { get; set; } = null!;
-
+        public DbSet<OpeningStock> OpeningStock { get; set; } = null!;
+        public DbSet<CashTransaction> CashsTransactions { get; set; } = null!;
+        public DbSet<CustomerTransaction> CustomerTransactions { get; set; }=null!;
+        public DbSet<SupplierTransaction> SupplierTransactions { get; set; } = null!;
+        public DbSet<InventoryTransaction> InventoryTransactions { get; set; }= null!;
     }
 }

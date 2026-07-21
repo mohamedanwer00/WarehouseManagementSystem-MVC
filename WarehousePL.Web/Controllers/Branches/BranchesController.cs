@@ -2,7 +2,7 @@
 using WarehouseBLL.BusinessServices.View_Models.Branch;
 using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Branch;
-using WarehouseDAL.Entities.Entities;
+using WarehouseDAL.Entities;
 using WarehouseDAL.Repositories.Implememtation;
 
 namespace WarehousePL.Web.Controllers.Branches

@@ -21,5 +21,5 @@ global using WarehouseBLL.FormViewModels.Unit;
 global using WarehouseBLL.FormViewModels.User;
 global using WarehouseBLL.FormViewModels.Warehouse;
 global using WarehouseDAL.Entities;
-global using WarehouseDAL.Entities.Entities;
 global using WarehouseDAL.Entities.Identity;
+global using WarehouseDAL.Entities.Enums;
