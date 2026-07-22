@@ -85,5 +85,25 @@
         </a>
 
     </td>
+    @* <td class="text-center">
+        <div class="d-flex justify-content-center align-items-center gap-1">
+            <!-- زرار التفاصيل -->
+            <a asp-action="Details"
+               asp-route-id="@Model.Id"
+               class="btn btn-sm btn-label-info">
+                <i class="bx bx-show me-1"></i> @_localization["Details"]
+            </a>
+
+            <!-- زرار الطباعة -->
+            <a asp-action="Details"
+               asp-route-id="@Model.Id"
+               asp-route-print="true"
+               target="_blank"
+               class="btn btn-sm btn-label-secondary"
+               title="طباعة">
+                <i class="icon-base bx bx-printer me-1"></i>
+            </a>
+        </div>
+    </td> *@
 
 </tr>

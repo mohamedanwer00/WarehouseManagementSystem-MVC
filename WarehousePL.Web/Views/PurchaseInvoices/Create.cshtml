@@ -104,22 +104,24 @@
             <div class="row g-3">
                 <div class="col-md-3">
                     <label asp-for="Discount" class="form-label fw-semibold">إجمالي الخصم</label>
-                    <input asp-for="Discount" id="Discount" class="form-control text-center fw-bold fs-6" value="0" />
+                    <input asp-for="Discount" id="Discount" class="form-control text-center fw-bold fs-6" />
                 </div>
 
                 <div class="col-md-3">
-                    <label asp-for="TotalAmount" class="form-label fw-semibold">صافي الفاتورة</label>
-                    <input asp-for="TotalAmount" id="TotalAmount" readonly class="form-control text-center fw-bold fs-6 bg-light text-primary" value="0" />
+                    <label class="form-label fw-semibold">صافي الفاتورة</label>
+                    <input type="text" id="TotalAmount" readonly class="form-control text-center fw-bold fs-6 bg-light text-primary"
+                           value="@Model.TotalAmount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" />
                 </div>
 
                 <div class="col-md-3">
                     <label asp-for="Paid" class="form-label fw-semibold">المدفوع</label>
-                    <input asp-for="Paid" id="Paid" class="form-control text-center fw-bold fs-6" value="0" />
+                    <input asp-for="Paid" id="Paid" class="form-control text-center fw-bold fs-6" />
                 </div>
 
                 <div class="col-md-3">
-                    <label asp-for="Remaining" class="form-label fw-semibold">المتبقي</label>
-                    <input asp-for="Remaining" id="Remaining" readonly class="form-control text-center fw-bold fs-6 bg-light text-danger" value="0" />
+                    <label class="form-label fw-semibold">المتبقي</label>
+                    <input type="text" id="Remaining" readonly class="form-control text-center fw-bold fs-6 bg-light text-danger"
+                           value="@(Model.Remaining?.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) ?? "0.00")" />
                 </div>
 
                 <div class="col-md-12">
@@ -140,6 +142,10 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    @* <script src="~/js/purchase-invoice.js"></script> *@
+    <script>
+        window.existingItems = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.Items ?? new List<PurchaseInvoiceItemFormViewModel>(),
+            new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+    </script>
     <script src="~/js/purchase-invoice.js" asp-append-version="true"></script>
 }

@@ -1,15 +1,18 @@
 ﻿using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice;
 using WarehouseBLL.FormViewModels.PurchaseInvoice;
+using WarehousePL.Web.Controllers.CashBoxes;
 
 namespace WarehousePL.Web.Controllers.PurchaseInvoices;
 
 public class PurchaseInvoicesController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStringLocalizer<PurchaseInvoicesController> _localization;
 
-    public PurchaseInvoicesController(IUnitOfWork unitOfWork)
+    public PurchaseInvoicesController(IUnitOfWork unitOfWork, IStringLocalizer<PurchaseInvoicesController> localization)
     {
         _unitOfWork = unitOfWork;
+        _localization = localization;
     }
 
     public IActionResult Index()
@@ -43,6 +46,7 @@ public class PurchaseInvoicesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(PurchaseInvoiceFormViewModel model)
     {
+        CalculateInvoiceTotals(model);
 
         if (!ModelState.IsValid || model.Items == null || !model.Items.Any())
         {
@@ -72,7 +76,7 @@ public class PurchaseInvoicesController : Controller
                 return View(model);
             }
 
-            if (cashBox.CurrentBalance < model.Paid.Value)
+            if (cashBox.CurrentBalance < model.Paid!.Value)
             {
                 ModelState.AddModelError("", "رصيد الخزنة لا يكفي لإتمام العملية.");
                 PopulateLists(model);
@@ -173,12 +177,33 @@ public class PurchaseInvoicesController : Controller
             .ProjectToType<PurchaseInvoiceDetailsViewModel>()
             .FirstOrDefault();
 
-        if (invoice == null)
+        if (invoice is null)
             return NotFound();
 
         return View(invoice);
     }
+    //public IActionResult Details(int id)
+    //{
+    //    var invoiceEntity = _unitOfWork.PurchaseInvoices
+    //        .GetTableNoTracking()
+    //        .Include(x => x.Supplier)
+    //        .Include(x => x.Branch)
+    //        .Include(x => x.Warehouse)
+    //        .Include(x => x.PurchaseInvoiceItems)
+    //            .ThenInclude(x => x.Product)
+    //        .Include(x => x.PurchaseInvoiceItems)
+    //            .ThenInclude(x => x.ProductUnit)
+    //                .ThenInclude(x => x.Unit)
+    //        .FirstOrDefault(x => x.Id == id);
 
+    //    if (invoiceEntity == null)
+    //        return NotFound();
+
+    //    // Mapping في الـ Memory عشان المابستر يتعامل مع اختلاف الـ Types تلقائياً
+    //    var invoice = invoiceEntity.Adapt<PurchaseInvoiceDetailsViewModel>();
+
+    //    return View(invoice);
+    //}
     private void PopulateLists(PurchaseInvoiceFormViewModel model)
     {
         model.Suppliers = _unitOfWork.Suppliers
@@ -208,6 +233,19 @@ public class PurchaseInvoicesController : Controller
         model.Items ??= new List<PurchaseInvoiceItemFormViewModel>();
     }
 
+    private static void CalculateInvoiceTotals(PurchaseInvoiceFormViewModel model)
+    {
+        decimal itemsTotal = model.Items?.Sum(i =>
+            (i.PurchasePrice * i.Quantity) - (i.Discount ?? 0)) ?? 0;
+
+        decimal invoiceDiscount = model.Discount ?? 0;
+        model.TotalAmount = itemsTotal - invoiceDiscount;
+        if (model.TotalAmount < 0)
+            model.TotalAmount = 0;
+
+        model.Remaining = model.TotalAmount - (model.Paid ?? 0);
+    }
+
     [HttpGet]
     public IActionResult GetWarehouses(int branchId)
     {
@@ -231,18 +269,19 @@ public class PurchaseInvoicesController : Controller
     }
 
     [HttpGet]
-    public IActionResult GetUnits(int productId)
+    [HttpGet]
+    public async Task<IActionResult> GetUnits(int productId)
     {
-        var units = _unitOfWork.ProductUnits
+        var units = await _unitOfWork.ProductUnits
             .GetTableNoTracking()
-            .Include(x => x.Unit)
             .Where(x => x.ProductId == productId)
-            .Select(x => new SelectListItem
+            .Select(x => new
             {
-                Value = x.Id.ToString(),
-                Text = x.Unit != null ? x.Unit.Name : ""
+                value = x.Id,
+                text = x.Unit!.Name,
+                isDefault = x.IsBaseUnit
             })
-            .ToList();
+            .ToListAsync();
 
         return Json(units);
     }

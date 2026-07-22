@@ -1,0 +1,116 @@
+﻿@using WarehouseBLL.FormViewModels.PurchaseInvoice
+@model PurchaseInvoiceDetailsViewModel
+
+@{
+    ViewBag.Title = "تفاصيل فاتورة المشتريات";
+}
+
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-bold"><i class="bx bx-receipt me-2"></i>تفاصيل فاتورة رقم: @Model.InvoiceNumber</h5>
+        <a asp-action="Index" class="btn btn-light btn-sm fw-bold">الرجوع للقائمة</a>
+    </div>
+
+    <div class="card-body">
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <strong>تاريخ الفاتورة:</strong>
+                <p class="text-muted mb-0">@Model.InvoiceDate.ToString("yyyy-MM-dd")</p>
+            </div>
+            <div class="col-md-3">
+                <strong>المورد:</strong>
+                <p class="text-muted mb-0">@Model.SupplierName</p>
+            </div>
+            <div class="col-md-3">
+                <strong>الفرع:</strong>
+                <p class="text-muted mb-0">@Model.BranchName</p>
+            </div>
+            <div class="col-md-3">
+                <strong>المخزن:</strong>
+                <p class="text-muted mb-0">@Model.WarehouseName</p>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3 border-bottom pb-2">أصناف الفاتورة</h5>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered text-center align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>الصنف</th>
+                        <th>الوحدة</th>
+                        <th>الكمية</th>
+                        <th>سعر الشراء</th>
+                        <th>الخصم</th>
+                        <th>الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items != null && Model.Items.Any())
+                    {
+                        int index = 1;
+                        foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@(index++)</td>
+                                <td>@item.ProductName</td>
+                                <td>@item.UnitName</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.PurchasePrice.ToString("N2")</td>
+                                <td>@(item.Discount?.ToString("N2") ?? "0.00")</td>
+                                <td>@item.TotalPrice.ToString("N2")</td>
+                            </tr>
+                        }    
+
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-muted">لا توجد أصناف في هذه الفاتورة.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row g-3 bg-light p-3 rounded">
+            <div class="col-md-3">
+                <strong>إجمالي الخصم:</strong>
+                <h6 class="text-danger mb-0">@(Model.Discount?.ToString("N2") ?? "0.00")</h6>
+            </div>
+            <div class="col-md-3">
+                <strong>صافي الفاتورة:</strong>
+                <h6 class="text-primary mb-0">@Model.TotalAmount.ToString("N2")</h6>
+            </div>
+            <div class="col-md-3">
+                <strong>المدفوع:</strong>
+                <h6 class="text-success mb-0">@(Model.Paid?.ToString("N2") ?? "0.00")</h6>
+            </div>
+            <div class="col-md-3">
+                <strong>المتبقي:</strong>
+                <h6 class="text-warning mb-0">@(Model.Remaining?.ToString("N2") ?? "0.00")</h6>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Notes))
+        {
+            <div class="mt-3">
+                <strong>ملاحظات:</strong>
+                <p class="text-muted mb-0">@Model.Notes</p>
+            </div>
+        }
+    </div>
+</div>
+
+@* @section Scripts {
+    <script>
+        $(document).ready(function () {
+            // فحص ما إذا كان الرابط يحتوي على print=true
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('print') === 'true') {
+                // فتح نافذة الطباعة تلقائياً
+                window.print();
+            }
+        });
+    </script>
+} *@

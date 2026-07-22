@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,18 +15,21 @@ public class PurchaseInvoiceFormViewModel
     public DateTime InvoiceDate { get; set; } = DateTime.Today;
 
     [Required(ErrorMessage = "المورد مطلوب")]
+    [Range(1, int.MaxValue, ErrorMessage = "يرجى اختيار المورد")]
     public int SupplierId { get; set; }
 
     [ValidateNever]
     public IEnumerable<SelectListItem> Suppliers { get; set; } = Enumerable.Empty<SelectListItem>();
 
     [Required(ErrorMessage = "الفرع مطلوب")]
+    [Range(1, int.MaxValue, ErrorMessage = "يرجى اختيار الفرع")]
     public int BranchId { get; set; }
 
     [ValidateNever]
     public IEnumerable<SelectListItem> Branches { get; set; } = Enumerable.Empty<SelectListItem>();
 
     [Required(ErrorMessage = "المخزن مطلوب")]
+    [Range(1, int.MaxValue, ErrorMessage = "يرجى اختيار المخزن")]
     public int WarehouseId { get; set; }
 
     [ValidateNever]
@@ -43,10 +47,12 @@ public class PurchaseInvoiceFormViewModel
 
     public decimal? Discount { get; set; } = 0;
 
+    [BindNever]
     public decimal TotalAmount { get; set; } = 0;
 
     public decimal? Paid { get; set; } = 0;
 
+    [BindNever]
     public decimal? Remaining { get; set; } = 0;
 
     public string? Notes { get; set; }

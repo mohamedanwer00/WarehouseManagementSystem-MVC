@@ -8,7 +8,7 @@ public class PurchaseInvoiceItemViewModel
 
     public decimal PurchasePrice { get; set; }
 
-    public double Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     public decimal? Discount { get; set; }
 

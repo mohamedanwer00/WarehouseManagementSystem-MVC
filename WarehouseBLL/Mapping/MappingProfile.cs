@@ -225,7 +225,8 @@ namespace WarehouseBLL.Mapping
 
             TypeAdapterConfig<PurchaseInvoiceFormViewModel, PurchaseInvoice>
                 .NewConfig()
-                .Ignore(dest => dest.Id);
+                .Ignore(dest => dest.Id)
+                .Map(dest => dest.PurchaseInvoiceItems, src => src.Items);
 
             TypeAdapterConfig<PurchaseInvoiceItemFormViewModel, PurchaseInvoiceItem>
                 .NewConfig()

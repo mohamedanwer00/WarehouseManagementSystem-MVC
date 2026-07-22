@@ -1,7 +1,6 @@
 ﻿$(document).ready(function () {
     let productsList = [];
 
-    // تعريف مسارات الـ API (تعدل حسب الـ Controller والروتينج عندك)
     const urls = {
         getProducts: '/PurchaseInvoices/GetProducts',
         getWarehouses: '/PurchaseInvoices/GetWarehouses',
@@ -10,12 +9,98 @@
         getPurchasePrice: '/PurchaseInvoices/GetPurchasePrice'
     };
 
-    // 1. تحميل المنتجات مرة واحدة لاستخدامها في الأسطر
+    function buildProductOptions(selectedProductId) {
+        let options = '<option value="">اختر الصنف</option>';
+        $.each(productsList, function (i, p) {
+            const selected = selectedProductId && p.value == selectedProductId ? ' selected' : '';
+            options += `<option value="${p.value}"${selected}>${p.text}</option>`;
+        });
+        return options;
+    }
+
+    function buildRowHtml(index, item) {
+        const productId = item ? item.productId : null;
+        const quantity = item ? item.quantity : 1;
+        const purchasePrice = item ? item.purchasePrice : 0;
+        const discount = item ? (item.discount ?? 0) : 0;
+
+        return `
+            <tr>
+                <td>
+                    <select name="Items[${index}].ProductId" class="form-select product-select" data-index="${index}">
+                        ${buildProductOptions(productId)}
+                    </select>
+                </td>
+                <td>
+                    <select name="Items[${index}].ProductUnitId" class="form-select unit-select" data-index="${index}">
+                        <option value="">اختر الوحدة</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0.01" name="Items[${index}].Quantity" class="form-control text-center qty-input" value="${quantity}" />
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" name="Items[${index}].PurchasePrice" class="form-control text-center price-input" value="${purchasePrice}" />
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" name="Items[${index}].Discount" class="form-control text-center item-discount-input" value="${discount}" />
+                </td>
+                <td>
+                    <input type="number" readonly class="form-control text-center item-total bg-light" value="0" />
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove"><i class="bx bx-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }
+
+    function loadUnitsForRow(row, productId, selectedUnitId) {
+        const unitSelect = row.find(".unit-select");
+        unitSelect.empty().append('<option value="">اختر الوحدة</option>');
+
+        if (!productId) return $.Deferred().resolve().promise();
+
+        return $.get(urls.getUnits, { productId: productId }).then(function (data) {
+            $.each(data, function (i, item) {
+                const selected = selectedUnitId && item.value == selectedUnitId ? ' selected' : '';
+                unitSelect.append($(`<option value="${item.value}"${selected}>${item.text}</option>`));
+            });
+        });
+    }
+
+    function addRow(item) {
+        const index = $("#itemsTable tbody tr").length;
+        const row = $(buildRowHtml(index, item));
+        $("#itemsTable tbody").append(row);
+
+        if (!item || !item.productId) return $.Deferred().resolve().promise();
+
+        return loadUnitsForRow(row, item.productId, item.productUnitId).then(function () {
+            calculateRowTotal(row);
+        });
+    }
+
+    function loadExistingItems() {
+        const items = window.existingItems || [];
+        if (!items.length) return;
+
+        const chain = items.reduce(function (promise, item) {
+            return promise.then(function () {
+                return addRow(item);
+            });
+        }, $.Deferred().resolve());
+
+        chain.then(function () {
+            calculateInvoiceTotals();
+        });
+    }
+
     $.get(urls.getProducts, function (data) {
         productsList = data;
+        loadExistingItems();
     });
 
-    // 2. تحديث المخازن والخزن عند تغيير الفرع
     $("#BranchId").on("change", function () {
         let branchId = $(this).val();
 
@@ -37,66 +122,44 @@
         });
     });
 
-    // 3. إضافة سطر جديد بالجدول
     $("#btnAddRow").on("click", function () {
-        let index = $("#itemsTable tbody tr").length;
-
-        let productOptions = '<option value="">اختر الصنف</option>';
-        $.each(productsList, function (i, p) {
-            productOptions += `<option value="${p.value}">${p.text}</option>`;
-        });
-
-        let rowHtml = `
-            <tr>
-                <td>
-                    <select name="Items[${index}].ProductId" class="form-select product-select" data-index="${index}">
-                        ${productOptions}
-                    </select>
-                </td>
-                <td>
-                    <select name="Items[${index}].ProductUnitId" class="form-select unit-select" data-index="${index}">
-                        <option value="">اختر الوحدة</option>
-                    </select>
-                </td>
-                <td>
-                    <input type="number" step="0.01" min="0.01" name="Items[${index}].Quantity" class="form-control text-center qty-input" value="1" />
-                </td>
-                <td>
-                    <input type="number" step="0.01" min="0" name="Items[${index}].PurchasePrice" class="form-control text-center price-input" value="0" />
-                </td>
-                <td>
-                    <input type="number" step="0.01" min="0" name="Items[${index}].Discount" class="form-control text-center item-discount-input" value="0" />
-                </td>
-                <td>
-                    <input type="number" readonly class="form-control text-center item-total bg-light" value="0" />
-                </td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove"><i class="bx bx-trash"></i></button>
-                </td>
-            </tr>
-        `;
-
-        $("#itemsTable tbody").append(rowHtml);
+        addRow(null);
     });
 
-    // 4. تحميل وحدات المنتج عند اختياره
+    // 4. تحميل وحدات المنتج واختيار الوحدة الأساسية تلقائياً
     $(document).on("change", ".product-select", function () {
         let productId = $(this).val();
         let row = $(this).closest("tr");
         let unitSelect = row.find(".unit-select");
 
         unitSelect.empty().append('<option value="">اختر الوحدة</option>');
+        row.find(".price-input").val(0); // إعادة تصفير السعر عند تغيير المنتج
 
         if (!productId) return;
 
         $.get(urls.getUnits, { productId: productId }, function (data) {
+            let defaultUnitId = null;
+
             $.each(data, function (i, item) {
-                unitSelect.append($('<option>', { value: item.value, text: item.text }));
+                // إضافة الخيار للقائمة
+                let option = $('<option>', { value: item.value, text: item.text });
+
+                // تحديد الوحدة الأساسية إذا كانت معلمة كـ Default أو أخذ أول وحدة كافتراضية
+                if (item.isDefault || i === 0) {
+                    option.attr('selected', 'selected');
+                    defaultUnitId = item.value;
+                }
+
+                unitSelect.append(option);
             });
+
+            // إذا تم اختيار وحدة أساسية تلقائياً، نجلب سعرها فوراً!
+            if (defaultUnitId) {
+                unitSelect.val(defaultUnitId).trigger('change');
+            }
         });
     });
 
-    // 5. جلب سعر الشراء للوحدة المختارة
     $(document).on("change", ".unit-select", function () {
         let unitId = $(this).val();
         let row = $(this).closest("tr");
@@ -109,7 +172,6 @@
         });
     });
 
-    // 6. أحداث إعادة الحسابات
     $(document).on("input", ".qty-input, .price-input, .item-discount-input", function () {
         calculateRowTotal($(this).closest("tr"));
     });
@@ -118,14 +180,11 @@
         calculateInvoiceTotals();
     });
 
-    // 7. حذف السطر وإعادة ترقيم الفهارس
     $(document).on("click", ".btn-remove", function () {
         $(this).closest("tr").remove();
         reindexRows();
         calculateInvoiceTotals();
     });
-
-    // --- دوال الحسابات والإدارة ---
 
     function calculateRowTotal(row) {
         let qty = parseFloat(row.find(".qty-input").val()) || 0;
