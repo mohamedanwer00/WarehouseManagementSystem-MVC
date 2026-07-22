@@ -380,5 +380,15 @@
   "Suppliers": "الموردين",
   "Customers": "العملاء",
   "CustomerType": "نوع المعاملة",
-  "OpeningStock": "المخزون الافتتاحى"
+  "OpeningStock": "المخزون الافتتاحى",
+  "InvoiceNumber": "رقم الفاتورة",
+  "InvoiceDate": "تاريخ الفاتورة",
+  "Remaining": "متبقي",
+  "PaymentMethod": "طريقة الدفع",
+  "PurchaseInvoices": "فاتورة مشتريات",
+  "Discount": "خصم",
+  "Remaining": "باقى",
+  "": "",
+  "": ""
+
 }

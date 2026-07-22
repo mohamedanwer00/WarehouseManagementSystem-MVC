@@ -1,0 +1,89 @@
+﻿@using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice
+@using WarehouseDAL.Entities.Enums
+
+@model PurchaseInvoiceViewModel
+
+<tr>
+
+    <td class="fw-bold">
+        @Model.InvoiceNumber
+    </td>
+    <td>
+        @Model.InvoiceDate.ToString("yyyy/MM/dd")
+    </td>
+    <td>
+        @Model.SupplierName
+    </td>
+    <td>
+        @Model.BranchName
+    </td>
+    <td>
+        @Model.WarehouseName
+    </td>
+    <td>
+        @Model.TotalAmount.ToString("N2")
+    </td>
+    <td class="text-success fw-bold">
+        @Model.Paid?.ToString("N2")
+    </td>
+    <td class="text-danger fw-bold">
+        @Model.Remaining?.ToString("N2")
+    </td>
+    <td>
+        @if (Model.PaymentMethod == PaymentMethod.Cash)
+        {
+            <span class="badge bg-label-success">
+                كاش
+            </span>
+        }
+        else if (Model.PaymentMethod == PaymentMethod.Credit)
+        {
+            <span class="badge bg-label-warning">
+                آجل
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-label-info">
+                تحويل بنكي
+            </span>
+        }
+
+    </td>
+
+    <td>
+
+        @if (Model.Status == InvoiceStatus.Paid)
+        {
+            <span class="badge bg-label-success">
+                مدفوعة
+            </span>
+        }
+        else if (Model.Status == InvoiceStatus.PartiallyPaid)
+        {
+            <span class="badge bg-label-warning">
+                مدفوعة جزئياً
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-label-danger">
+                ملغاة
+            </span>
+        }
+
+    </td>
+
+    <td>
+
+        <a asp-action="Details"
+           asp-route-id="@Model.Id"
+           class="btn btn-sm btn-label-info">
+
+            @_localization["Details"]
+
+        </a>
+
+    </td>
+
+</tr>

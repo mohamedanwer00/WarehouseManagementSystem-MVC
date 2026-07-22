@@ -45,6 +45,8 @@ public class Program
         builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
         builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
         builder.Services.AddScoped<IOpeningStockRepository, OpeningStockRepository>();
+        builder.Services.AddScoped<IPurchaseInvoiceRepository, PurchaseInvoiceRepository>();
+        builder.Services.AddScoped<IProductWarehouseRepository, ProductWarehouseRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         var app = builder.Build();

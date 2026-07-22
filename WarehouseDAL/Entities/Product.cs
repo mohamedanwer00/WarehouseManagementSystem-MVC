@@ -14,5 +14,6 @@ namespace WarehouseDAL.Entities
         public int CategoryId { get; set; }
         public Category Category { get; set; } = null!;
         public ICollection<ProductUnit> ProductUnits { get; set; } = new List<ProductUnit>();
+        public ICollection<ProductWarehouse> ProductWarehouses { get; set; } = [];
     }
 }

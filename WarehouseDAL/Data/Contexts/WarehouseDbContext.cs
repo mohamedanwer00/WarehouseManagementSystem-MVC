@@ -41,5 +41,6 @@ namespace WarehouseDAL.Data.Contexts
         public DbSet<CustomerTransaction> CustomerTransactions { get; set; }=null!;
         public DbSet<SupplierTransaction> SupplierTransactions { get; set; } = null!;
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; }= null!;
+        public DbSet<ProductWarehouse> ProductWarehouses { get; set;} = null!;
     }
 }

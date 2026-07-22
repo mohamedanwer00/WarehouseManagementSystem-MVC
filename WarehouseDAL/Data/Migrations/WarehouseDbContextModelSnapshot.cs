@@ -165,7 +165,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Branches");
+                    b.ToTable("Branches", (string)null);
 
                     b.HasData(
                         new
@@ -224,7 +224,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.ToTable("CashBoxes");
+                    b.ToTable("CashBoxes", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Category", b =>
@@ -257,7 +257,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Customer", b =>
@@ -315,7 +315,7 @@ namespace WarehouseDAL.Data.Migrations
                     b.HasIndex("PhoneNumber")
                         .IsUnique();
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.CustomerTransaction", b =>
@@ -365,7 +365,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("SalesInvoiceId");
 
-                    b.ToTable("CustomerTransactions");
+                    b.ToTable("CustomerTransactions", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Identity.Role", b =>
@@ -539,7 +539,7 @@ namespace WarehouseDAL.Data.Migrations
                     b.HasIndex("WarehouseId", "ProductId")
                         .IsUnique();
 
-                    b.ToTable("OpeningStock");
+                    b.ToTable("OpeningStock", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Product", b =>
@@ -591,7 +591,7 @@ namespace WarehouseDAL.Data.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.ProductUnit", b =>
@@ -644,7 +644,7 @@ namespace WarehouseDAL.Data.Migrations
                     b.HasIndex("ProductId", "UnitId")
                         .IsUnique();
 
-                    b.ToTable("ProductUnits");
+                    b.ToTable("ProductUnits", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.PurchaseInvoice", b =>
@@ -715,7 +715,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("PurchaseInvoices");
+                    b.ToTable("PurchaseInvoices", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.PurchaseInvoiceItem", b =>
@@ -770,7 +770,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("PurchaseInvoiceId");
 
-                    b.ToTable("PurchaseInvoiceItems");
+                    b.ToTable("PurchaseInvoiceItems", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.SalesInvoice", b =>
@@ -844,7 +844,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("SalesInvoices");
+                    b.ToTable("SalesInvoices", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.SalesInvoiceItem", b =>
@@ -896,7 +896,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("SalesInvoiceId");
 
-                    b.ToTable("SalesInvoiceItems");
+                    b.ToTable("SalesInvoiceItems", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Supplier", b =>
@@ -955,7 +955,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Suppliers");
+                    b.ToTable("Suppliers", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Transactions.CashTransaction", b =>
@@ -1003,7 +1003,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("CashBoxId");
 
-                    b.ToTable("CashsTransactions");
+                    b.ToTable("CashsTransactions", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Transactions.InventoryTransaction", b =>
@@ -1058,7 +1058,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("InventoryTransactions");
+                    b.ToTable("InventoryTransactions", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Transactions.SupplierTransaction", b =>
@@ -1108,7 +1108,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("SupplierId");
 
-                    b.ToTable("SupplierTransactions");
+                    b.ToTable("SupplierTransactions", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Unit", b =>
@@ -1149,7 +1149,7 @@ namespace WarehouseDAL.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Units");
+                    b.ToTable("Units", (string)null);
                 });
 
             modelBuilder.Entity("WarehouseDAL.Entities.Warehouse", b =>
@@ -1192,7 +1192,7 @@ namespace WarehouseDAL.Data.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.ToTable("Warehouses");
+                    b.ToTable("Warehouses", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

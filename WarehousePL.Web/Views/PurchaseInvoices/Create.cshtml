@@ -1,0 +1,145 @@
+﻿@using WarehouseBLL.FormViewModels.PurchaseInvoice
+@model PurchaseInvoiceFormViewModel
+
+@{
+    ViewBag.Title = "إضافة فاتورة مشتريات";
+}
+
+<form asp-action="Create" method="post" id="purchaseInvoiceForm">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="card mb-3 shadow-sm border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bx bx-receipt me-2"></i>بيانات الفاتورة</h5>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label asp-for="InvoiceNumber" class="form-label fw-semibold">رقم الفاتورة</label>
+                    <input asp-for="InvoiceNumber" class="form-control" readonly />
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="InvoiceDate" class="form-label fw-semibold">تاريخ الفاتورة</label>
+                    <input asp-for="InvoiceDate" class="form-control" type="date" />
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="SupplierId" class="form-label fw-semibold">المورد</label>
+                    <select asp-for="SupplierId" asp-items="Model.Suppliers" class="form-select">
+                        <option value="">اختر المورد</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="BranchId" class="form-label fw-semibold">الفرع</label>
+                    <select asp-for="BranchId" asp-items="Model.Branches" class="form-select" id="BranchId">
+                        <option value="">اختر الفرع</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="WarehouseId" class="form-label fw-semibold">المخزن</label>
+                    <select asp-for="WarehouseId" asp-items="Model.Warehouses" class="form-select" id="WarehouseId">
+                        <option value="">اختر المخزن</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="PaymentMethod" class="form-label fw-semibold">طريقة الدفع</label>
+                    <select asp-for="PaymentMethod" asp-items="Model.PaymentMethods" class="form-select" id="PaymentMethod">
+                    </select>
+                </div>
+
+                <div class="col-md-3 cashbox-container">
+                    <label asp-for="CashBoxId" class="form-label fw-semibold">الخزنة</label>
+                    <select asp-for="CashBoxId" asp-items="Model.CashBoxes" class="form-select" id="CashBoxId">
+                        <option value="">اختر الخزنة</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول الأسطر والأصناف -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold"><i class="bx bx-list-ul me-2"></i>أصناف الفاتورة</h5>
+            <button type="button" class="btn btn-primary fw-bold" id="btnAddRow">
+                <i class="bx bx-plus me-1"></i> إضافة صنف
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle mb-0" id="itemsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="25%">الصنف</th>
+                            <th width="20%">الوحدة</th>
+                            <th width="12%">الكمية</th>
+                            <th width="15%">سعر الشراء</th>
+                            <th width="10%">الخصم</th>
+                            <th width="13%">الإجمالي</th>
+                            <th width="5%">حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- الأسطر ستضاف هنا ديناميكياً -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- الحسابات الإجمالية -->
+    <div class="card shadow-sm border-0 mt-3">
+        <div class="card-header py-3">
+            <h5 class="mb-0 fw-bold"><i class="bx bx-calculator me-2"></i>الحسابات</h5>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label asp-for="Discount" class="form-label fw-semibold">إجمالي الخصم</label>
+                    <input asp-for="Discount" id="Discount" class="form-control text-center fw-bold fs-6" value="0" />
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="TotalAmount" class="form-label fw-semibold">صافي الفاتورة</label>
+                    <input asp-for="TotalAmount" id="TotalAmount" readonly class="form-control text-center fw-bold fs-6 bg-light text-primary" value="0" />
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="Paid" class="form-label fw-semibold">المدفوع</label>
+                    <input asp-for="Paid" id="Paid" class="form-control text-center fw-bold fs-6" value="0" />
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="Remaining" class="form-label fw-semibold">المتبقي</label>
+                    <input asp-for="Remaining" id="Remaining" readonly class="form-control text-center fw-bold fs-6 bg-light text-danger" value="0" />
+                </div>
+
+                <div class="col-md-12">
+                    <label asp-for="Notes" class="form-label fw-semibold">ملاحظات</label>
+                    <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-end">
+        <button type="submit" class="btn btn-success fw-bold px-4">
+            <i class="bx bx-check me-1"></i> حفظ الفاتورة
+        </button>
+        <a asp-action="Index" class="btn btn-secondary px-4">رجوع</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @* <script src="~/js/purchase-invoice.js"></script> *@
+    <script src="~/js/purchase-invoice.js" asp-append-version="true"></script>
+}

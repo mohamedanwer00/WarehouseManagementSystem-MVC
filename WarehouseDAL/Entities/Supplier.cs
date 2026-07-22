@@ -14,5 +14,7 @@ namespace WarehouseDAL.Entities
         public BalanceType OpeningBalanceType { get; set; } = BalanceType.Creditor;
 
         public decimal CurrentBalance { get; set; }
+        public ICollection<PurchaseInvoice> PurchaseInvoices { get; set; } = new List<PurchaseInvoice>();
+
     }
 }

@@ -1,5 +1,7 @@
 ﻿using WarehouseBLL.BusinessServices.View_Models.OpeningStock;
+using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice;
 using WarehouseBLL.FormViewModels.OpeningStock;
+using WarehouseBLL.FormViewModels.PurchaseInvoice;
 
 namespace WarehouseBLL.Mapping
 {
@@ -188,6 +190,54 @@ namespace WarehouseBLL.Mapping
                 .Map(dest => dest.ProductId, src => src.ProductId)
                 .Map(dest => dest.Quantity, src => src.Quantity);
 
+            #endregion
+
+            //PurchaseInvoice
+            #region PurchaseInvoice
+            TypeAdapterConfig<PurchaseInvoice, PurchaseInvoiceViewModel>
+    .NewConfig()
+    .Map(dest => dest.SupplierName, src => src.Supplier.Name)
+    .Map(dest => dest.BranchName, src => src.Branch.Name)
+    .Map(dest => dest.WarehouseName, src => src.Warehouse.Name);
+
+            TypeAdapterConfig<PurchaseInvoiceViewModel, PurchaseInvoice>
+                .NewConfig();
+
+            // =========================
+            // PurchaseInvoice -> DetailsViewModel
+            // =========================
+
+            TypeAdapterConfig<PurchaseInvoice, PurchaseInvoiceDetailsViewModel>
+                .NewConfig()
+                .Map(dest => dest.SupplierName, src => src.Supplier.Name)
+                .Map(dest => dest.BranchName, src => src.Branch.Name)
+                .Map(dest => dest.WarehouseName, src => src.Warehouse.Name)
+                .Map(dest => dest.Items, src => src.PurchaseInvoiceItems);
+
+            TypeAdapterConfig<PurchaseInvoiceItem, PurchaseInvoiceItemViewModel>
+                .NewConfig()
+                .Map(dest => dest.ProductName, src => src.Product.Name)
+                .Map(dest => dest.UnitName, src => src.ProductUnit.Unit!.Name);
+
+            TypeAdapterConfig<PurchaseInvoiceItemViewModel, PurchaseInvoiceItem>
+                .NewConfig();
+
+
+            TypeAdapterConfig<PurchaseInvoiceFormViewModel, PurchaseInvoice>
+                .NewConfig()
+                .Ignore(dest => dest.Id);
+
+            TypeAdapterConfig<PurchaseInvoiceItemFormViewModel, PurchaseInvoiceItem>
+                .NewConfig()
+                .Ignore(dest => dest.Id);
+
+
+            TypeAdapterConfig<PurchaseInvoice, PurchaseInvoiceFormViewModel>
+                .NewConfig()
+                .Map(dest => dest.Items, src => src.PurchaseInvoiceItems);
+
+            TypeAdapterConfig<PurchaseInvoiceItem, PurchaseInvoiceItemFormViewModel>
+                .NewConfig();
             #endregion
         }
     }

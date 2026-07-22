@@ -7,5 +7,7 @@
         public string PhoneNumber { get; set; } = null!;
         public ICollection<CashBox> CashBoxes { get; set; } = new List<CashBox>();
         public ICollection<Warehouse> Warehouses { get; set; } = new List<Warehouse>();
+        public ICollection<PurchaseInvoice> PurchaseInvoices { get; set; } = new List<PurchaseInvoice>();
+
     }
 }

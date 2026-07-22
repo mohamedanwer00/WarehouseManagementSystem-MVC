@@ -17,6 +17,8 @@ namespace WarehouseDAL.Repositories.Interfaces
         ISupplierRepository Suppliers { get; }
         ICustomerRepository Customers { get; }
         IOpeningStockRepository OpeningStocks { get; }
+        IPurchaseInvoiceRepository PurchaseInvoices { get; }
+        IProductWarehouseRepository ProductWarehouses { get; }
         int SaveChanges();
     }
 }
