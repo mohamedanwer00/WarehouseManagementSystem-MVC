@@ -386,5 +386,7 @@
   "Remaining": "متبقي",
   "PaymentMethod": "طريقة الدفع",
   "PurchaseInvoices": "فاتورة مشتريات",
-  "SalesInvoices": "فاتوره بيع"
+  "SalesInvoices": "فاتوره بيع",
+  "AddCategorey": "اضافة فئة",
+  "AddUnit": "اضافة وحدة"
 }
