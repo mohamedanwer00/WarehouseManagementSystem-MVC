@@ -11,7 +11,7 @@ public class SalesInvoice : BaseEntity
     public decimal? Remaining { get; set; }//المتبقي
     public string? Notes { get; set; }
 
-    public int CusromerId { get; set; }
+    public int CustomerId { get; set; }
     public Customer Customer { get; set; } = null!;
 
     public int BranchId { get; set; }

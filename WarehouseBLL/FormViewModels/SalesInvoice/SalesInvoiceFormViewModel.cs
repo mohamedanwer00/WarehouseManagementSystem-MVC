@@ -1,0 +1,61 @@
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
+
+namespace WarehouseBLL.FormViewModels.SalesInvoice;
+
+public class SalesInvoiceFormViewModel
+{
+    public int? Id { get; set; }
+
+    public string? InvoiceNumber { get; set; }
+
+    [Required(ErrorMessage = "تاريخ الفاتورة مطلوب")]
+    public DateTime InvoiceDate { get; set; } = DateTime.Today;
+
+    [Required(ErrorMessage = "العميل مطلوب")]
+    [Range(1, int.MaxValue, ErrorMessage = "يرجى اختيار العميل")]
+    public int CustomerId { get; set; }
+
+    [ValidateNever]
+    public IEnumerable<SelectListItem> Customers { get; set; } = Enumerable.Empty<SelectListItem>();
+
+    [Required(ErrorMessage = "الفرع مطلوب")]
+    [Range(1, int.MaxValue, ErrorMessage = "يرجى اختيار الفرع")]
+    public int BranchId { get; set; }
+
+    [ValidateNever]
+    public IEnumerable<SelectListItem> Branches { get; set; } = Enumerable.Empty<SelectListItem>();
+
+    [Required(ErrorMessage = "المخزن مطلوب")]
+    [Range(1, int.MaxValue, ErrorMessage = "يرجى اختيار المخزن")]
+    public int WarehouseId { get; set; }
+
+    [ValidateNever]
+    public IEnumerable<SelectListItem> Warehouses { get; set; } = Enumerable.Empty<SelectListItem>();
+
+    public int? CashBoxId { get; set; }
+
+    [ValidateNever]
+    public IEnumerable<SelectListItem> CashBoxes { get; set; } = Enumerable.Empty<SelectListItem>();
+
+    public PaymentMethod PaymentMethod { get; set; }
+
+    [ValidateNever]
+    public IEnumerable<SelectListItem> PaymentMethods { get; set; } = Enumerable.Empty<SelectListItem>();
+
+    public decimal? Discount { get; set; } = 0;
+
+    [BindNever]
+    public decimal TotalAmount { get; set; } = 0;
+
+    public decimal? Paid { get; set; } = 0;
+
+    [BindNever]
+    public decimal? Remaining { get; set; } = 0;
+
+    public string? Notes { get; set; }
+
+    public List<SalesInvoiceItemFormViewModel> Items { get; set; } = new();
+}

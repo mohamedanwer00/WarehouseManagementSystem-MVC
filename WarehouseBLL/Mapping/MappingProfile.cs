@@ -1,7 +1,9 @@
 ﻿using WarehouseBLL.BusinessServices.View_Models.OpeningStock;
 using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice;
+using WarehouseBLL.BusinessServices.View_Models.SalesInvoice;
 using WarehouseBLL.FormViewModels.OpeningStock;
 using WarehouseBLL.FormViewModels.PurchaseInvoice;
+using WarehouseBLL.FormViewModels.SalesInvoice;
 
 namespace WarehouseBLL.Mapping
 {
@@ -195,17 +197,13 @@ namespace WarehouseBLL.Mapping
             //PurchaseInvoice
             #region PurchaseInvoice
             TypeAdapterConfig<PurchaseInvoice, PurchaseInvoiceViewModel>
-    .NewConfig()
-    .Map(dest => dest.SupplierName, src => src.Supplier.Name)
-    .Map(dest => dest.BranchName, src => src.Branch.Name)
-    .Map(dest => dest.WarehouseName, src => src.Warehouse.Name);
+                .NewConfig()
+                .Map(dest => dest.SupplierName, src => src.Supplier.Name)
+                .Map(dest => dest.BranchName, src => src.Branch.Name)
+                .Map(dest => dest.WarehouseName, src => src.Warehouse.Name);
 
             TypeAdapterConfig<PurchaseInvoiceViewModel, PurchaseInvoice>
                 .NewConfig();
-
-            // =========================
-            // PurchaseInvoice -> DetailsViewModel
-            // =========================
 
             TypeAdapterConfig<PurchaseInvoice, PurchaseInvoiceDetailsViewModel>
                 .NewConfig()
@@ -239,6 +237,52 @@ namespace WarehouseBLL.Mapping
 
             TypeAdapterConfig<PurchaseInvoiceItem, PurchaseInvoiceItemFormViewModel>
                 .NewConfig();
+            #endregion
+
+            //SalesInvoice
+            #region SalesInvoice
+
+            TypeAdapterConfig<SalesInvoice, SalesInvoiceViewModel>
+                .NewConfig()
+                .Map(dest => dest.CustomerName, src => src.Customer.Name)
+                .Map(dest => dest.BranchName, src => src.Branch.Name)
+                .Map(dest => dest.WarehouseName, src => src.Warehouse.Name);
+
+            TypeAdapterConfig<SalesInvoiceViewModel, SalesInvoice>
+                .NewConfig();
+
+            TypeAdapterConfig<SalesInvoice, SalesInvoiceDetailsViewModel>
+                .NewConfig()
+                .Map(dest => dest.CustomerName, src => src.Customer.Name)
+                .Map(dest => dest.BranchName, src => src.Branch.Name)
+                .Map(dest => dest.WarehouseName, src => src.Warehouse.Name)
+                .Map(dest => dest.Items, src => src.SalesInvoiceItems);
+
+            TypeAdapterConfig<SalesInvoiceItem, SalesInvoiceItemViewModel>
+                .NewConfig()
+                .Map(dest => dest.ProductName, src => src.Product.Name)
+                .Map(dest => dest.UnitName, src => src.ProductUnit.Unit!.Name);
+
+            TypeAdapterConfig<SalesInvoiceItemViewModel, SalesInvoiceItem>
+                .NewConfig();
+
+            TypeAdapterConfig<SalesInvoiceFormViewModel, SalesInvoice>
+                .NewConfig()
+                .Ignore(dest => dest.Id)
+                .Map(dest => dest.SalesInvoiceItems, src => src.Items)
+                .Map(dest => dest.CustomerId, src => src.CustomerId);
+
+            TypeAdapterConfig<SalesInvoiceItemFormViewModel, SalesInvoiceItem>
+                .NewConfig()
+                .Ignore(dest => dest.Id);
+
+            TypeAdapterConfig<SalesInvoice, SalesInvoiceFormViewModel>
+                .NewConfig()
+                .Map(dest => dest.Items, src => src.SalesInvoiceItems);
+
+            TypeAdapterConfig<SalesInvoiceItem, SalesInvoiceItemFormViewModel>
+                .NewConfig();
+
             #endregion
         }
     }

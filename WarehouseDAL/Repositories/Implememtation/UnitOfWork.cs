@@ -21,6 +21,7 @@ namespace WarehouseDAL.Repositories.Implememtation
         public ICustomerRepository Customers { get; }
         public IOpeningStockRepository OpeningStocks { get; }
         public IPurchaseInvoiceRepository PurchaseInvoices { get; }
+        public ISalesInvoiceRepository SalesInvoices { get; }
         public IProductWarehouseRepository ProductWarehouses { get; }
         public UnitOfWork(
             WarehouseDbContext dbContext,
@@ -35,7 +36,8 @@ namespace WarehouseDAL.Repositories.Implememtation
             ICustomerRepository customers,
             IOpeningStockRepository openingStocks,
             IPurchaseInvoiceRepository purchaseInvoices,
-            IProductWarehouseRepository productWarehouses)
+            IProductWarehouseRepository productWarehouses,
+            ISalesInvoiceRepository salesInvoices)
 
         {
             _dbContext = dbContext;
@@ -51,6 +53,7 @@ namespace WarehouseDAL.Repositories.Implememtation
             OpeningStocks = openingStocks;
             PurchaseInvoices = purchaseInvoices;
             ProductWarehouses = productWarehouses;
+            SalesInvoices = salesInvoices;
         }
 
         public int SaveChanges()

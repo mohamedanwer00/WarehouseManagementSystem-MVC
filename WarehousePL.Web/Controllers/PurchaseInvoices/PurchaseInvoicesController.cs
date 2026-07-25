@@ -34,7 +34,7 @@ public class PurchaseInvoicesController : Controller
     {
         PurchaseInvoiceFormViewModel model = new()
         {
-            InvoiceNumber = $"PUR-{DateTime.Now:yyyyMMddHHmmss}",
+            InvoiceNumber = $"PI-{DateTime.Now:yyyyMMddHHmmss}",
             InvoiceDate = DateTime.Today
         };
 
@@ -182,28 +182,7 @@ public class PurchaseInvoicesController : Controller
 
         return View(invoice);
     }
-    //public IActionResult Details(int id)
-    //{
-    //    var invoiceEntity = _unitOfWork.PurchaseInvoices
-    //        .GetTableNoTracking()
-    //        .Include(x => x.Supplier)
-    //        .Include(x => x.Branch)
-    //        .Include(x => x.Warehouse)
-    //        .Include(x => x.PurchaseInvoiceItems)
-    //            .ThenInclude(x => x.Product)
-    //        .Include(x => x.PurchaseInvoiceItems)
-    //            .ThenInclude(x => x.ProductUnit)
-    //                .ThenInclude(x => x.Unit)
-    //        .FirstOrDefault(x => x.Id == id);
 
-    //    if (invoiceEntity == null)
-    //        return NotFound();
-
-    //    // Mapping في الـ Memory عشان المابستر يتعامل مع اختلاف الـ Types تلقائياً
-    //    var invoice = invoiceEntity.Adapt<PurchaseInvoiceDetailsViewModel>();
-
-    //    return View(invoice);
-    //}
     private void PopulateLists(PurchaseInvoiceFormViewModel model)
     {
         model.Suppliers = _unitOfWork.Suppliers

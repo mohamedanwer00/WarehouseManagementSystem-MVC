@@ -386,9 +386,5 @@
   "Remaining": "متبقي",
   "PaymentMethod": "طريقة الدفع",
   "PurchaseInvoices": "فاتورة مشتريات",
-  "Discount": "خصم",
-  "Remaining": "باقى",
-  "": "",
-  "": ""
-
+  "SalesInvoices": "فاتوره بيع"
 }
