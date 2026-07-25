@@ -40,7 +40,7 @@ public class SalesInvoiceItem : BaseEntity
     public ProductUnit ProductUnit { get; set; } = null!;
 
     public double Quantity { get; set; }
-
+    public decimal SellingPrice { get; set; }
     public decimal TotalPrice { get; set; } // (quantity * PurchasePrice - Discount)
 
     public decimal? Discount { get; set; }

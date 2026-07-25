@@ -1,6 +1,6 @@
 ﻿using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice;
 using WarehouseBLL.FormViewModels.PurchaseInvoice;
-using WarehousePL.Web.Controllers.CashBoxes;
+using WarehouseDAL.Entities.Enums;
 
 namespace WarehousePL.Web.Controllers.PurchaseInvoices;
 
@@ -58,7 +58,6 @@ public class PurchaseInvoicesController : Controller
             return View(model);
         }
 
-        // التحقق من الخزنة والرصيد في حالة الدفع الكاش
         if (model.PaymentMethod == PaymentMethod.Cash && (model.Paid ?? 0) > 0)
         {
             if (!model.CashBoxId.HasValue)
@@ -93,7 +92,6 @@ public class PurchaseInvoicesController : Controller
         invoice.CreatedOn = DateTime.Now;
         invoice.LastAction = LastActionName.Insert;
 
-        // حساب حالة الفاتورة تلقائياً بدلاً من التثبيت
         decimal paidAmount = invoice.Paid ?? 0;
         decimal totalAmount = invoice.TotalAmount;
 
@@ -101,8 +99,7 @@ public class PurchaseInvoicesController : Controller
             invoice.Status = InvoiceStatus.Paid;
         else if (paidAmount > 0 && paidAmount < totalAmount)
             invoice.Status = InvoiceStatus.PartiallyPaid;
-        else
-            invoice.Status = InvoiceStatus.PartiallyPaid; // أو حالة غير مدفوع حسب الـ Enum عندك
+
 
         foreach (PurchaseInvoiceItem item in invoice.PurchaseInvoiceItems)
         {
@@ -112,7 +109,13 @@ public class PurchaseInvoicesController : Controller
 
             item.TotalPrice = (item.PurchasePrice * (decimal)item.Quantity) - (item.Discount ?? 0);
 
-            // تحديث/إضافة المخزون
+            // جلب الوحدة المحددة للحصول على الـ Factor
+            ProductUnit? productUnit = await _unitOfWork.ProductUnits.GetById(item.ProductUnitId);
+            decimal factor = productUnit?.Factor ?? 1;
+
+            // حساب الكمية المحولة بالوحدة الأساسية (مثلاً 1 شكارة * 50 = 50 كيلو)
+            decimal baseQuantity = (decimal)item.Quantity * factor;
+
             ProductWarehouse? stock = _unitOfWork.ProductWarehouses
                 .AsQueryable()
                 .FirstOrDefault(x => x.ProductId == item.ProductId && x.WarehouseId == invoice.WarehouseId);
@@ -123,7 +126,7 @@ public class PurchaseInvoicesController : Controller
                 {
                     ProductId = item.ProductId,
                     WarehouseId = invoice.WarehouseId,
-                    Quantity = (decimal)item.Quantity,
+                    Quantity = baseQuantity, // إضافة بالوحدة الأساسية
                     CreatedById = User.GetUserId(),
                     CreatedOn = DateTime.Now,
                     LastAction = LastActionName.Insert
@@ -132,14 +135,12 @@ public class PurchaseInvoicesController : Controller
             }
             else
             {
-                stock.Quantity += (decimal)item.Quantity;
+                stock.Quantity += baseQuantity; // إضافة بالوحدة الأساسية
                 stock.CreatedById = User.GetUserId();
                 stock.CreatedOn = DateTime.Now;
                 _unitOfWork.ProductWarehouses.Update(stock);
             }
 
-            // تحديث سعر الشراء لآخر وحدة
-            ProductUnit? productUnit = await _unitOfWork.ProductUnits.GetById(item.ProductUnitId);
             if (productUnit != null)
             {
                 productUnit.PurchasePrice = item.PurchasePrice;
@@ -147,7 +148,6 @@ public class PurchaseInvoicesController : Controller
             }
         }
 
-        // تحديث حساب المورد
         Supplier? supplier = await _unitOfWork.Suppliers.GetById(invoice.SupplierId);
         if (supplier != null)
         {
@@ -247,7 +247,6 @@ public class PurchaseInvoicesController : Controller
         return Json(products);
     }
 
-    [HttpGet]
     [HttpGet]
     public async Task<IActionResult> GetUnits(int productId)
     {

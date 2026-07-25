@@ -57,25 +57,35 @@ namespace WarehousePL.Web.Controllers.SalesInvoices
                 return View(model);
             }
 
-            // 1. التحقق من توفر الكميات في المخزن المحدد قبل إتمام الفاتورة
+            // 1. التحقق من توفر الكميات في المخزن بالوحدة الأساسية
             foreach (var item in model.Items)
             {
+                ProductUnit? productUnit = await _unitOfWork.ProductUnits.GetById(item.ProductUnitId);
+                decimal factor = productUnit?.Factor ?? 1;
+
+                // تحويل الكمية المطلوبة إلى الوحدة الأساسية
+                decimal requiredBaseQuantity = (decimal)item.Quantity * factor;
+
                 var stock = _unitOfWork.ProductWarehouses
                     .AsQueryable()
                     .FirstOrDefault(x => x.ProductId == item.ProductId && x.WarehouseId == model.WarehouseId);
 
                 decimal availableQuantity = stock?.Quantity ?? 0;
 
-                if (availableQuantity < item.Quantity)
+                if (availableQuantity < requiredBaseQuantity)
                 {
                     var product = await _unitOfWork.Products.GetById(item.ProductId);
-                    ModelState.AddModelError("", $"الكمية المتاحة من المنتج ({product?.Name ?? "المحدد"}) هي {availableQuantity} فقط، ولا تكفي للبيع.");
+
+                    // تحويل المتاح إلى الوحدة المطلوبة للعرض للمستخدم بشكل واضح
+                    decimal availableInSelectedUnit = factor > 0 ? Math.Round(availableQuantity / factor, 2) : availableQuantity;
+
+                    ModelState.AddModelError("", $"الكمية المتاحة من المنتج ({product?.Name ?? "المحدد"}) هي {availableInSelectedUnit} فقط بهذه الوحدة (أو {availableQuantity} بالوحدة الأساسية).");
                     PopulateLists(model);
                     return View(model);
                 }
             }
 
-            // 2. معالجة الدفع الكاش وزيادة رصيد الخزنة (إيداع)
+            // 2. معالجة الدفع الكاش وزيادة الخزنة
             if (model.PaymentMethod == PaymentMethod.Cash && (model.Paid ?? 0) > 0)
             {
                 if (!model.CashBoxId.HasValue)
@@ -103,7 +113,6 @@ namespace WarehousePL.Web.Controllers.SalesInvoices
             invoice.CreatedOn = DateTime.Now;
             invoice.LastAction = LastActionName.Insert;
 
-            // حساب حالة الفاتورة تلقائياً
             decimal paidAmount = invoice.Paid ?? 0;
             decimal totalAmount = invoice.TotalAmount;
 
@@ -111,37 +120,35 @@ namespace WarehousePL.Web.Controllers.SalesInvoices
                 invoice.Status = InvoiceStatus.Paid;
             else if (paidAmount > 0 && paidAmount < totalAmount)
                 invoice.Status = InvoiceStatus.PartiallyPaid;
-            else
-                invoice.Status = InvoiceStatus.Cancelled;
 
-            // 3. حساب السعر من الوحدة، خصم الكميات من المخزن، وحفظ البنود
+
+            // 3. خصم الكميات من المخزن بالوحدة الأساسية
             foreach (SalesInvoiceItem item in invoice.SalesInvoiceItems)
             {
                 item.CreatedById = User.GetUserId();
                 item.CreatedOn = DateTime.Now;
                 item.LastAction = LastActionName.Insert;
 
-                // جيب سعر البيع من الوحدة نفسها من الداتابيز (مش من الـ navigation property، لأنها null بعد الـ Adapt)
+                item.TotalPrice = (item.SellingPrice * (decimal)item.Quantity) - (item.Discount ?? 0);
                 ProductUnit? productUnit = await _unitOfWork.ProductUnits.GetById(item.ProductUnitId);
-                decimal sellingPrice = productUnit?.SellingPrice ?? 0;
+                decimal factor = productUnit?.Factor ?? 1;
 
-                item.TotalPrice = (sellingPrice * (decimal)item.Quantity) - (item.Discount ?? 0);
+                decimal baseQuantityToDeduct = (decimal)item.Quantity * factor;
 
-                // خصم الكمية المباعة من المخزون
                 ProductWarehouse? stock = _unitOfWork.ProductWarehouses
                     .AsQueryable()
                     .FirstOrDefault(x => x.ProductId == item.ProductId && x.WarehouseId == invoice.WarehouseId);
 
                 if (stock != null)
                 {
-                    stock.Quantity -= (decimal)item.Quantity;
+                    stock.Quantity -= baseQuantityToDeduct; // خصم الكمية بالوحدة الأساسية
                     stock.CreatedById = User.GetUserId();
                     stock.CreatedOn = DateTime.Now;
                     _unitOfWork.ProductWarehouses.Update(stock);
                 }
             }
 
-            // 4. تحديث حساب العميل (إضافة المبلغ المتبقي الآجل للرصيد)
+            // 4. تحديث حساب العميل
             Customer? customer = await _unitOfWork.Customers.GetById(invoice.CustomerId);
             if (customer != null)
             {
