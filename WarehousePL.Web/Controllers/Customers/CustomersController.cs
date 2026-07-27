@@ -1,5 +1,9 @@
 using WarehouseBLL.BusinessServices.View_Models.Customer;
+using WarehouseBLL.BusinessServices.View_Models.Supplier;
 using WarehouseBLL.FormViewModels.Customer;
+using WarehouseDAL.Entities.Enums;
+using WarehouseDAL.Entities.Transactions;
+using Microsoft.EntityFrameworkCore;
 namespace WarehousePL.Web.Controllers.Customers;
 
 public class CustomersController : Controller
@@ -43,34 +47,32 @@ public class CustomersController : Controller
         if (!ModelState.IsValid)
             return PartialView("_Form", model);
 
-        var customer = model.Adapt<Customer>();
-        customer.LastAction = LastActionName.Insert;
-        customer.CreatedById = User.GetUserId();
-        customer.CreatedOn = DateTime.Now;
+            var customer = model.Adapt<Customer>();
+            customer.LastAction = LastActionName.Insert;
+            customer.CreatedById = User.GetUserId();
+            customer.CreatedOn = DateTime.Now;
 
-        customer.CurrentBalance = model.OpeningBalanceType == BalanceType.Debitor
-            ? -model.OpeningBalance
-            : model.OpeningBalance;
+            customer.CurrentBalance = model.OpeningBalance;
 
-        await _unitOfWork.Customers.AddAsync(customer);
-        await _unitOfWork.SaveChangesAsync();
-
-        if (model.OpeningBalance > 0)
-        {
-            await _unitOfWork.CustomerTransactions.AddAsync(new CustomerTransaction
-            {
-                CustomerId = customer.Id,
-                Amount = model.OpeningBalance,
-                BalanceType = model.OpeningBalanceType,
-                Notes = "رصيد افتتاحي",
-                Date = DateTime.Now
-            });
+            await _unitOfWork.Customers.AddAsync(customer);
             await _unitOfWork.SaveChangesAsync();
-        }
+
+            if (model.OpeningBalance > 0)
+            {
+                await _unitOfWork.CustomerTransactions.AddAsync(new CustomerTransaction
+                {
+                    CustomerId = customer.Id,
+                    Amount = Math.Abs(model.OpeningBalance),
+                    CustomerTransactionType = CustomerTransactionType.OPenBalance,
+                    Notes = "رصيد افتتاحي",
+                    Date = DateTime.Now
+                });
+                await _unitOfWork.SaveChangesAsync();
+            }
 
 
-        var viewModel = customer.Adapt<CustomerViewModel>();
-        return PartialView("_Row", viewModel);
+            var viewModel = customer.Adapt<CustomerViewModel>();
+            return PartialView("_Row", viewModel);
     }
 
     [HttpGet]
@@ -104,25 +106,25 @@ public class CustomersController : Controller
         if (customer == null)
             return NotFound();
 
-        var oldOpeningBalance = customer.OpeningBalance;
-        var oldOpeningBalanceType = customer.OpeningBalanceType;
-        var oldCurrentBalance = customer.CurrentBalance;
+            var oldOpeningBalance = customer.OpeningBalance;
+            var oldOpeningBalanceType = customer.OpeningBalanceType;
+            var oldCurrentBalance = customer.CurrentBalance;
 
-        model.Adapt(customer);
+            model.Adapt(customer);
 
-        customer.OpeningBalance = oldOpeningBalance;
-        customer.OpeningBalanceType = oldOpeningBalanceType;
-        customer.CurrentBalance = oldCurrentBalance;
+            customer.OpeningBalance = oldOpeningBalance;
+            customer.OpeningBalanceType = oldOpeningBalanceType;
+            customer.CurrentBalance = oldCurrentBalance;
 
-        customer.LastAction = LastActionName.Update;
-        customer.UpdatedById = User.GetUserId();
-        customer.UpdatedOn = DateTime.Now;
+            customer.LastAction = LastActionName.Update;
+            customer.UpdatedById = User.GetUserId();
+            customer.UpdatedOn = DateTime.Now;
 
-        _unitOfWork.Customers.Update(customer);
-        await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.Customers.Update(customer);
+            await _unitOfWork.SaveChangesAsync();
 
-        var viewModel = customer.Adapt<CustomerViewModel>();
-        return PartialView("_Row", viewModel);
+            var viewModel = customer.Adapt<CustomerViewModel>();
+            return PartialView("_Row", viewModel);
     }
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -138,16 +140,16 @@ public class CustomersController : Controller
             return BadRequest("لا يمكن حذف العميل إلا إذا كان الرصيد الحالي يساوي صفر.");
 
 
-        customer.LastAction = LastActionName.Delete;
-        customer.UpdatedById = User.GetUserId();
-        customer.UpdatedOn = DateTime.Now;
+            customer.LastAction = LastActionName.Delete;
+            customer.UpdatedById = User.GetUserId();
+            customer.UpdatedOn = DateTime.Now;
 
-        _unitOfWork.Customers.Update(customer);
-        await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.Customers.Update(customer);
+            await _unitOfWork.SaveChangesAsync();
 
-        var viewModel = customer.Adapt<CustomerViewModel>();
+            var viewModel = customer.Adapt<CustomerViewModel>();
 
-        return PartialView("_Row", viewModel);
+            return PartialView("_Row", viewModel);
     }
 
     [HttpPost]
@@ -159,15 +161,15 @@ public class CustomersController : Controller
         if (customer is null)
             return NotFound();
 
-        customer.LastAction = LastActionName.Update;
-        customer.UpdatedById = User.GetUserId();
-        customer.UpdatedOn = DateTime.Now;
-        _unitOfWork.Customers.Update(customer);
-        await _unitOfWork.SaveChangesAsync();
+            customer.LastAction = LastActionName.Update;
+            customer.UpdatedById = User.GetUserId();
+            customer.UpdatedOn = DateTime.Now;
+            _unitOfWork.Customers.Update(customer);
+            await _unitOfWork.SaveChangesAsync();
 
-        var ViewModel = customer.Adapt<CustomerViewModel>();
-        ViewModel.LastAction = customer.LastAction;
-        return PartialView("_Row", ViewModel);
+            var ViewModel = customer.Adapt<CustomerViewModel>();
+            ViewModel.LastAction = customer.LastAction;
+            return PartialView("_Row", ViewModel);
     }
     [HttpGet]
     public IActionResult Statement(int? customerId, DateTime? dateFrom, DateTime? dateTo)
@@ -226,13 +228,20 @@ public class CustomersController : Controller
         var lines = new List<StatementLineViewModel>();
         foreach (var t in transactions)
         {
-            if (t.BalanceType == BalanceType.Debitor)
+            string notes = t.Notes;
+            if (t.CustomerTransactionType == CustomerTransactionType.OPenBalance && string.IsNullOrWhiteSpace(notes))
+                notes = "رصيد افتتاحي";
+            else if (t.CustomerTransactionType == CustomerTransactionType.Payment && string.IsNullOrWhiteSpace(notes))
+                notes = "سداد";
+
+            if (t.CustomerTransactionType == CustomerTransactionType.SalesInvoice ||
+                t.CustomerTransactionType == CustomerTransactionType.OPenBalance)
             {
                 running += t.Amount;
                 lines.Add(new StatementLineViewModel
                 {
                     Date = t.Date,
-                    Notes = t.Notes,
+                    Notes = notes,
                     DebtorAmount = t.Amount,
                     RunningBalance = running,
                     InvoiceId = t.SalesInvoiceId,
@@ -240,13 +249,13 @@ public class CustomersController : Controller
                     IsPurchaseInvoice = false
                 });
             }
-            else
+            else if (t.CustomerTransactionType == CustomerTransactionType.Payment)
             {
                 running -= t.Amount;
                 lines.Add(new StatementLineViewModel
                 {
                     Date = t.Date,
-                    Notes = t.Notes,
+                    Notes = notes,
                     CreditAmount = t.Amount,
                     RunningBalance = running,
                     InvoiceId = t.SalesInvoiceId,

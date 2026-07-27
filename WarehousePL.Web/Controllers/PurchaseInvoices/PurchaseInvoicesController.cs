@@ -1,4 +1,4 @@
-﻿using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice;
+using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice;
 using WarehouseBLL.FormViewModels.PurchaseInvoice;
 using WarehouseDAL.Entities.Enums;
 using WarehouseDAL.Entities.Transactions;
@@ -158,17 +158,30 @@ public class PurchaseInvoicesController : Controller
         await _unitOfWork.PurchaseInvoices.AddAsync(invoice);
         await _unitOfWork.SaveChangesAsync(); // نحصل على invoice.Id
 
-        // 1. SupplierTransaction
+        // SupplierTransaction
+        // إثبات الفاتورة كاملة على المورد
         await _unitOfWork.SupplierTransactions.AddAsync(new SupplierTransaction
         {
             SupplierId = invoice.SupplierId,
-            Amount = invoice.Remaining ?? 0,
-            BalanceType = BalanceType.Creditor,
             PurchaseInvoiceId = invoice.Id,
+            Amount = Math.Abs(invoice.TotalAmount),
+            SupplierTransactionType = SupplierTransactionType.PurchaseInvoice,
             Date = DateTime.Now
         });
 
-        // 2. InventoryTransaction لكل صنف
+        // لو دفع وقت إنشاء الفاتورة
+        if ((invoice.Paid ?? 0) > 0)
+        {
+            await _unitOfWork.SupplierTransactions.AddAsync(new SupplierTransaction
+            {
+                SupplierId = invoice.SupplierId,
+                Amount = Math.Abs(invoice.Paid.Value),
+                SupplierTransactionType = SupplierTransactionType.Payment,
+                Date = DateTime.Now
+            });
+        }
+
+        // InventoryTransaction لكل صنف
         foreach (var item in invoice.PurchaseInvoiceItems)
         {
             ProductUnit? pu = await _unitOfWork.ProductUnits.GetById(item.ProductUnitId);
@@ -185,7 +198,7 @@ public class PurchaseInvoicesController : Controller
             });
         }
 
-        // 3. CashTransaction إذا كان الدفع كاش
+        //  CashTransaction إذا كان الدفع كاش
         if (model.PaymentMethod == PaymentMethod.Cash && (invoice.Paid ?? 0) > 0)
         {
             await _unitOfWork.CashTransactions.AddAsync(new CashTransaction

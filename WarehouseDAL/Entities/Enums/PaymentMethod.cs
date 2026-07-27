@@ -1,9 +1,7 @@
-﻿namespace WarehouseDAL.Entities.Enums
+﻿namespace WarehouseDAL.Entities.Enums;
+public enum PaymentMethod
 {
-    public enum PaymentMethod
-    {
-        Cash = 1,        
-        Credit = 2,   
-        BankTransfer = 3
-    }
+    Cash = 1,        
+    Credit = 2,   
+    BankTransfer = 3
 }

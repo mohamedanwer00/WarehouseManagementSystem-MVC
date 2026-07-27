@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using WarehouseBLL.BusinessServices.View_Models.SalesInvoice;
 using WarehouseBLL.FormViewModels.SalesInvoice;
+using WarehouseDAL.Entities.Enums;
+using WarehouseDAL.Entities.Transactions;
 namespace WarehousePL.Web.Controllers.SalesInvoices;
 
 public class SalesInvoicesController : Controller
@@ -156,17 +158,28 @@ public class SalesInvoicesController : Controller
         await _unitOfWork.SalesInvoices.AddAsync(invoice);
         await _unitOfWork.SaveChangesAsync(); // الحفظ الأول لنحصل على invoice.Id
 
-        // 1. CustomerTransaction
+        // CustomerTransaction
         await _unitOfWork.CustomerTransactions.AddAsync(new CustomerTransaction
         {
             CustomerId = invoice.CustomerId,
-            Amount = invoice.Remaining ?? 0,
-            BalanceType = BalanceType.Debitor,
+            Amount = Math.Abs(invoice.TotalAmount),
+            CustomerTransactionType = CustomerTransactionType.SalesInvoice,
             SalesInvoiceId = invoice.Id,
-            Date = DateTime.Now
+            Date = invoice.InvoiceDate
         });
 
-        // 2. InventoryTransaction لكل صنف
+        if ((invoice.Paid ?? 0) > 0)
+        {
+            await _unitOfWork.CustomerTransactions.AddAsync(new CustomerTransaction
+            {
+                CustomerId = invoice.CustomerId,
+                Amount = Math.Abs(invoice.Paid.Value),
+                CustomerTransactionType = CustomerTransactionType.Payment,
+                SalesInvoiceId = invoice.Id,
+                Date = invoice.InvoiceDate
+            });
+        }
+        // InventoryTransaction لكل صنف
         foreach (var item in invoice.SalesInvoiceItems)
         {
             ProductUnit? pu = await _unitOfWork.ProductUnits.GetById(item.ProductUnitId);
@@ -183,7 +196,7 @@ public class SalesInvoicesController : Controller
             });
         }
 
-        // 3. CashTransaction إذا كان الدفع كاش
+        // CashTransaction إذا كان الدفع كاش
         if (model.PaymentMethod == PaymentMethod.Cash && (invoice.Paid ?? 0) > 0)
         {
             await _unitOfWork.CashTransactions.AddAsync(new CashTransaction

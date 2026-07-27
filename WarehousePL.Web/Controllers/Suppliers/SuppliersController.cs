@@ -1,4 +1,8 @@
+using WarehouseBLL.BusinessServices.View_Models.Supplier;
 using WarehouseBLL.FormViewModels.Supplier;
+using WarehouseDAL.Entities.Enums;
+using WarehouseDAL.Entities.Transactions;
+using Microsoft.EntityFrameworkCore;
 
 namespace WarehousePL.Web.Controllers.Suppliers
 {
@@ -37,36 +41,32 @@ namespace WarehousePL.Web.Controllers.Suppliers
 
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
+                var supplier = model.Adapt<Supplier>();
+                supplier.LastAction = LastActionName.Insert;
+                supplier.CreatedById = User.GetUserId();
+                supplier.CreatedOn = DateTime.Now;
+                supplier.CurrentBalance = model.OpeningBalance;
 
-
-            var supplier = model.Adapt<Supplier>();
-            supplier.LastAction = LastActionName.Insert;
-            supplier.CreatedById = User.GetUserId();
-            supplier.CreatedOn = DateTime.Now;
-            supplier.CurrentBalance = model.OpeningBalanceType == BalanceType.Creditor
-                ? model.OpeningBalance
-                : -model.OpeningBalance;
-
-            await _unitOfWork.Suppliers.AddAsync(supplier);
-            await _unitOfWork.SaveChangesAsync();
-
-            if (model.OpeningBalance > 0)
-            {
-                await _unitOfWork.SupplierTransactions.AddAsync(new SupplierTransaction
-                {
-                    SupplierId = supplier.Id,
-                    Amount = model.OpeningBalance,
-                    BalanceType = model.OpeningBalanceType,
-                    Notes = "رصيد افتتاحي",
-                    Date = DateTime.Now
-                });
+                await _unitOfWork.Suppliers.AddAsync(supplier);
                 await _unitOfWork.SaveChangesAsync();
-            }
+
+                if (model.OpeningBalance > 0)
+                {
+                    await _unitOfWork.SupplierTransactions.AddAsync(new SupplierTransaction
+                    {
+                        SupplierId = supplier.Id,
+                        Amount = Math.Abs(model.OpeningBalance),
+                        SupplierTransactionType = SupplierTransactionType.OPenBalance,
+                        Notes = "رصيد افتتاحي",
+                        Date = DateTime.Now
+                    });
+                    await _unitOfWork.SaveChangesAsync();
+                }
 
 
-            var viewModel = supplier.Adapt<SupplierViewModel>();
-            viewModel.LastAction = supplier.LastAction;
-            return PartialView("_Row", viewModel);
+                var viewModel = supplier.Adapt<SupplierViewModel>();
+                viewModel.LastAction = supplier.LastAction;
+                return PartialView("_Row", viewModel);
         }
         [HttpGet]
         public IActionResult Edit(int id)
@@ -98,25 +98,25 @@ namespace WarehousePL.Web.Controllers.Suppliers
             if (supplier == null)
                 return NotFound();
 
-            var oldOpeningBalance = supplier.OpeningBalance;
-            var oldOpeningBalanceType = supplier.OpeningBalanceType;
-            var oldCurrentBalance = supplier.CurrentBalance;
+                var oldOpeningBalance = supplier.OpeningBalance;
+                var oldOpeningBalanceType = supplier.OpeningBalanceType;
+                var oldCurrentBalance = supplier.CurrentBalance;
 
-            model.Adapt(supplier);
+                model.Adapt(supplier);
 
-            supplier.OpeningBalance = oldOpeningBalance;
-            supplier.OpeningBalanceType = oldOpeningBalanceType;
-            supplier.CurrentBalance = oldCurrentBalance;
-            supplier.LastAction = LastActionName.Update;
-            supplier.UpdatedById = User.GetUserId();
-            supplier.UpdatedOn = DateTime.Now;
+                supplier.OpeningBalance = oldOpeningBalance;
+                supplier.OpeningBalanceType = oldOpeningBalanceType;
+                supplier.CurrentBalance = oldCurrentBalance;
+                supplier.LastAction = LastActionName.Update;
+                supplier.UpdatedById = User.GetUserId();
+                supplier.UpdatedOn = DateTime.Now;
 
-            _unitOfWork.Suppliers.Update(supplier);
-            await _unitOfWork.SaveChangesAsync();
+                _unitOfWork.Suppliers.Update(supplier);
+                await _unitOfWork.SaveChangesAsync();
 
-            var viewModel = supplier.Adapt<SupplierViewModel>();
-            viewModel.LastAction = supplier.LastAction;
-            return PartialView("_Row", viewModel);
+                var viewModel = supplier.Adapt<SupplierViewModel>();
+                viewModel.LastAction = supplier.LastAction;
+                return PartialView("_Row", viewModel);
         }
 
         [HttpPost]
@@ -132,15 +132,15 @@ namespace WarehousePL.Web.Controllers.Suppliers
                 return Content("لا يمكن حذف المورد إلا إذا كان الرصيد الحالي يساوي صفر.");
             }
 
-            supplier.LastAction = LastActionName.Delete;
-            supplier.UpdatedById = User.GetUserId();
-            supplier.UpdatedOn = DateTime.Now;
-            _unitOfWork.Suppliers.Update(supplier);
-            await _unitOfWork.SaveChangesAsync();
+                supplier.LastAction = LastActionName.Delete;
+                supplier.UpdatedById = User.GetUserId();
+                supplier.UpdatedOn = DateTime.Now;
+                _unitOfWork.Suppliers.Update(supplier);
+                await _unitOfWork.SaveChangesAsync();
 
-            var viewModel = supplier.Adapt<SupplierViewModel>();
-            viewModel.LastAction = supplier.LastAction;
-            return PartialView("_Row", viewModel);
+                var viewModel = supplier.Adapt<SupplierViewModel>();
+                viewModel.LastAction = supplier.LastAction;
+                return PartialView("_Row", viewModel);
         }
 
         [HttpPost]
@@ -151,15 +151,15 @@ namespace WarehousePL.Web.Controllers.Suppliers
             if (supplier is null)
                 return NotFound();
 
-            supplier.LastAction = LastActionName.Update;
-            supplier.UpdatedById = User.GetUserId();
-            supplier.UpdatedOn = DateTime.Now;
-            _unitOfWork.Suppliers.Update(supplier);
-            await _unitOfWork.SaveChangesAsync();
+                supplier.LastAction = LastActionName.Update;
+                supplier.UpdatedById = User.GetUserId();
+                supplier.UpdatedOn = DateTime.Now;
+                _unitOfWork.Suppliers.Update(supplier);
+                await _unitOfWork.SaveChangesAsync();
 
-            var rowViewModel = supplier.Adapt<SupplierViewModel>();
-            rowViewModel.LastAction = supplier.LastAction;
-            return PartialView("_Row", rowViewModel);
+                var rowViewModel = supplier.Adapt<SupplierViewModel>();
+                rowViewModel.LastAction = supplier.LastAction;
+                return PartialView("_Row", rowViewModel);
         }
 
         [HttpGet]
@@ -194,7 +194,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
                     model.TotalDebtor = model.Lines.Sum(l => l.DebtorAmount ?? 0);
                     model.TotalCreditor = model.Lines.Sum(l => l.CreditAmount ?? 0);
                     model.ClosingBalance = model.Lines.LastOrDefault()?.RunningBalance
-                        ?? (model.OpeningBalanceType == BalanceType.Creditor ? -model.OpeningBalance : model.OpeningBalance);
+                        ?? (model.OpeningBalanceType == BalanceType.Creditor ? model.OpeningBalance : -model.OpeningBalance);
                 }
             }
 
@@ -214,37 +214,46 @@ namespace WarehousePL.Web.Controllers.Suppliers
             decimal openingBalance, BalanceType openingBalanceType)
         {
             decimal running = openingBalanceType == BalanceType.Creditor
-                ? -openingBalance : openingBalance;
+                ? openingBalance : -openingBalance;
 
             var lines = new List<StatementLineViewModel>();
             foreach (var t in transactions)
             {
-                if (t.BalanceType == BalanceType.Debitor)
+                string notes = t.Notes;
+                if (t.SupplierTransactionType == SupplierTransactionType.OPenBalance && string.IsNullOrWhiteSpace(notes))
+                    notes = "رصيد افتتاحي";
+                else if (t.SupplierTransactionType == SupplierTransactionType.Payment && string.IsNullOrWhiteSpace(notes))
+                    notes = "سداد";
+
+                bool isPurchaseInvoice = t.SupplierTransactionType == SupplierTransactionType.PurchaseInvoice;
+
+                if (t.SupplierTransactionType == SupplierTransactionType.PurchaseInvoice ||
+                    t.SupplierTransactionType == SupplierTransactionType.OPenBalance)
                 {
                     running += t.Amount;
                     lines.Add(new StatementLineViewModel
                     {
                         Date = t.Date,
-                        Notes = t.Notes,
-                        DebtorAmount = t.Amount,
+                        Notes = notes,
+                        CreditAmount = t.Amount,
                         RunningBalance = running,
                         InvoiceId = t.PurchaseInvoiceId,
                         InvoiceNumber = t.PurchaseInvoice?.InvoiceNumber,
-                        IsPurchaseInvoice = true
+                        IsPurchaseInvoice = isPurchaseInvoice
                     });
                 }
-                else
+                else if (t.SupplierTransactionType == SupplierTransactionType.Payment)
                 {
                     running -= t.Amount;
                     lines.Add(new StatementLineViewModel
                     {
                         Date = t.Date,
-                        Notes = t.Notes,
-                        CreditAmount = t.Amount,
+                        Notes = notes,
+                        DebtorAmount = t.Amount,
                         RunningBalance = running,
                         InvoiceId = t.PurchaseInvoiceId,
                         InvoiceNumber = t.PurchaseInvoice?.InvoiceNumber,
-                        IsPurchaseInvoice = true
+                        IsPurchaseInvoice = isPurchaseInvoice
                     });
                 }
             }
