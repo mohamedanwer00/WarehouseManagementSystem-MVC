@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using WarehouseBLL.BusinessServices.View_Models.Unit;
 using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Unit;
@@ -47,12 +47,13 @@ namespace WarehousePL.Web.Controllers.Units
                 return PartialView("_Form", model);
             }
 
+
             var unit = model.Adapt<Unit>();
             unit.LastAction = LastActionName.Insert;
             unit.CreatedById = User.GetUserId();
-            unit.CreatedOn= DateTime.Now;
+            unit.CreatedOn = DateTime.Now;
             await _unitOfWork.Units.AddAsync(unit);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = unit.Adapt<UnitViewModel>();
             viewModel.LastAction = unit.LastAction;
@@ -94,9 +95,9 @@ namespace WarehousePL.Web.Controllers.Units
             unit.Symbol = model.Symbol;
             unit.LastAction = LastActionName.Update;
             unit.UpdatedById = User.GetUserId();
-            unit.UpdatedOn= DateTime.Now;
+            unit.UpdatedOn = DateTime.Now;
             _unitOfWork.Units.Update(unit);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = unit.Adapt<UnitViewModel>();
             viewModel.LastAction = unit.LastAction;
@@ -110,11 +111,12 @@ namespace WarehousePL.Web.Controllers.Units
             if (unit is null)
                 return NotFound();
 
+
             unit.LastAction = LastActionName.Delete;
             unit.UpdatedById = User.GetUserId();
             unit.UpdatedOn = DateTime.Now;
             _unitOfWork.Units.Update(unit);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = unit.Adapt<UnitViewModel>();
             viewModel.LastAction = unit.LastAction;
@@ -132,7 +134,7 @@ namespace WarehousePL.Web.Controllers.Units
             unit.UpdatedById = User.GetUserId();
             unit.UpdatedOn = DateTime.Now;
             _unitOfWork.Units.Update(unit);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = unit.Adapt<UnitViewModel>();
             viewModel.LastAction = unit.LastAction;

@@ -2,6 +2,7 @@
 using WarehouseBLL.BusinessServices.View_Models.OpeningStock;
 using WarehouseBLL.FormViewModels.OpeningStock;
 using WarehouseDAL.Entities;
+using WarehouseDAL.Entities.Transactions;
 namespace WarehousePL.Web.Controllers.OpeningStock
 {
     public class OpeningStocksController : Controller
@@ -75,7 +76,7 @@ namespace WarehousePL.Web.Controllers.OpeningStock
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(OpeningStockFormViewModel model)
+        public async Task<IActionResult> Create(OpeningStockFormViewModel model)
         {
             if (!ModelState.IsValid || model.SelectedWarehouse <= 0 || model.Items == null || !model.Items.Any())
             {
@@ -83,26 +84,22 @@ namespace WarehousePL.Web.Controllers.OpeningStock
                 model.Warehouses = model.SelectedBranch > 0 ? GetWarehousesList(model.SelectedBranch) : new List<SelectListItem>();
 
                 if (model.SelectedWarehouse > 0 && (model.Items == null || !model.Items.Any()))
-                {
                     model.Items = GetProductsForWarehouse(model.SelectedWarehouse);
-                }
 
                 return View(model);
             }
 
             var existingStocks = _unitOfWork.OpeningStocks
                 .GetAll(x => x.WarehouseId == model.SelectedWarehouse && x.LastAction != LastActionName.Delete)
-                .ToDictionary(x => x.ProductId);// هنا بحولها الى ديكشينارى 
+                .ToDictionary(x => x.ProductId);
 
             var currentUserId = User.GetUserId() ?? 0;
 
-            // الأصناف المراد تعديلها
             var toUpdate = model.Items
                 .Where(item => existingStocks.ContainsKey(item.ProductId))
                 .Select(item => UpdateStock(existingStocks[item.ProductId], item.Quantity))
                 .ToList();
 
-            // الأصناف الجديدة المراد إضافتها
             var toInsert = model.Items
                 .Where(item => !existingStocks.ContainsKey(item.ProductId))
                 .Select(item => BuildNewStock(model.SelectedWarehouse, item, currentUserId))
@@ -114,10 +111,29 @@ namespace WarehousePL.Web.Controllers.OpeningStock
             if (toInsert.Any())
                 _unitOfWork.OpeningStocks.AddRange(toInsert);
 
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
+
+            // إنشاء InventoryTransaction لكل صنف
+            var warehouse = await _unitOfWork.Warehouses.GetById(model.SelectedWarehouse);
+            if (warehouse != null)
+            {
+                foreach (var item in model.Items.Where(i => i.Quantity > 0))
+                {
+                    await _unitOfWork.InventoryTransactions.AddAsync(new InventoryTransaction
+                    {
+                        ProductId = item.ProductId,
+                        BranchId = warehouse.BranchId,
+                        WarehouseId = model.SelectedWarehouse,
+                        InventoryTransactionType = InventoryTransactionType.OpeningStock,
+                        Quantity = item.Quantity,
+                        Date = DateTime.Now
+                    });
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+
 
             TempData["SuccessMessage"] = "تم حفظ المخزون الافتتاحي بنجاح.";
-
             return RedirectToAction(nameof(Create), new { selectedBranchId = model.SelectedBranch, selectedWarehouseId = model.SelectedWarehouse });
         }
         // 4. Endpoints للتعامل عبر JS/AJAX إن أردت

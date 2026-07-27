@@ -97,6 +97,7 @@ function setDataTable() {
     if (!$.fn.DataTable.isDataTable('.js-table')) {
         datatable = $('.js-table').DataTable({
             order: [[2, 'desc']],
+            scrollX: true,
             language: {
                 url: (isRTL ? '/lib/datatable/ar.json' : ''),
             },

@@ -1,0 +1,108 @@
+@using WarehouseBLL.BusinessServices.View_Models.Reports
+@model BranchInventoryViewModel
+
+@{
+    ViewBag.Title = "جرد مخزون الفرع";
+}
+
+<form asp-action="BranchInventory" method="get" class="mb-4">
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bx bx-filter me-2"></i>بيانات التصفية</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold">الفرع</label>
+                    <select asp-for="SelectedBranchId" asp-items="Model.Branches" class="form-select">
+                        <option value="">اختر الفرع</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">
+                        <i class="bx bx-search me-1"></i> عرض الجرد
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (Model.SelectedBranchId.HasValue && Model.SelectedBranchId > 0)
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-info text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bx bx-warehouse me-2"></i>
+                جرد مخزون الفرع
+            </h5>
+            <div>
+                <span class="badge bg-white text-info fs-6">
+                    <i class="bx bx-package me-1"></i>
+                    إجمالي الكميات: @Model.GrandTotal.ToString("0.00")
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.Items.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-start" width="25%">اسم الصنف (الوحدة الأساسية)</th>
+                                @foreach (var whName in Model.WarehouseNames)
+                                {
+                                    <th>@whName</th>
+                                }
+                                <th width="15%" class="table-primary">الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td class="text-start fw-semibold">@item.ProductName</td>
+                                    @foreach (var whName in Model.WarehouseNames)
+                                    {
+                                        var qty = item.QuantityByWarehouse.ContainsKey(whName)
+                                            ? item.QuantityByWarehouse[whName] : 0;
+                                        <td class="@(qty > 0 ? "text-success fw-bold" : "text-muted")">
+                                            @qty.ToString("0.00")
+                                        </td>
+                                    }
+                                    <td class="fw-bold @(item.TotalQuantity > 0 ? "text-primary" : "text-muted")">
+                                        @item.TotalQuantity.ToString("0.00")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-secondary fw-bold">
+                                <td class="text-end">الإجمالي:</td>
+                                @foreach (var whName in Model.WarehouseNames)
+                                {
+                                    var whTotal = Model.Items.Sum(i =>
+                                        i.QuantityByWarehouse.ContainsKey(whName) ? i.QuantityByWarehouse[whName] : 0);
+                                    <td class="@(whTotal > 0 ? "text-success" : "text-muted")">
+                                        @whTotal.ToString("0.00")
+                                    </td>
+                                }
+                                <td class="text-primary">
+                                    @Model.GrandTotal.ToString("0.00")
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bx bx-info-circle fs-1 d-block mb-2"></i>
+                    <p class="mb-0">لا توجد بيانات مخزون لهذا الفرع.</p>
+                </div>
+            }
+        </div>
+    </div>
+}

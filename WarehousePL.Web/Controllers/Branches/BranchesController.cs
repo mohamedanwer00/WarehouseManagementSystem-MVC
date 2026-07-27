@@ -1,4 +1,4 @@
-﻿using WarehouseBLL.BusinessServices.View_Models;
+using WarehouseBLL.BusinessServices.View_Models;
 using WarehouseBLL.BusinessServices.View_Models.Branch;
 using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Branch;
@@ -36,16 +36,16 @@ namespace WarehousePL.Web.Controllers.Branches
         {
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
-            var branch = model.Adapt<Branch>();
-            branch.LastAction = LastActionName.Insert;
-            branch.CreatedById=User.GetUserId();
-            branch.CreatedOn = DateTime.Now;
-            await _unitOfWork.Branches.AddAsync(branch);
-            _unitOfWork.SaveChanges();
-            var viewModel = branch.Adapt<BranchViewModel>();
-            viewModel.LastAction = branch.LastAction;
-            return RedirectToAction(nameof(Index));
-        }
+                var branch = model.Adapt<Branch>();
+                branch.LastAction = LastActionName.Insert;
+                branch.CreatedById = User.GetUserId();
+                branch.CreatedOn = DateTime.Now;
+                await _unitOfWork.Branches.AddAsync(branch);
+                await _unitOfWork.SaveChangesAsync();
+                var viewModel = branch.Adapt<BranchViewModel>();
+                viewModel.LastAction = branch.LastAction;
+                return RedirectToAction(nameof(Index));
+            }
         [HttpGet]
         public IActionResult Edit(int id)
         {
@@ -64,16 +64,16 @@ namespace WarehousePL.Web.Controllers.Branches
             var branch = await _unitOfWork.Branches.GetById(model.Id!.Value);
             if (branch is null)
                 return NotFound();
-            branch = model.Adapt(branch);
-            branch.LastAction = LastActionName.Update;
-            branch.UpdatedById=User.GetUserId();
-            branch.UpdatedOn=DateTime.Now;
-            _unitOfWork.Branches.Update(branch);
-            _unitOfWork.SaveChanges();
-            var viewModel = branch.Adapt<BranchViewModel>();
-            viewModel.LastAction = branch.LastAction;
-            return RedirectToAction(nameof(Index));
-        }
+                branch = model.Adapt(branch);
+                branch.LastAction = LastActionName.Update;
+                branch.UpdatedById = User.GetUserId();
+                branch.UpdatedOn = DateTime.Now;
+                _unitOfWork.Branches.Update(branch);
+                await _unitOfWork.SaveChangesAsync();
+                var viewModel = branch.Adapt<BranchViewModel>();
+                viewModel.LastAction = branch.LastAction;
+                return RedirectToAction(nameof(Index));
+            }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -83,10 +83,10 @@ namespace WarehousePL.Web.Controllers.Branches
             if (branch is null)
                 return NotFound();
 
-            branch.LastAction = LastActionName.Delete;
-            branch.UpdatedById = User.GetUserId();
-            branch.UpdatedOn = DateTime.Now;
-            _unitOfWork.Branches.Update(branch);
+                branch.LastAction = LastActionName.Delete;
+                branch.UpdatedById = User.GetUserId();
+                branch.UpdatedOn = DateTime.Now;
+                _unitOfWork.Branches.Update(branch);
             _unitOfWork.SaveChanges();
 
             var viewModel = branch.Adapt<BranchViewModel>();
@@ -103,10 +103,10 @@ namespace WarehousePL.Web.Controllers.Branches
             if (branch is null)
                 return NotFound();
 
-            branch.LastAction = LastActionName.Update;
-            branch.UpdatedById = User.GetUserId();
-            branch.UpdatedOn = DateTime.Now;
-            _unitOfWork.Branches.Update(branch);
+                branch.LastAction = LastActionName.Update;
+                branch.UpdatedById = User.GetUserId();
+                branch.UpdatedOn = DateTime.Now;
+                _unitOfWork.Branches.Update(branch);
             _unitOfWork.SaveChanges();
 
             var viewModel = branch.Adapt<BranchViewModel>();

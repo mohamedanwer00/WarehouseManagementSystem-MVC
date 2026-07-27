@@ -22,4 +22,4 @@ global using WarehouseBLL.BusinessServices.View_Models.Supplier;
 global using WarehouseDAL.Entities.Enums;
 global using WarehouseBLL.BusinessServices.View_Models.Product;
 global using WarehouseBLL.FormViewModels.Product;
-
+global using WarehouseDAL.Entities.Transactions;

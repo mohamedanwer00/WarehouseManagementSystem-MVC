@@ -1,6 +1,7 @@
 ﻿using WarehouseBLL.BusinessServices.View_Models.PurchaseInvoice;
 using WarehouseBLL.FormViewModels.PurchaseInvoice;
 using WarehouseDAL.Entities.Enums;
+using WarehouseDAL.Entities.Transactions;
 
 namespace WarehousePL.Web.Controllers.PurchaseInvoices;
 
@@ -100,7 +101,6 @@ public class PurchaseInvoicesController : Controller
         else if (paidAmount > 0 && paidAmount < totalAmount)
             invoice.Status = InvoiceStatus.PartiallyPaid;
 
-
         foreach (PurchaseInvoiceItem item in invoice.PurchaseInvoiceItems)
         {
             item.CreatedById = User.GetUserId();
@@ -156,8 +156,49 @@ public class PurchaseInvoicesController : Controller
         }
 
         await _unitOfWork.PurchaseInvoices.AddAsync(invoice);
-        _unitOfWork.SaveChanges();
+        await _unitOfWork.SaveChangesAsync(); // نحصل على invoice.Id
 
+        // 1. SupplierTransaction
+        await _unitOfWork.SupplierTransactions.AddAsync(new SupplierTransaction
+        {
+            SupplierId = invoice.SupplierId,
+            Amount = invoice.Remaining ?? 0,
+            BalanceType = BalanceType.Creditor,
+            PurchaseInvoiceId = invoice.Id,
+            Date = DateTime.Now
+        });
+
+        // 2. InventoryTransaction لكل صنف
+        foreach (var item in invoice.PurchaseInvoiceItems)
+        {
+            ProductUnit? pu = await _unitOfWork.ProductUnits.GetById(item.ProductUnitId);
+            decimal factor = (pu?.Factor ?? 0) != 0 ? pu!.Factor : 1;
+            await _unitOfWork.InventoryTransactions.AddAsync(new InventoryTransaction
+            {
+                ProductId = item.ProductId,
+                BranchId = invoice.BranchId,
+                WarehouseId = invoice.WarehouseId,
+                InventoryTransactionType = InventoryTransactionType.Purchase,
+                Quantity = (decimal)item.Quantity * factor,
+                ReferenceNumber = invoice.InvoiceNumber,
+                Date = DateTime.Now
+            });
+        }
+
+        // 3. CashTransaction إذا كان الدفع كاش
+        if (model.PaymentMethod == PaymentMethod.Cash && (invoice.Paid ?? 0) > 0)
+        {
+            await _unitOfWork.CashTransactions.AddAsync(new CashTransaction
+            {
+                CashBoxId = model.CashBoxId!.Value,
+                Amount = invoice.Paid!.Value,
+                TransactionType = CashTransactionType.Withdraw,
+                ReferenceNumber = invoice.InvoiceNumber,
+                Date = DateTime.Now
+            });
+        }
+
+        await _unitOfWork.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
 

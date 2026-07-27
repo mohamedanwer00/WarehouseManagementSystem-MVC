@@ -50,6 +50,12 @@ public class Program
         builder.Services.AddScoped<ISalesInvoiceRepository, SalesInvoiceRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+        // Generic Repositories للمعاملات
+        builder.Services.AddScoped<IGenericRepository<SupplierTransaction>, GenericRepository<SupplierTransaction>>();
+        builder.Services.AddScoped<IGenericRepository<CustomerTransaction>, GenericRepository<CustomerTransaction>>();
+        builder.Services.AddScoped<IGenericRepository<InventoryTransaction>, GenericRepository<InventoryTransaction>>();
+        builder.Services.AddScoped<IGenericRepository<CashTransaction>, GenericRepository<CashTransaction>>();
+
         var app = builder.Build();
 
         // إنشاء قاعدة البيانات وتطبيق الـ Migrations

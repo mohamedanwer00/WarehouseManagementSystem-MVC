@@ -27,7 +27,6 @@ namespace WarehousePL.Web.Controllers.Categories
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CategoryFormViewModel model)
         {
-            // تحقق من تكرار الاسم
             var isDuplicate = _unitOfWork.Categories
                 .GetAll(c => c.Name.Trim().ToLower() == model.Name.Trim().ToLower()
                           && c.LastAction != LastActionName.Delete)
@@ -39,13 +38,14 @@ namespace WarehousePL.Web.Controllers.Categories
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
 
+
             var category = model.Adapt<Category>();
             category.LastAction = LastActionName.Insert;
             category.CreatedById = User.GetUserId();
             category.CreatedOn = DateTime.Now;
 
-             await _unitOfWork.Categories.AddAsync(category);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.Categories.AddAsync(category);
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;
@@ -69,7 +69,6 @@ namespace WarehousePL.Web.Controllers.Categories
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(CategoryFormViewModel model)
         {
-            // تحقق من تكرار الاسم (ما عدا نفس العنصر)
             var isDuplicate = _unitOfWork.Categories
                 .GetAll(c => c.Name.Trim().ToLower() == model.Name.Trim().ToLower()
                           && c.Id != model.Id
@@ -87,13 +86,14 @@ namespace WarehousePL.Web.Controllers.Categories
             if (category is null)
                 return NotFound();
 
+
             model.Adapt(category);
             category.LastAction = LastActionName.Update;
             category.UpdatedById = User.GetUserId();
             category.UpdatedOn = DateTime.Now;
 
             _unitOfWork.Categories.Update(category);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;
@@ -110,7 +110,6 @@ namespace WarehousePL.Web.Controllers.Categories
             if (category is null)
                 return NotFound();
 
-            // منع الحذف لو الكاتيجوري مرتبطة بمنتج نشط
             var hasProducts = _unitOfWork.Products
                 .GetAll(p => p.CategoryId == id && p.LastAction != LastActionName.Delete)
                 .Any();
@@ -126,7 +125,7 @@ namespace WarehousePL.Web.Controllers.Categories
             category.UpdatedOn = DateTime.Now;
 
             _unitOfWork.Categories.Update(category);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;
@@ -148,7 +147,7 @@ namespace WarehousePL.Web.Controllers.Categories
             category.UpdatedOn = DateTime.Now;
 
             _unitOfWork.Categories.Update(category);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = category.Adapt<CategoryViewModel>();
             viewModel.LastAction = category.LastAction;

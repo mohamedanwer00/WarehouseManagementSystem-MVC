@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
 using WarehouseDAL.Entities;
+using WarehouseDAL.Entities.Transactions;
 
 namespace WarehouseDAL.Repositories.Interfaces
 {
@@ -20,6 +23,14 @@ namespace WarehouseDAL.Repositories.Interfaces
         IPurchaseInvoiceRepository PurchaseInvoices { get; }
         ISalesInvoiceRepository SalesInvoices { get; }
         IProductWarehouseRepository ProductWarehouses { get; }
+
+        // Transaction Repositories
+        IGenericRepository<SupplierTransaction> SupplierTransactions { get; }
+        IGenericRepository<CustomerTransaction> CustomerTransactions { get; }
+        IGenericRepository<InventoryTransaction> InventoryTransactions { get; }
+        IGenericRepository<CashTransaction> CashTransactions { get; }
+
         int SaveChanges();
+        Task<int> SaveChangesAsync();
     }
 }

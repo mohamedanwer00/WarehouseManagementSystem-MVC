@@ -1,4 +1,4 @@
-﻿using WarehouseBLL.BusinessServices.View_Models.Warehouse;
+using WarehouseBLL.BusinessServices.View_Models.Warehouse;
 using WarehouseBLL.Extensions;
 using WarehouseBLL.FormViewModels.Warehouse;
 using WarehouseDAL.Entities;
@@ -19,7 +19,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             var warehouses = await _unitOfWork.Warehouses.AsQueryable()
                 .Include(w => w.Branch)
                 .ToListAsync();
-            
+
             var viewModel = warehouses.Adapt<IEnumerable<WarehouseViewModel>>();
             return View(viewModel);
         }
@@ -52,6 +52,12 @@ namespace WarehousePL.Web.Controllers.Warehouses
             if (isNameExists)
             {
                 ModelState.AddModelError(nameof(model.Name), "اسم المخزن موجود بالفعل.");
+                var branches = _unitOfWork.Branches.GetAll();
+                model.Branches = branches.Select(b => new SelectListItem
+                {
+                    Text = b.Name,
+                    Value = b.Id.ToString()
+                });
                 return PartialView("_Form", model);
             }
 
@@ -75,7 +81,8 @@ namespace WarehousePL.Web.Controllers.Warehouses
             warehouse.CreatedOn = DateTime.Now;
 
             await _unitOfWork.Warehouses.AddAsync(warehouse);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
+            
 
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
@@ -85,9 +92,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             {
                 viewModel.BranchName = selectedBranch.Name;
             }
-            //return PartialView("_Row", viewModel);
             return RedirectToAction(nameof(Index));
-
         }
         [HttpGet]
         public IActionResult Edit(int id)
@@ -138,13 +143,14 @@ namespace WarehousePL.Web.Controllers.Warehouses
             warehouse.UpdatedById = User.GetUserId();
             warehouse.UpdatedOn = DateTime.Now;
             _unitOfWork.Warehouses.Update(warehouse);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
+
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
             var selectedBranch = await _unitOfWork.Branches.GetById(model.SelectedBranch);
             if (selectedBranch != null)
             {
-                viewModel.BranchName = selectedBranch.Name; // إسناد الاسم يدوياً للـ View Model
+                viewModel.BranchName = selectedBranch.Name;
             }
             return RedirectToAction(nameof(Index));
         }
@@ -161,7 +167,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             warehouse.UpdatedById = User.GetUserId();
             warehouse.UpdatedOn = DateTime.Now;
             _unitOfWork.Warehouses.Update(warehouse);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
@@ -187,7 +193,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             warehouse.UpdatedById = User.GetUserId();
             warehouse.UpdatedOn = DateTime.Now;
             _unitOfWork.Warehouses.Update(warehouse);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;

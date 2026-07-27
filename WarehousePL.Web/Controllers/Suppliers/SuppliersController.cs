@@ -1,4 +1,4 @@
-﻿using WarehouseBLL.FormViewModels.Supplier;
+using WarehouseBLL.FormViewModels.Supplier;
 
 namespace WarehousePL.Web.Controllers.Suppliers
 {
@@ -38,6 +38,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
 
+
             var supplier = model.Adapt<Supplier>();
             supplier.LastAction = LastActionName.Insert;
             supplier.CreatedById = User.GetUserId();
@@ -47,7 +48,21 @@ namespace WarehousePL.Web.Controllers.Suppliers
                 : -model.OpeningBalance;
 
             await _unitOfWork.Suppliers.AddAsync(supplier);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
+
+            if (model.OpeningBalance > 0)
+            {
+                await _unitOfWork.SupplierTransactions.AddAsync(new SupplierTransaction
+                {
+                    SupplierId = supplier.Id,
+                    Amount = model.OpeningBalance,
+                    BalanceType = model.OpeningBalanceType,
+                    Notes = "رصيد افتتاحي",
+                    Date = DateTime.Now
+                });
+                await _unitOfWork.SaveChangesAsync();
+            }
+
 
             var viewModel = supplier.Adapt<SupplierViewModel>();
             viewModel.LastAction = supplier.LastAction;
@@ -97,7 +112,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
             supplier.UpdatedOn = DateTime.Now;
 
             _unitOfWork.Suppliers.Update(supplier);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = supplier.Adapt<SupplierViewModel>();
             viewModel.LastAction = supplier.LastAction;
@@ -121,7 +136,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
             supplier.UpdatedById = User.GetUserId();
             supplier.UpdatedOn = DateTime.Now;
             _unitOfWork.Suppliers.Update(supplier);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var viewModel = supplier.Adapt<SupplierViewModel>();
             viewModel.LastAction = supplier.LastAction;
@@ -140,11 +155,100 @@ namespace WarehousePL.Web.Controllers.Suppliers
             supplier.UpdatedById = User.GetUserId();
             supplier.UpdatedOn = DateTime.Now;
             _unitOfWork.Suppliers.Update(supplier);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             var rowViewModel = supplier.Adapt<SupplierViewModel>();
             rowViewModel.LastAction = supplier.LastAction;
             return PartialView("_Row", rowViewModel);
+        }
+
+        [HttpGet]
+        public IActionResult Statement(int? supplierId, DateTime? dateFrom, DateTime? dateTo)
+        {
+            var model = new SupplierStatementViewModel
+            {
+                SupplierId = supplierId ?? 0,
+                DateFrom = dateFrom,
+                DateTo = dateTo,
+                Suppliers = GetSuppliersList()
+            };
+
+            if (supplierId.HasValue && supplierId > 0 && dateFrom.HasValue && dateTo.HasValue)
+            {
+                var supplier = _unitOfWork.Suppliers.GetById(supplierId.Value).GetAwaiter().GetResult();
+                if (supplier != null)
+                {
+                    model.SupplierName = supplier.Name;
+                    model.OpeningBalance = supplier.OpeningBalance;
+                    model.OpeningBalanceType = supplier.OpeningBalanceType;
+
+                    var transactions = _unitOfWork.SupplierTransactions
+                        .GetTableNoTracking()
+                        .Where(t => t.SupplierId == supplierId && t.Date >= dateFrom && t.Date <= dateTo)
+                        .Include(t => t.PurchaseInvoice)
+                        .OrderBy(t => t.Date)
+                        .ToList();
+
+                    model.HasTransactions = transactions.Any();
+                    model.Lines = BuildStatementLines(transactions, model.OpeningBalance, model.OpeningBalanceType);
+                    model.TotalDebtor = model.Lines.Sum(l => l.DebtorAmount ?? 0);
+                    model.TotalCreditor = model.Lines.Sum(l => l.CreditAmount ?? 0);
+                    model.ClosingBalance = model.Lines.LastOrDefault()?.RunningBalance
+                        ?? (model.OpeningBalanceType == BalanceType.Creditor ? -model.OpeningBalance : model.OpeningBalance);
+                }
+            }
+
+            return View(model);
+        }
+
+        private IEnumerable<SelectListItem> GetSuppliersList()
+        {
+            return _unitOfWork.Suppliers
+                .GetAll(x => x.LastAction != LastActionName.Delete)
+                .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+                .ToList();
+        }
+
+        private List<StatementLineViewModel> BuildStatementLines(
+            List<SupplierTransaction> transactions,
+            decimal openingBalance, BalanceType openingBalanceType)
+        {
+            decimal running = openingBalanceType == BalanceType.Creditor
+                ? -openingBalance : openingBalance;
+
+            var lines = new List<StatementLineViewModel>();
+            foreach (var t in transactions)
+            {
+                if (t.BalanceType == BalanceType.Debitor)
+                {
+                    running += t.Amount;
+                    lines.Add(new StatementLineViewModel
+                    {
+                        Date = t.Date,
+                        Notes = t.Notes,
+                        DebtorAmount = t.Amount,
+                        RunningBalance = running,
+                        InvoiceId = t.PurchaseInvoiceId,
+                        InvoiceNumber = t.PurchaseInvoice?.InvoiceNumber,
+                        IsPurchaseInvoice = true
+                    });
+                }
+                else
+                {
+                    running -= t.Amount;
+                    lines.Add(new StatementLineViewModel
+                    {
+                        Date = t.Date,
+                        Notes = t.Notes,
+                        CreditAmount = t.Amount,
+                        RunningBalance = running,
+                        InvoiceId = t.PurchaseInvoiceId,
+                        InvoiceNumber = t.PurchaseInvoice?.InvoiceNumber,
+                        IsPurchaseInvoice = true
+                    });
+                }
+            }
+            return lines;
         }
     }
 }

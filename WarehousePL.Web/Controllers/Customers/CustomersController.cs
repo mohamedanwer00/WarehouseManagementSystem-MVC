@@ -1,162 +1,260 @@
-﻿using WarehouseBLL.BusinessServices.View_Models.Customer;
+using WarehouseBLL.BusinessServices.View_Models.Customer;
 using WarehouseBLL.FormViewModels.Customer;
+namespace WarehousePL.Web.Controllers.Customers;
 
-namespace WarehousePL.Web.Controllers.Customers
+public class CustomersController : Controller
 {
-    public class CustomersController : Controller
+    private readonly IUnitOfWork _unitOfWork;
+
+    public CustomersController(IUnitOfWork unitOfWork)
     {
-        private readonly IUnitOfWork _unitOfWork;
+        _unitOfWork = unitOfWork;
+    }
 
-        public CustomersController(IUnitOfWork unitOfWork)
+    public IActionResult Index()
+    {
+        var customers = _unitOfWork.Customers.GetTableNoTracking().ToList();
+        var viewModel = customers.Adapt<List<CustomerViewModel>>();
+        return View(viewModel);
+    }
+
+
+    [HttpGet]
+    public IActionResult Create()
+    {
+        var model = new CustomerFormViewModel();
+        return PartialView("_Form", model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CustomerFormViewModel model)
+    {
+        if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.Name == model.Name))
         {
-            _unitOfWork = unitOfWork;
+            ModelState.AddModelError(nameof(model.Name), "اسم العميل موجود بالفعل");
         }
 
-        public IActionResult Index()
+        if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.PhoneNumber == model.PhoneNumber))
         {
-            var customers = _unitOfWork.Customers.GetTableNoTracking().ToList();
-            var viewModel = customers.Adapt<List<CustomerViewModel>>();
-            return View(viewModel);
+            ModelState.AddModelError(nameof(model.PhoneNumber), "رقم الهاتف مستخدم بالفعل");
         }
-        [HttpGet]
-        public IActionResult Create()
-        {
-            var model = new CustomerFormViewModel();
+
+        if (!ModelState.IsValid)
             return PartialView("_Form", model);
+
+        var customer = model.Adapt<Customer>();
+        customer.LastAction = LastActionName.Insert;
+        customer.CreatedById = User.GetUserId();
+        customer.CreatedOn = DateTime.Now;
+
+        customer.CurrentBalance = model.OpeningBalanceType == BalanceType.Debitor
+            ? -model.OpeningBalance
+            : model.OpeningBalance;
+
+        await _unitOfWork.Customers.AddAsync(customer);
+        await _unitOfWork.SaveChangesAsync();
+
+        if (model.OpeningBalance > 0)
+        {
+            await _unitOfWork.CustomerTransactions.AddAsync(new CustomerTransaction
+            {
+                CustomerId = customer.Id,
+                Amount = model.OpeningBalance,
+                BalanceType = model.OpeningBalanceType,
+                Notes = "رصيد افتتاحي",
+                Date = DateTime.Now
+            });
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CustomerFormViewModel model)
+
+        var viewModel = customer.Adapt<CustomerViewModel>();
+        return PartialView("_Row", viewModel);
+    }
+
+    [HttpGet]
+    public IActionResult Edit(int id)
+    {
+        var customer = _unitOfWork.Customers.GetById(id);
+        if (customer is null)
+            return NotFound();
+
+        var model = customer.Adapt<CustomerFormViewModel>();
+        return PartialView("_Form", model);
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(CustomerFormViewModel model)
+    {
+        if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.Name == model.Name && x.Id != model.Id))
         {
-            if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.Name == model.Name))
-            {
-                ModelState.AddModelError(nameof(model.Name), "اسم العميل موجود بالفعل");
-            }
-
-            if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.PhoneNumber == model.PhoneNumber))
-            {
-                ModelState.AddModelError(nameof(model.PhoneNumber), "رقم الهاتف مستخدم بالفعل");
-            }
-
-            if (!ModelState.IsValid)
-                return PartialView("_Form", model);
-
-            var customer = model.Adapt<Customer>();
-            customer.LastAction = LastActionName.Insert;
-            customer.CreatedById = User.GetUserId();
-            customer.CreatedOn = DateTime.Now;
-
-            customer.CurrentBalance = model.OpeningBalanceType == BalanceType.Debitor
-                ? -model.OpeningBalance
-                : model.OpeningBalance;
-
-            await _unitOfWork.Customers.AddAsync(customer);
-            _unitOfWork.SaveChanges();
-
-            var viewModel = customer.Adapt<CustomerViewModel>();
-            //return RedirectToAction(nameof(Index));
-            return PartialView("_Row", viewModel);
+            ModelState.AddModelError(nameof(model.Name), "اسم العميل موجود بالفعل");
         }
 
-        [HttpGet]
-        public IActionResult Edit(int id)
+        if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.PhoneNumber == model.PhoneNumber && x.Id != model.Id))
         {
-            var customer = _unitOfWork.Customers.GetById(id);
-            if (customer is null)
-                return NotFound();
+            ModelState.AddModelError(nameof(model.PhoneNumber), "رقم الهاتف مستخدم بالفعل");
+        }
 
-            var model = customer.Adapt<CustomerFormViewModel>();
+        if (!ModelState.IsValid)
             return PartialView("_Form", model);
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CustomerFormViewModel model)
+
+        var customer = await _unitOfWork.Customers.GetById(model.Id.Value);
+        if (customer == null)
+            return NotFound();
+
+        var oldOpeningBalance = customer.OpeningBalance;
+        var oldOpeningBalanceType = customer.OpeningBalanceType;
+        var oldCurrentBalance = customer.CurrentBalance;
+
+        model.Adapt(customer);
+
+        customer.OpeningBalance = oldOpeningBalance;
+        customer.OpeningBalanceType = oldOpeningBalanceType;
+        customer.CurrentBalance = oldCurrentBalance;
+
+        customer.LastAction = LastActionName.Update;
+        customer.UpdatedById = User.GetUserId();
+        customer.UpdatedOn = DateTime.Now;
+
+        _unitOfWork.Customers.Update(customer);
+        await _unitOfWork.SaveChangesAsync();
+
+        var viewModel = customer.Adapt<CustomerViewModel>();
+        return PartialView("_Row", viewModel);
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var customer = await _unitOfWork.Customers.GetById(id);
+
+        if (customer is null)
+            return NotFound();
+
+        if (customer.CurrentBalance != 0)
+            return BadRequest("لا يمكن حذف العميل إلا إذا كان الرصيد الحالي يساوي صفر.");
+
+
+        customer.LastAction = LastActionName.Delete;
+        customer.UpdatedById = User.GetUserId();
+        customer.UpdatedOn = DateTime.Now;
+
+        _unitOfWork.Customers.Update(customer);
+        await _unitOfWork.SaveChangesAsync();
+
+        var viewModel = customer.Adapt<CustomerViewModel>();
+
+        return PartialView("_Row", viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+
+    public async Task<IActionResult> Restore(int id)
+    {
+        var customer = await _unitOfWork.Customers.GetById(id);
+        if (customer is null)
+            return NotFound();
+
+        customer.LastAction = LastActionName.Update;
+        customer.UpdatedById = User.GetUserId();
+        customer.UpdatedOn = DateTime.Now;
+        _unitOfWork.Customers.Update(customer);
+        await _unitOfWork.SaveChangesAsync();
+
+        var ViewModel = customer.Adapt<CustomerViewModel>();
+        ViewModel.LastAction = customer.LastAction;
+        return PartialView("_Row", ViewModel);
+    }
+    [HttpGet]
+    public IActionResult Statement(int? customerId, DateTime? dateFrom, DateTime? dateTo)
+    {
+        var model = new CustomerStatementViewModel
         {
-            // فحص تكرار الاسم مع استثناء العميل الحالي نفسه عند التعديل
-            if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.Name == model.Name && x.Id != model.Id))
+            CustomerId = customerId ?? 0,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            Customers = GetCustomersList()
+        };
+
+        if (customerId.HasValue && customerId > 0 && dateFrom.HasValue && dateTo.HasValue)
+        {
+            var customer = _unitOfWork.Customers.GetById(customerId.Value).GetAwaiter().GetResult();
+            if (customer != null)
             {
-                ModelState.AddModelError(nameof(model.Name), "اسم العميل موجود بالفعل");
-            }
+                model.CustomerName = customer.Name;
+                model.OpeningBalance = customer.OpeningBalance;
+                model.OpeningBalanceType = customer.OpeningBalanceType;
 
-            // فحص تكرار رقم الهاتف مع استثناء العميل الحالي نفسه عند التعديل
-            if (_unitOfWork.Customers.GetTableNoTracking().Any(x => x.PhoneNumber == model.PhoneNumber && x.Id != model.Id))
+                var transactions = _unitOfWork.CustomerTransactions
+                    .GetTableNoTracking()
+                    .Where(t => t.CustomerId == customerId && t.Date >= dateFrom && t.Date <= dateTo)
+                    .Include(t => t.SalesInvoice)
+                    .OrderBy(t => t.Date)
+                    .ToList();
+
+                model.HasTransactions = transactions.Any();
+                model.Lines = BuildStatementLines(transactions, model.OpeningBalance, model.OpeningBalanceType);
+                model.TotalDebtor = model.Lines.Sum(l => l.DebtorAmount ?? 0);
+                model.TotalCreditor = model.Lines.Sum(l => l.CreditAmount ?? 0);
+                model.ClosingBalance = model.Lines.LastOrDefault()?.RunningBalance
+                    ?? (model.OpeningBalanceType == BalanceType.Debitor ? model.OpeningBalance : -model.OpeningBalance);
+            }
+        }
+
+        return View(model);
+    }
+
+    private IEnumerable<SelectListItem> GetCustomersList()
+    {
+        return _unitOfWork.Customers
+            .GetAll(x => x.LastAction != LastActionName.Delete)
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+            .ToList();
+    }
+
+    private List<StatementLineViewModel> BuildStatementLines(
+        List<CustomerTransaction> transactions,
+        decimal openingBalance, BalanceType openingBalanceType)
+    {
+        decimal running = openingBalanceType == BalanceType.Debitor
+            ? openingBalance : -openingBalance;
+
+        var lines = new List<StatementLineViewModel>();
+        foreach (var t in transactions)
+        {
+            if (t.BalanceType == BalanceType.Debitor)
             {
-                ModelState.AddModelError(nameof(model.PhoneNumber), "رقم الهاتف مستخدم بالفعل");
+                running += t.Amount;
+                lines.Add(new StatementLineViewModel
+                {
+                    Date = t.Date,
+                    Notes = t.Notes,
+                    DebtorAmount = t.Amount,
+                    RunningBalance = running,
+                    InvoiceId = t.SalesInvoiceId,
+                    InvoiceNumber = t.SalesInvoice?.InvoiceNumber,
+                    IsPurchaseInvoice = false
+                });
             }
-
-            if (!ModelState.IsValid)
-                return PartialView("_Form", model);
-
-            var customer = await _unitOfWork.Customers.GetById(model.Id.Value);
-            if (customer == null)
-                return NotFound();
-
-            var oldOpeningBalance = customer.OpeningBalance;
-            var oldOpeningBalanceType = customer.OpeningBalanceType;
-            var oldCurrentBalance = customer.CurrentBalance;
-
-            model.Adapt(customer);
-
-            // تثبيت الإعدادات المالية القديمة لمنع التصفير والتلاعب
-            customer.OpeningBalance = oldOpeningBalance;
-            customer.OpeningBalanceType = oldOpeningBalanceType;
-            customer.CurrentBalance = oldCurrentBalance;
-
-            customer.LastAction = LastActionName.Update;
-            customer.UpdatedById = User.GetUserId();
-            customer.UpdatedOn = DateTime.Now;
-
-            _unitOfWork.Customers.Update(customer);
-            _unitOfWork.SaveChanges();
-
-            var viewModel = customer.Adapt<CustomerViewModel>();
-            //return RedirectToAction(nameof(Index));
-            return PartialView("_Row", viewModel);
+            else
+            {
+                running -= t.Amount;
+                lines.Add(new StatementLineViewModel
+                {
+                    Date = t.Date,
+                    Notes = t.Notes,
+                    CreditAmount = t.Amount,
+                    RunningBalance = running,
+                    InvoiceId = t.SalesInvoiceId,
+                    InvoiceNumber = t.SalesInvoice?.InvoiceNumber,
+                    IsPurchaseInvoice = false
+                });
+            }
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-
-        public async Task<IActionResult> Delete(int id)
-        {
-            var customer = await _unitOfWork.Customers.GetById(id);
-
-            if (customer is null)
-                return NotFound();
-
-            if (customer.CurrentBalance != 0)
-                return BadRequest("لا يمكن حذف العميل إلا إذا كان الرصيد الحالي يساوي صفر.");
-
-            customer.LastAction = LastActionName.Delete;
-            customer.UpdatedById = User.GetUserId();
-            customer.UpdatedOn = DateTime.Now;
-
-            _unitOfWork.Customers.Update(customer);
-            _unitOfWork.SaveChanges();
-
-            var viewModel = customer.Adapt<CustomerViewModel>();
-
-            return PartialView("_Row", viewModel);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-
-        public async Task<IActionResult> Restore(int id)
-        {
-            var customer = await _unitOfWork.Customers.GetById(id);
-            if (customer is null)
-                return NotFound();
-
-            customer.LastAction = LastActionName.Update;
-            customer.UpdatedById = User.GetUserId();
-            customer.UpdatedOn = DateTime.Now;
-            _unitOfWork.Customers.Update(customer);
-            _unitOfWork.SaveChanges();
-
-            var ViewModel = customer.Adapt<CustomerViewModel>();
-            ViewModel.LastAction = customer.LastAction;
-            return PartialView("_Row", ViewModel);
-        }
+        return lines;
     }
 }

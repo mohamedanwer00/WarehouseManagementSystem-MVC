@@ -1,0 +1,195 @@
+@using WarehouseBLL.BusinessServices.View_Models.Reports
+@model WarehouseInventoryViewModel
+
+@{
+    ViewBag.Title = "جرد مخزن";
+}
+
+<form asp-action="WarehouseInventory" method="get" class="mb-4">
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bx bx-filter me-2"></i>بيانات التصفية</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">الفرع</label>
+                    <select asp-for="SelectedBranchId" asp-items="Model.Branches" class="form-select" id="BranchId">
+                        <option value="">اختر الفرع</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">المخزن</label>
+                    <select asp-for="SelectedWarehouseId" asp-items="Model.Warehouses" class="form-select" id="WarehouseId">
+                        <option value="">اختر المخزن</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">
+                        <i class="bx bx-search me-1"></i> عرض الجرد
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (Model.SelectedBranchId.HasValue && Model.SelectedBranchId > 0 &&
+    Model.SelectedWarehouseId.HasValue && Model.SelectedWarehouseId > 0)
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-header  py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bx bx-archive me-2"></i>
+                جرد المخزن
+            </h5>
+            <div class="d-flex gap-2">
+                <span class="badge fs-6">
+                    <i class="bx bx-box me-1"></i>
+                    عدد الأصناف: @Model.TotalProducts
+                </span>
+                <span class="badge fs-6">
+                    <i class="bx bx-package me-1"></i>
+                    إجمالي الكميات: @Model.TotalQuantity.ToString("0.00")
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.Items.Any())
+            {
+                var counter = 0;
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="5%">#</th>
+                                <th class="text-start" width="30%">اسم الصنف (الوحدة الأساسية)</th>
+                                <th width="12%" class="text-success">إجمالي الداخل</th>
+                                <th width="12%" class="text-danger">إجمالي الخارج</th>
+                                <th width="13%" class="text-primary">الكمية المتاحة</th>
+                                <th width="10%">آخر الحركات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                counter++;
+                                var accordionId = $"movements-{counter}";
+                                var collapseId = $"collapse-{counter}";
+                                <tr>
+                                    <td class="fw-bold">@counter</td>
+                                    <td class="text-start fw-semibold">@item.ProductName</td>
+                                    <td class="fw-bold text-success">@item.TotalIn.ToString("0.00")</td>
+                                    <td class="fw-bold text-danger">@item.TotalOut.ToString("0.00")</td>
+                                    <td class="fw-bold @(item.Available > 0 ? "text-primary" : "text-warning")">
+                                        @item.Available.ToString("0.00")
+                                    </td>
+                                    <td>
+                                        @if (item.Movements.Any())
+                                        {
+                                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="@($"#{collapseId}")"
+                                                    aria-expanded="false" aria-controls="@collapseId">
+                                                <i class="bx bx-chevron-down me-1"></i>
+                                                عرض (@item.Movements.Count)
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">لا توجد</span>
+                                        }
+                                    </td>
+                                </tr>
+                                if (item.Movements.Any())
+                                {
+                                    <tr class="collapse" id="@collapseId">
+                                        <td colspan="6" class="p-0 border-0">
+                                            <div class="bg-light p-3 m-0 border-start border-end border-bottom border-primary">
+                                                <h6 class="text-primary mb-2 fw-bold">
+                                                    <i class="bx bx-history me-1"></i>
+                                                    آخر الحركات للصنف: @item.ProductName
+                                                </h6>
+                                                <table class="table table-sm table-striped table-bordered mb-0 text-center align-middle">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th width="18%">التاريخ</th>
+                                                            <th width="15%">نوع العملية</th>
+                                                            <th width="15%">الكمية</th>
+                                                            <th>رقم المرجع</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var mov in item.Movements)
+                                                        {
+                                                            <tr>
+                                                                <td>@mov.Date.ToString("yyyy/MM/dd HH:mm")</td>
+                                                                <td>
+                                                                    <span class="badge @(mov.TransactionType == "بيع" ? "bg-danger" :
+                                                                                mov.TransactionType == "شراء" ? "bg-success" : "bg-secondary")">
+                                                                        @mov.TransactionType
+                                                                    </span>
+                                                                </td>
+                                                                <td class="fw-bold">@mov.Quantity.ToString("0.00")</td>
+                                                                <td>@mov.ReferenceNumber</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-secondary fw-bold">
+                                <td colspan="2" class="text-end">الإجمالي:</td>
+                                <td class="text-success">@Model.Items.Sum(i => i.TotalIn).ToString("0.00")</td>
+                                <td class="text-danger">@Model.Items.Sum(i => i.TotalOut).ToString("0.00")</td>
+                                <td class="text-primary">@Model.TotalQuantity.ToString("0.00")</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bx bx-info-circle fs-1 d-block mb-2"></i>
+                    <p class="mb-0">لا توجد أصناف في هذا المخزن.</p>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var branchSelect = document.getElementById('BranchId');
+            var warehouseSelect = document.getElementById('WarehouseId');
+
+            if (branchSelect && warehouseSelect) {
+                branchSelect.addEventListener('change', function () {
+                    var branchId = branchSelect.value;
+                    warehouseSelect.innerHTML = '<option value="">اختر المخزن</option>';
+
+                    if (branchId) {
+                        fetch('@Url.Action("GetWarehouses", "Reports")?branchId=' + branchId)
+                            .then(function (response) { return response.json(); })
+                            .then(function (data) {
+                                data.forEach(function (item) {
+                                    var option = document.createElement('option');
+                                    option.value = item.value;
+                                    option.text = item.text;
+                                    warehouseSelect.appendChild(option);
+                                });
+                            });
+                    }
+                });
+            }
+        });
+    </script>
+}

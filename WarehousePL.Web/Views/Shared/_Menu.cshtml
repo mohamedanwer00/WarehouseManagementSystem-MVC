@@ -144,6 +144,38 @@
                 <div data-i18n="SalesInvoices"></div>
             </a>
         </li>
+        <!-- التقارير المالية -->
+        <li class="menu-item" active-when="Suppliers.Statement">
+            <a asp-controller="Suppliers" asp-action="Statement" class="menu-link">
+                <i class="menu-icon icon-base bx bx-detail"></i>
+                <div data-i18n="كشف حساب المورد">كشف حساب المورد</div>
+            </a>
+        </li>
+        <li class="menu-item" active-when="Customers.Statement">
+            <a asp-controller="Customers" asp-action="Statement" class="menu-link">
+                <i class="menu-icon icon-base bx bx-receipt"></i>
+                <div data-i18n="كشف حساب العميل">كشف حساب العميل</div>
+            </a>
+        </li>
+        <!-- تقارير المخزون -->
+        <li class="menu-item" active-when="Reports.BranchInventory">
+            <a asp-controller="Reports" asp-action="BranchInventory" class="menu-link">
+                <i class="menu-icon icon-base bx bx-buildings"></i>
+                <div data-i18n="جرد المخازن بالفرع">جرد المخازن بالفرع</div>
+            </a>
+        </li>
+        <li class="menu-item" active-when="Reports.WarehouseInventory">
+            <a asp-controller="Reports" asp-action="WarehouseInventory" class="menu-link">
+                <i class="menu-icon icon-base bx bx-store"></i>
+                <div data-i18n="جرد المخزن">جرد المخزن</div>
+            </a>
+        </li>
+        <li class="menu-item" active-when="Reports.ItemMovement">
+            <a asp-controller="Reports" asp-action="ItemMovement" class="menu-link">
+                <i class="menu-icon icon-base bx bx-transfer-alt"></i>
+                <div data-i18n="حركات المخزون">حركات المخزون</div>
+            </a>
+        </li>
 		
     </ul>
 </aside>

@@ -1,4 +1,4 @@
-﻿namespace WarehousePL.Web.Controllers.Products
+namespace WarehousePL.Web.Controllers.Products
 {
     public class ProductsController : Controller
     {
@@ -57,13 +57,14 @@
                 return View(model);
             }
 
+
             var product = model.Adapt<Product>();
             product.LastAction = LastActionName.Insert;
             product.CreatedById = User.GetUserId();
             product.CreatedOn = DateTime.Now;
 
             await _unitOfWork.Products.AddAsync(product);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
@@ -123,6 +124,7 @@
                 return View(model);
             }
 
+
             product.Name = model.Name;
             product.Code = model.Code;
             product.MinimumQuantity = model.MinimumQuantity;
@@ -171,7 +173,7 @@
             }
 
             _unitOfWork.Products.Update(product);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

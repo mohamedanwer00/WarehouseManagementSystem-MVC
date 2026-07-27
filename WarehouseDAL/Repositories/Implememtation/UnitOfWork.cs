@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
 using WarehouseDAL.Data.Contexts;
+using WarehouseDAL.Entities;
+using WarehouseDAL.Entities.Transactions;
 using WarehouseDAL.Repositories.Interfaces;
 
 namespace WarehouseDAL.Repositories.Implememtation
@@ -23,6 +27,13 @@ namespace WarehouseDAL.Repositories.Implememtation
         public IPurchaseInvoiceRepository PurchaseInvoices { get; }
         public ISalesInvoiceRepository SalesInvoices { get; }
         public IProductWarehouseRepository ProductWarehouses { get; }
+
+        // Transaction Repositories
+        public IGenericRepository<SupplierTransaction> SupplierTransactions { get; }
+        public IGenericRepository<CustomerTransaction> CustomerTransactions { get; }
+        public IGenericRepository<InventoryTransaction> InventoryTransactions { get; }
+        public IGenericRepository<CashTransaction> CashTransactions { get; }
+
         public UnitOfWork(
             WarehouseDbContext dbContext,
             ICategoryRepository categories,
@@ -37,8 +48,11 @@ namespace WarehouseDAL.Repositories.Implememtation
             IOpeningStockRepository openingStocks,
             IPurchaseInvoiceRepository purchaseInvoices,
             IProductWarehouseRepository productWarehouses,
-            ISalesInvoiceRepository salesInvoices)
-
+            ISalesInvoiceRepository salesInvoices,
+            IGenericRepository<SupplierTransaction> supplierTransactions,
+            IGenericRepository<CustomerTransaction> customerTransactions,
+            IGenericRepository<InventoryTransaction> inventoryTransactions,
+            IGenericRepository<CashTransaction> cashTransactions)
         {
             _dbContext = dbContext;
             Categories = categories;
@@ -54,12 +68,16 @@ namespace WarehouseDAL.Repositories.Implememtation
             PurchaseInvoices = purchaseInvoices;
             ProductWarehouses = productWarehouses;
             SalesInvoices = salesInvoices;
+            SupplierTransactions = supplierTransactions;
+            CustomerTransactions = customerTransactions;
+            InventoryTransactions = inventoryTransactions;
+            CashTransactions = cashTransactions;
         }
 
-        public int SaveChanges()
-        {
-            return _dbContext.SaveChanges();
-        }
+        public int SaveChanges() => _dbContext.SaveChanges();
+
+        public Task<int> SaveChangesAsync() => _dbContext.SaveChangesAsync();
+
 
         public void Dispose()
         {

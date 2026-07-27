@@ -1,4 +1,4 @@
-﻿namespace WarehouseDAL.Entities;
+﻿namespace WarehouseDAL.Entities.Transactions;
 
 public class CustomerTransaction : BaseEntity
 {
