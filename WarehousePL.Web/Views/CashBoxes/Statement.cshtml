@@ -1,0 +1,284 @@
+@using WarehouseBLL.BusinessServices.View_Models.CashBox
+@using WarehouseDAL.Entities.Transactions
+@model CashBoxStatementViewModel
+
+@{
+    ViewBag.Title = "كشف حساب الخزنة";
+}
+
+<form asp-action="Statement" method="get" class="mb-4">
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bx bx-filter me-2"></i>بيانات التصفية</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">الخزنة</label>
+                    <select asp-for="CashBoxId" asp-items="Model.CashBoxes" class="form-select">
+                        <option value="">اختر الخزنة</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">التاريخ من</label>
+                    <input asp-for="DateFrom" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">التاريخ إلى</label>
+                    <input asp-for="DateTo" type="date" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">
+                        <i class="bx bx-search me-1"></i> عرض
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (Model.CashBoxId > 0 && Model.DateFrom.HasValue && Model.DateTo.HasValue)
+{
+    <!-- بطاقات ملخص الخزنة -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="text-muted small mb-1">الرصيد قبل الفترة</p>
+                            <h4 class="fw-bold text-secondary mb-0">@Model.OpeningBalanceBeforePeriod.ToString("0.00")</h4>
+                        </div>
+                        <div class="bg-secondary bg-opacity-10 p-3 rounded-circle">
+                            <i class="bx bx-wallet fs-3 text-secondary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 border-end border-4 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="text-muted small mb-1">إجمالي الوارد</p>
+                            <h4 class="fw-bold text-success mb-0">@Model.TotalIn.ToString("0.00")</h4>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="bx bx-log-in fs-3 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 border-end border-4 border-danger">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="text-muted small mb-1">إجمالي الصادر</p>
+                            <h4 class="fw-bold text-danger mb-0">@Model.TotalOut.ToString("0.00")</h4>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle">
+                            <i class="bx bx-log-out fs-3 text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 border-end border-4 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="text-muted small mb-1">الرصيد بعد الفترة</p>
+                            <h4 class="fw-bold text-primary mb-0">@Model.ClosingBalanceAfterPeriod.ToString("0.00")</h4>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="bx bx-dollar-circle fs-3 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="mb-0 fw-bold">
+                <i class="bx bx-receipt me-2"></i>
+                كشف حساب الخزنة: @Model.CashBoxName
+                @if (!string.IsNullOrEmpty(Model.BranchName))
+                {
+                    <small class="text-muted fw-normal fs-6">(فرع: @Model.BranchName)</small>
+                }
+                <span class="fw-normal fs-6 text-muted"> من @Model.DateFrom.Value.ToString("yyyy/MM/dd") إلى @Model.DateTo.Value.ToString("yyyy/MM/dd")</span>
+            </h5>
+            <div class="d-flex gap-2">
+                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">
+                    <i class="bx bx-log-in me-1"></i>صافي الفترة: @((Model.TotalIn - Model.TotalOut).ToString("0.00"))
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="10%">التاريخ</th>
+                            <th width="11%">نوع العملية</th>
+                            <th class="text-start">البيان / رقم المرجع</th>
+                            <th width="11%">الرصيد قبل</th>
+                            <th width="11%">وارد</th>
+                            <th width="11%">صادر</th>
+                            <th width="11%">الرصيد بعد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- صف الرصيد قبل بدء الفترة -->
+                        <tr class="bg-light fw-bold">
+                            <td colspan="3" class="text-start">
+                                <i class="bx bx-right-arrow-alt me-1"></i> رصيد قبل بدء الفترة
+                            </td>
+                            <td class="text-secondary">--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td class="text-secondary">@Model.OpeningBalanceBeforePeriod.ToString("0.00")</td>
+                        </tr>
+
+                        @if (Model.HasTransactions && Model.Lines.Any())
+                        {
+                            @foreach (var line in Model.Lines)
+                            {
+                                <tr>
+                                    <td>@line.Date.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>
+                                        @if (line.TransactionType == CashTransactionType.Deposit)
+                                        {
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
+                                                <i class="bx bx-plus-circle me-1"></i>@line.TransactionTypeName
+                                            </span>
+                                        }
+                                        else if (line.TransactionType == CashTransactionType.Sales)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                                <i class="bx bx-cart me-1"></i>@line.TransactionTypeName
+                                            </span>
+                                        }
+                                        else if (line.TransactionType == CashTransactionType.OpeningBalance)
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">
+                                                <i class="bx bx-wallet me-1"></i>@line.TransactionTypeName
+                                            </span>
+                                        }
+                                        else if (line.TransactionType == CashTransactionType.Withdraw)
+                                        {
+                                            if (line.IsPurchaseInvoice)
+                                            {
+                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                                    <i class="bx bx-package me-1"></i>@line.TransactionTypeName
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">
+                                                    <i class="bx bx-minus-circle me-1"></i>@line.TransactionTypeName
+                                                </span>
+                                            }
+                                        }
+                                    </td>
+                                    <td class="text-start">
+                                        @if (line.IsSalesInvoice && line.ReferenceInvoiceId.HasValue && !string.IsNullOrEmpty(line.ReferenceNumber))
+                                        {
+                                            <a asp-action="Details" asp-controller="SalesInvoices" asp-route-id="@line.ReferenceInvoiceId.Value" class="text-primary fw-bold text-decoration-none">
+                                                <i class="bx bx-link-external me-1"></i>فاتورة مبيعات: @line.ReferenceNumber
+                                            </a>
+                                        }
+                                        else if (line.IsPurchaseInvoice && line.ReferenceInvoiceId.HasValue && !string.IsNullOrEmpty(line.ReferenceNumber))
+                                        {
+                                            <a asp-action="Details" asp-controller="PurchaseInvoices" asp-route-id="@line.ReferenceInvoiceId.Value" class="text-primary fw-bold text-decoration-none">
+                                                <i class="bx bx-link-external me-1"></i>فاتورة مشتريات: @line.ReferenceNumber
+                                            </a>
+                                        }
+                                        else if (!string.IsNullOrEmpty(line.ReferenceNumber))
+                                        {
+                                            <span class="fw-semibold">
+                                                <i class="bx bx-hash me-1 text-muted"></i>المرجع: @line.ReferenceNumber
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span>@line.Notes</span>
+                                        }
+                                    </td>
+                                    <td class="fw-semibold text-secondary">@line.BalanceBefore.ToString("0.00")</td>
+                                    <td>
+                                        @if (line.InAmount.HasValue)
+                                        {
+                                            <span class="fw-bold text-success">+ @line.InAmount.Value.ToString("0.00")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">--</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (line.OutAmount.HasValue)
+                                        {
+                                            <span class="fw-bold text-danger">- @line.OutAmount.Value.ToString("0.00")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">--</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold @(line.BalanceAfter >= 0 ? "text-primary" : "text-danger")">
+                                        @line.BalanceAfter.ToString("0.00")
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bx bx-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                    لا توجد حركات خلال الفترة المحددة
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-success fw-bold">
+                            <td colspan="4" class="text-end">إجمالي الوارد خلال الفترة:</td>
+                            <td class="text-success">@Model.TotalIn.ToString("0.00")</td>
+                            <td>--</td>
+                            <td></td>
+                        </tr>
+                        <tr class="table-danger fw-bold">
+                            <td colspan="4" class="text-end">إجمالي الصادر خلال الفترة:</td>
+                            <td>--</td>
+                            <td class="text-danger">@Model.TotalOut.ToString("0.00")</td>
+                            <td></td>
+                        </tr>
+                        <tr class="table-primary fw-bold">
+                            <td colspan="4" class="text-end">صافي الفترة (وارد - صادر):</td>
+                            <td colspan="2" class="@((Model.TotalIn - Model.TotalOut) >= 0 ? "text-success" : "text-danger")">
+                                @((Model.TotalIn - Model.TotalOut).ToString("0.00"))
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr class="table-secondary fw-bold fs-6">
+                            <td colspan="6" class="text-end">
+                                            الرصيد الختامي  : 
+                            </td>
+                            <td class="text-primary fs-5">
+                                @Model.ClosingBalanceAfterPeriod.ToString("0.00")           
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+}

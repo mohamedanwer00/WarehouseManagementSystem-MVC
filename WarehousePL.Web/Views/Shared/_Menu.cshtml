@@ -1,4 +1,4 @@
-﻿﻿<aside id="layout-menu" class="layout-menu menu-vertical menu">
+﻿﻿﻿﻿﻿﻿﻿﻿﻿<aside id="layout-menu" class="layout-menu menu-vertical menu">
     <div class="app-brand demo">
         <a href="/" class="app-brand-link">
             <span class="app-brand-logo demo">
@@ -155,6 +155,12 @@
             <a asp-controller="Customers" asp-action="Statement" class="menu-link">
                 <i class="menu-icon icon-base bx bx-receipt"></i>
                 <div data-i18n="كشف حساب العميل">كشف حساب العميل</div>
+            </a>
+        </li>
+        <li class="menu-item" active-when="CashBoxes.Statement">
+            <a asp-controller="CashBoxes" asp-action="Statement" class="menu-link">
+                <i class="menu-icon icon-base bx bx-wallet-alt"></i>
+                <div data-i18n="كشف حساب الخزنة">كشف حساب الخزنة</div>
             </a>
         </li>
         <!-- تقارير المخزون -->

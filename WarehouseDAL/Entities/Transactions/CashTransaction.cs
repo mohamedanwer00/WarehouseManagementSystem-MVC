@@ -1,4 +1,4 @@
-﻿namespace WarehouseDAL.Entities.Transactions;
+namespace WarehouseDAL.Entities.Transactions;
 
 public class CashTransaction : BaseEntity
 {
@@ -15,8 +15,8 @@ public class CashTransaction : BaseEntity
 }
 public enum CashTransactionType
 {
-    Deposit = 1,//ايداع
-    Withdraw = 2,//سحب 
-    Sales = 3,//بيع
-    OpeningBalance = 4,//رصيد افتتاحى 
+    Deposit = 1,         // إيداع
+    Withdraw = 2,        // سحب
+    Sales = 3,           // بيع (كاش من عميل)
+    OpeningBalance = 4,  // رصيد افتتاحى
 }

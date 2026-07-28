@@ -28,6 +28,7 @@ namespace WarehousePL.Web.Controllers.Branches
         [HttpGet]
         public IActionResult Create()
         {
+
             return PartialView("_Form");
         }
         [HttpPost]

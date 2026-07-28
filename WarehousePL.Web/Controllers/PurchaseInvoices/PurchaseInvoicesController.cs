@@ -83,7 +83,9 @@ public class PurchaseInvoicesController : Controller
                 return View(model);
             }
 
-            cashBox.CurrentBalance -= model.Paid.Value;
+            decimal safePaid = Math.Abs(model.Paid.Value);
+            decimal currentSafe = Math.Abs(cashBox.CurrentBalance);
+            cashBox.CurrentBalance = currentSafe - safePaid;
             _unitOfWork.CashBoxes.Update(cashBox);
         }
 
@@ -204,8 +206,9 @@ public class PurchaseInvoicesController : Controller
             await _unitOfWork.CashTransactions.AddAsync(new CashTransaction
             {
                 CashBoxId = model.CashBoxId!.Value,
-                Amount = invoice.Paid!.Value,
+                Amount = Math.Abs(invoice.Paid!.Value),
                 TransactionType = CashTransactionType.Withdraw,
+                Notes = "فاتورة مشتريات",
                 ReferenceNumber = invoice.InvoiceNumber,
                 Date = DateTime.Now
             });
