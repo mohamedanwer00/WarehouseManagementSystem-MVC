@@ -55,33 +55,33 @@ namespace WarehousePL.Web.Controllers.Users
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserFormViewModel viewModel)
         {
-            viewModel.Roles = await GetRolesAsync();
-
             if (!ModelState.IsValid)
-                return PartialView("_Form", viewModel);
-
-            if (System.Text.RegularExpressions.Regex.IsMatch(viewModel.UserName, @"\p{IsArabic}"))
             {
-                ModelState.AddModelError(nameof(viewModel.UserName),
-                    "لا يُسمح باستخدام الأحرف العربية في اسم المستخدم.");
-
+                viewModel.Roles = await GetRolesAsync();
                 return PartialView("_Form", viewModel);
             }
-            // Check if the username already exists
-            var userExists = _userManager.Users
-                .Any(x => x.UserName == viewModel.UserName);
+
+            // التحقق من الحروف العربية
+            if (System.Text.RegularExpressions.Regex.IsMatch(viewModel.UserName, @"\p{IsArabic}"))
+            {
+                ModelState.AddModelError(nameof(viewModel.UserName), "لا يُسمح باستخدام الأحرف العربية في اسم المستخدم.");
+                viewModel.Roles = await GetRolesAsync();
+                return PartialView("_Form", viewModel);
+            }
+
+            // التحقق من وجود اسم المستخدم
+            var userExists = await _userManager.Users.AnyAsync(x => x.UserName == viewModel.UserName);
             if (userExists)
             {
-                ModelState.AddModelError(nameof(viewModel.UserName),
-                    "اسم المستخدم مستخدم بالفعل.");
-
+                ModelState.AddModelError(nameof(viewModel.UserName), "اسم المستخدم مستخدم بالفعل.");
+                viewModel.Roles = await GetRolesAsync();
                 return PartialView("_Form", viewModel);
             }
 
             var user = viewModel.Adapt<User>();
-
             user.CreateDate = DateTime.Now;
             user.LastAction = LastActionName.Insert;
+
             IdentityResult result = await _userManager.CreateAsync(user, viewModel.Password);
 
             if (!result.Succeeded)
@@ -89,24 +89,35 @@ namespace WarehousePL.Web.Controllers.Users
                 foreach (IdentityError error in result.Errors)
                     ModelState.AddModelError(string.Empty, error.Description);
 
+                viewModel.Roles = await GetRolesAsync();
                 return PartialView("_Form", viewModel);
             }
-            Role? role = await _roleManager.FindByIdAsync(viewModel.SelectedRole.ToString());
 
+            // إضافة الدور (Role)
+            Role? role = await _roleManager.FindByIdAsync(viewModel.SelectedRole.ToString());
             if (role != null)
             {
                 IdentityResult roleResult = await _userManager.AddToRoleAsync(user, role.Name!);
-
                 if (!roleResult.Succeeded)
                 {
                     foreach (IdentityError error in roleResult.Errors)
                         ModelState.AddModelError(string.Empty, error.Description);
 
+                    viewModel.Roles = await GetRolesAsync();
                     return PartialView("_Form", viewModel);
                 }
             }
 
-            return RedirectToAction(nameof(Index));
+            // 🎯 هنا التحسين: إرجاع الـ PartialView الخاص بالصف فقط ليتم إضافته في الجدول
+            var userViewModel = user.Adapt<UserViewModel>();
+
+            // إسناد اسم الـ Role للـ ViewModel ليعرض في الصف
+            if (role != null)
+            {
+                userViewModel.Roles = new List<string> { role.Name! };
+            }
+
+            return PartialView("_Row", userViewModel);
         }
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
@@ -145,12 +156,18 @@ namespace WarehousePL.Web.Controllers.Users
             if (!ModelState.IsValid)
                 return PartialView("_Form", viewModel);
 
+            if (viewModel.UserId <= 0)
+                return NotFound();
             var user = await _userManager.FindByIdAsync(viewModel.UserId.ToString());
-
             if (user == null)
                 return NotFound();
-            // التأكد أن اسم المستخدم غير مستخدم من شخص آخر
-            bool userExists = _userManager.Users.Any(x =>
+            if (System.Text.RegularExpressions.Regex.IsMatch(viewModel.UserName, @"\p{IsArabic}"))
+            {
+                ModelState.AddModelError(nameof(viewModel.UserName), "لا يُسمح باستخدام الأحرف العربية في اسم المستخدم.");
+                return PartialView("_Form", viewModel);
+            }
+
+            bool userExists = await _userManager.Users.AnyAsync(x =>
                 x.UserName == viewModel.UserName &&
                 x.Id != viewModel.UserId);
 
@@ -159,17 +176,19 @@ namespace WarehousePL.Web.Controllers.Users
                 ModelState.AddModelError(nameof(viewModel.UserName), "اسم المستخدم مستخدم بالفعل.");
                 return PartialView("_Form", viewModel);
             }
-            // التأكد أن رقم الهاتف غير مستخدم من شخص آخر
-            bool phoneExists = _userManager.Users.Any(x =>
-                x.PhoneNumber == viewModel.PhoneNumber &&
-                x.Id != viewModel.UserId);
 
-            if (phoneExists)
+            if (!string.IsNullOrWhiteSpace(viewModel.PhoneNumber))
             {
-                ModelState.AddModelError(nameof(viewModel.PhoneNumber), "رقم الهاتف مستخدم بالفعل.");
-                return PartialView("_Form", viewModel);
+                bool phoneExists = await _userManager.Users.AnyAsync(x =>
+                    x.PhoneNumber == viewModel.PhoneNumber &&
+                    x.Id != viewModel.UserId);
+
+                if (phoneExists)
+                {
+                    ModelState.AddModelError(nameof(viewModel.PhoneNumber), "رقم الهاتف مستخدم بالفعل.");
+                    return PartialView("_Form", viewModel);
+                }
             }
-            // تحديث بيانات المستخدم
             user.Name = viewModel.Name;
             user.UserName = viewModel.UserName;
             user.PhoneNumber = viewModel.PhoneNumber;
@@ -199,16 +218,22 @@ namespace WarehousePL.Web.Controllers.Users
 
                 return PartialView("_Form", viewModel);
             }
-            // تحديث الرول
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-            var role = await _roleManager.FindByIdAsync(viewModel.SelectedRole.ToString());
+            Role? role = await _roleManager.FindByIdAsync(viewModel.SelectedRole.ToString());
+            if (role != null)
+            {
+                await _userManager.AddToRoleAsync(user, role.Name!);
+            }
+            var userViewModel = user.Adapt<UserViewModel>();
 
             if (role != null)
-                await _userManager.AddToRoleAsync(user, role.Name!);
+            {
+                userViewModel.Roles = new List<string> { role.Name! };
+            }
 
-            return RedirectToAction(nameof(Index));
+            return PartialView("_Row", userViewModel);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -37,6 +37,16 @@ namespace WarehousePL.Web.Controllers.Branches
         {
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
+
+            var isNameExists = await _unitOfWork.Branches
+                .AsQueryable()
+                .AnyAsync(b => b.Name.Trim().ToLower() == model.Name.Trim().ToLower()
+                            && b.LastAction != LastActionName.Delete);
+            if (isNameExists)
+            {
+                ModelState.AddModelError(nameof(model.Name), "NameAlreadyExists");
+                return PartialView("_Form", model);
+            }
             var branch = model.Adapt<Branch>();
             branch.LastAction = LastActionName.Insert;
             branch.CreatedById = User.GetUserId();
@@ -45,7 +55,7 @@ namespace WarehousePL.Web.Controllers.Branches
             await _unitOfWork.SaveChangesAsync();
             var viewModel = branch.Adapt<BranchViewModel>();
             viewModel.LastAction = branch.LastAction;
-            return RedirectToAction(nameof(Index));
+            return PartialView("_Row", viewModel);
         }
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
@@ -63,9 +73,26 @@ namespace WarehousePL.Web.Controllers.Branches
         {
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
-            var branch = await _unitOfWork.Branches.GetById(model.Id!.Value);
+
+            if (!model.Id.HasValue || model.Id.Value <= 0)
+                return NotFound();
+
+            var branch = await _unitOfWork.Branches.GetById(model.Id.Value);
             if (branch is null)
                 return NotFound();
+
+            var isNameExists = await _unitOfWork.Branches
+                .AsQueryable()
+                .AnyAsync(b => b.Name.Trim().ToLower() == model.Name.Trim().ToLower()
+                            && b.Id != model.Id.Value
+                            && b.LastAction != LastActionName.Delete);
+
+            if (isNameExists)
+            {
+                ModelState.AddModelError(nameof(model.Name), "اسم الفرع مستخدم بالفعل.");
+                return PartialView("_Form", model);
+            }
+
             branch = model.Adapt(branch);
             branch.LastAction = LastActionName.Update;
             branch.UpdatedById = User.GetUserId();
@@ -74,7 +101,8 @@ namespace WarehousePL.Web.Controllers.Branches
             await _unitOfWork.SaveChangesAsync();
             var viewModel = branch.Adapt<BranchViewModel>();
             viewModel.LastAction = branch.LastAction;
-            return RedirectToAction(nameof(Index));
+
+            return PartialView("_Row", viewModel);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]

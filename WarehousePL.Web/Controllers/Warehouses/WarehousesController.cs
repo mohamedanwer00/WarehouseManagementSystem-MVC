@@ -40,27 +40,24 @@ namespace WarehousePL.Web.Controllers.Warehouses
 
             return PartialView("_Form", viewModel);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(WarehouseFormViewModel model)
         {
-            var isNameExists = _unitOfWork.Warehouses
-                .GetAll()
-                .Any(w => w.Name.Trim().ToLower() == model.Name.Trim().ToLower() && w.LastAction != LastActionName.Delete);
+            if (!string.IsNullOrWhiteSpace(model.Name))
+            {
+                model.Name = model.Name.Trim();
+            }
+
+            bool isNameExists = await _unitOfWork.Warehouses
+                .AsQueryable()
+                .AnyAsync(w => w.Name.Trim().ToLower() == model.Name.ToLower()
+                            && w.LastAction != LastActionName.Delete);
 
             if (isNameExists)
             {
                 ModelState.AddModelError(nameof(model.Name), "اسم المخزن موجود بالفعل.");
-                var branches = _unitOfWork.Branches.GetAll();
-                model.Branches = branches.Select(b => new SelectListItem
-                {
-                    Text = b.Name,
-                    Value = b.Id.ToString()
-                });
-                return PartialView("_Form", model);
             }
-
 
             if (!ModelState.IsValid)
             {
@@ -75,14 +72,16 @@ namespace WarehousePL.Web.Controllers.Warehouses
             }
 
             var warehouse = model.Adapt<Warehouse>();
-            warehouse.Address = "Default Address";
+
+            warehouse.BranchId = model.SelectedBranch; 
+            warehouse.Address ??= "Default Address"; 
+
             warehouse.LastAction = LastActionName.Insert;
             warehouse.CreatedById = User.GetUserId();
             warehouse.CreatedOn = DateTime.Now;
 
             await _unitOfWork.Warehouses.AddAsync(warehouse);
             await _unitOfWork.SaveChangesAsync();
-
 
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
@@ -92,7 +91,8 @@ namespace WarehousePL.Web.Controllers.Warehouses
             {
                 viewModel.BranchName = selectedBranch.Name;
             }
-            return RedirectToAction(nameof(Index));
+
+            return PartialView("_Row", viewModel);
         }
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
@@ -114,13 +114,25 @@ namespace WarehousePL.Web.Controllers.Warehouses
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(WarehouseFormViewModel model)
         {
-            var isNameExists = _unitOfWork.Warehouses
-                .GetAll()
-                .Any(w => w.Id != model.Id && w.Name.Trim().ToLower() == model.Name.Trim().ToLower() && w.LastAction != LastActionName.Delete);
+            if (!model.Id.HasValue || model.Id.Value <= 0)
+                return NotFound();
+
+            if (!string.IsNullOrWhiteSpace(model.Name))
+            {
+                model.Name = model.Name.Trim();
+            }
+
+            bool isNameExists = await _unitOfWork.Warehouses
+                .AsQueryable()
+                .AnyAsync(w => w.Id != model.Id.Value
+                            && w.Name.Trim().ToLower() == model.Name.ToLower()
+                            && w.LastAction != LastActionName.Delete);
+
             if (isNameExists)
             {
                 ModelState.AddModelError(nameof(model.Name), "اسم المخزن موجود بالفعل.");
             }
+
             if (!ModelState.IsValid)
             {
                 var branches = _unitOfWork.Branches.GetAll();
@@ -129,6 +141,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
                     Text = b.Name,
                     Value = b.Id.ToString()
                 });
+
                 return PartialView("_Form", model);
             }
             var warehouse = await _unitOfWork.Warehouses.GetById(model.Id.Value);
@@ -137,7 +150,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
                 return NotFound();
             }
             warehouse.Name = model.Name;
-            warehouse.BranchId = model.SelectedBranch;
+            warehouse.BranchId = model.SelectedBranch; 
             warehouse.LastAction = LastActionName.Update;
             warehouse.UpdatedById = User.GetUserId();
             warehouse.UpdatedOn = DateTime.Now;
@@ -151,7 +164,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
             {
                 viewModel.BranchName = selectedBranch.Name;
             }
-            return RedirectToAction(nameof(Index));
+            return PartialView("_Row", viewModel);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
