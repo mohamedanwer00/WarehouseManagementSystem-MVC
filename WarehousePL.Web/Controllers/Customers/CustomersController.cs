@@ -76,13 +76,13 @@ public class CustomersController : Controller
     }
 
     [HttpGet]
-    public IActionResult Edit(int id)
+    public async Task< IActionResult> Edit(int id)
     {
-        var customer = _unitOfWork.Customers.GetById(id);
+        Customer? customer = await _unitOfWork.Customers.GetById(id);
         if (customer is null)
             return NotFound();
 
-        var model = customer.Adapt<CustomerFormViewModel>();
+        CustomerFormViewModel model = customer.Adapt<CustomerFormViewModel>();
         return PartialView("_Form", model);
     }
     [HttpPost]
@@ -174,6 +174,8 @@ public class CustomersController : Controller
     [HttpGet]
     public IActionResult Statement(int? customerId, DateTime? dateFrom, DateTime? dateTo)
     {
+        dateFrom ??= DateTime.Today.AddMonths(-1);
+        dateTo ??= DateTime.Today;
         var model = new CustomerStatementViewModel
         {
             CustomerId = customerId ?? 0,
@@ -182,7 +184,7 @@ public class CustomersController : Controller
             Customers = GetCustomersList()
         };
 
-        if (customerId.HasValue && customerId > 0 && dateFrom.HasValue && dateTo.HasValue)
+        if (customerId.HasValue && customerId > 0)
         {
             var customer = _unitOfWork.Customers.GetById(customerId.Value).GetAwaiter().GetResult();
             if (customer != null)

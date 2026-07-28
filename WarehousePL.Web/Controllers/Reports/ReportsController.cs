@@ -153,6 +153,10 @@ namespace WarehousePL.Web.Controllers.Reports
 
         public IActionResult ItemMovement(int? selectedProductId, DateTime? dateFrom, DateTime? dateTo)
         {
+            // لو المستخدم مختارش تاريخ، هنحدد آخر شهر تلقائيًا
+            dateFrom ??= DateTime.Today.AddMonths(-1);
+            dateTo ??= DateTime.Today;
+
             var model = new ItemMovementViewModel
             {
                 SelectedProductId = selectedProductId,
@@ -161,8 +165,7 @@ namespace WarehousePL.Web.Controllers.Reports
                 Products = GetProductsList()
             };
 
-            if (selectedProductId.HasValue && selectedProductId > 0 &&
-                dateFrom.HasValue && dateTo.HasValue)
+            if (selectedProductId.HasValue && selectedProductId > 0)
             {
                 var transactions = _unitOfWork.InventoryTransactions
                     .GetTableNoTracking()

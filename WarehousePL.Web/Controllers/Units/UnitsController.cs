@@ -61,13 +61,13 @@ namespace WarehousePL.Web.Controllers.Units
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var unit = _unitOfWork.Units.GetById(id);
-            if (unit == null)
+            Unit? unit = await _unitOfWork.Units.GetById(id);
+            if (unit is null)
                 return NotFound();
 
-            var viewModel = unit.Adapt<UnitFormViewModel>();
+            UnitFormViewModel viewModel = unit.Adapt<UnitFormViewModel>();
             return PartialView("_Form", viewModel);
         }
         [HttpPost]
@@ -111,6 +111,28 @@ namespace WarehousePL.Web.Controllers.Units
             if (unit is null)
                 return NotFound();
 
+            bool isBaseUnit = _unitOfWork.ProductUnits
+                .GetAll(x => x.UnitId == id
+                          && x.IsBaseUnit
+                          && x.LastAction != LastActionName.Delete)
+                .Any();
+
+            if (isBaseUnit)
+            {
+                Response.StatusCode = 400;
+                return Content("لا يمكن حذف هذه الوحدة لأنها الوحدة الأساسية لأحد المنتجات.");
+            }
+
+            bool isUsed = _unitOfWork.ProductUnits
+                .GetAll(x => x.UnitId == id
+                          && x.LastAction != LastActionName.Delete)
+                .Any();
+
+            if (isUsed)
+            {
+                Response.StatusCode = 400;
+                return Content("لا يمكن حذف هذه الوحدة لأنها مرتبطة بأحد المنتجات.");
+            }
 
             unit.LastAction = LastActionName.Delete;
             unit.UpdatedById = User.GetUserId();

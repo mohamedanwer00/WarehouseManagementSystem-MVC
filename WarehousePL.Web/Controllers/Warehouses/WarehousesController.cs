@@ -82,7 +82,7 @@ namespace WarehousePL.Web.Controllers.Warehouses
 
             await _unitOfWork.Warehouses.AddAsync(warehouse);
             await _unitOfWork.SaveChangesAsync();
-            
+
 
             var viewModel = warehouse.Adapt<WarehouseViewModel>();
             viewModel.LastAction = warehouse.LastAction;
@@ -95,15 +95,14 @@ namespace WarehousePL.Web.Controllers.Warehouses
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var warehouse = _unitOfWork.Warehouses.GetById(id);
-            if (warehouse == null)
-            {
+            Warehouse? warehouse = await _unitOfWork.Warehouses.GetById(id);
+            if (warehouse is null)
                 return NotFound();
-            }
+
             var branches = _unitOfWork.Branches.GetAll();
-            var viewModel = warehouse.Adapt<WarehouseFormViewModel>();
+            WarehouseFormViewModel viewModel = warehouse.Adapt<WarehouseFormViewModel>();
             viewModel.Branches = branches.Select(b => new SelectListItem
             {
                 Text = b.Name,
@@ -159,10 +158,18 @@ namespace WarehousePL.Web.Controllers.Warehouses
         public async Task<IActionResult> Delete(int id)
         {
             var warehouse = await _unitOfWork.Warehouses.GetById(id);
-            if (warehouse == null)
-            {
+            if (warehouse is null)
                 return NotFound();
+            bool hasProducts = _unitOfWork.ProductWarehouses
+                .GetAll(x => x.WarehouseId == id && x.LastAction != LastActionName.Delete)
+                .Any();
+
+            if (hasProducts)
+            {
+                Response.StatusCode = 400;
+                return Content("لا يمكن حذف هذا المخزن  لأنه مرتبط بمنتجات نشطة.");
             }
+
             warehouse.LastAction = LastActionName.Delete;
             warehouse.UpdatedById = User.GetUserId();
             warehouse.UpdatedOn = DateTime.Now;

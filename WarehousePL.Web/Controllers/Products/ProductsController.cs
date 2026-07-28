@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+
 namespace WarehousePL.Web.Controllers.Products
 {
     public class ProductsController : Controller
@@ -70,14 +72,15 @@ namespace WarehousePL.Web.Controllers.Products
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task< IActionResult> Edit(int id)
         {
-            var product = _unitOfWork.Products.GetTableNoTracking()
+            Product? product = _unitOfWork.Products.GetTableNoTracking()
                 .Include(p => p.ProductUnits)
                     .ThenInclude(pu => pu.Unit)
                 .FirstOrDefault(p => p.Id == id);
 
-            if (product == null) return NotFound();
+            if (product is null)
+                return NotFound();
 
             var model = product.Adapt<ProductFormViewModel>();
 
@@ -217,6 +220,50 @@ namespace WarehousePL.Web.Controllers.Products
             return View(viewModel);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            Product? product = await _unitOfWork.Products.GetById(id);
+
+            if (product is null)
+                return NotFound();
+
+            bool hasQuantity = _unitOfWork.ProductWarehouses
+                .GetAll(x => x.ProductId == id &&
+                             x.Quantity > 0 &&
+                             x.LastAction != LastActionName.Delete).Any();
+            if (hasQuantity)
+            {
+                Response.StatusCode = 400;
+                return Content("لا يمكن حذف المنتج لأنه يحتوي على كمية داخل المخازن.");
+            }
+
+            product.LastAction = LastActionName.Delete;
+            product.UpdatedById = User.GetUserId();
+            product.UpdatedOn = DateTime.Now;
+
+            _unitOfWork.Products.Update(product);
+            await _unitOfWork.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Restore(int id)
+        {
+            Product? product = await _unitOfWork.Products.GetById(id);
+
+            if (product is null)
+                return NotFound();
+
+            product.LastAction = LastActionName.Update;
+            product.UpdatedById = User.GetUserId();
+            product.UpdatedOn = DateTime.Now;
+
+            _unitOfWork.Products.Update(product);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok();
+        }
         private void PopulateDropdowns(ProductFormViewModel model)
         {
             model.Categories = _unitOfWork.Categories.GetAll().Where(c => c.LastAction != LastActionName.Delete)

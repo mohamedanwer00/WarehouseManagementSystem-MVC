@@ -36,23 +36,24 @@ namespace WarehousePL.Web.Controllers.Branches
         {
             if (!ModelState.IsValid)
                 return PartialView("_Form", model);
-                var branch = model.Adapt<Branch>();
-                branch.LastAction = LastActionName.Insert;
-                branch.CreatedById = User.GetUserId();
-                branch.CreatedOn = DateTime.Now;
-                await _unitOfWork.Branches.AddAsync(branch);
-                await _unitOfWork.SaveChangesAsync();
-                var viewModel = branch.Adapt<BranchViewModel>();
-                viewModel.LastAction = branch.LastAction;
-                return RedirectToAction(nameof(Index));
-            }
+            var branch = model.Adapt<Branch>();
+            branch.LastAction = LastActionName.Insert;
+            branch.CreatedById = User.GetUserId();
+            branch.CreatedOn = DateTime.Now;
+            await _unitOfWork.Branches.AddAsync(branch);
+            await _unitOfWork.SaveChangesAsync();
+            var viewModel = branch.Adapt<BranchViewModel>();
+            viewModel.LastAction = branch.LastAction;
+            return RedirectToAction(nameof(Index));
+        }
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var branch = _unitOfWork.Branches.GetById(id);
+            Branch? branch = await _unitOfWork.Branches.GetById(id);
             if (branch is null)
                 return NotFound();
-            var viewModel = branch.Adapt<BranchFormViewModel>();
+
+            BranchFormViewModel viewModel = branch.Adapt<BranchFormViewModel>();
             return PartialView("_Form", viewModel);
         }
         [HttpPost]
@@ -64,16 +65,16 @@ namespace WarehousePL.Web.Controllers.Branches
             var branch = await _unitOfWork.Branches.GetById(model.Id!.Value);
             if (branch is null)
                 return NotFound();
-                branch = model.Adapt(branch);
-                branch.LastAction = LastActionName.Update;
-                branch.UpdatedById = User.GetUserId();
-                branch.UpdatedOn = DateTime.Now;
-                _unitOfWork.Branches.Update(branch);
-                await _unitOfWork.SaveChangesAsync();
-                var viewModel = branch.Adapt<BranchViewModel>();
-                viewModel.LastAction = branch.LastAction;
-                return RedirectToAction(nameof(Index));
-            }
+            branch = model.Adapt(branch);
+            branch.LastAction = LastActionName.Update;
+            branch.UpdatedById = User.GetUserId();
+            branch.UpdatedOn = DateTime.Now;
+            _unitOfWork.Branches.Update(branch);
+            await _unitOfWork.SaveChangesAsync();
+            var viewModel = branch.Adapt<BranchViewModel>();
+            viewModel.LastAction = branch.LastAction;
+            return RedirectToAction(nameof(Index));
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -83,10 +84,20 @@ namespace WarehousePL.Web.Controllers.Branches
             if (branch is null)
                 return NotFound();
 
-                branch.LastAction = LastActionName.Delete;
-                branch.UpdatedById = User.GetUserId();
-                branch.UpdatedOn = DateTime.Now;
-                _unitOfWork.Branches.Update(branch);
+            var hasWarehouses = _unitOfWork.Warehouses
+               .GetAll(p =>p.BranchId == id && p.LastAction != LastActionName.Delete)
+               .Any();
+
+            if (hasWarehouses)
+            {
+                Response.StatusCode = 400;
+                return Content("لا يمكن حذف الفرع لأنه مرتبط بمخازن نشطة.");
+            }
+            
+            branch.LastAction = LastActionName.Delete;
+            branch.UpdatedById = User.GetUserId();
+            branch.UpdatedOn = DateTime.Now;
+            _unitOfWork.Branches.Update(branch);
             _unitOfWork.SaveChanges();
 
             var viewModel = branch.Adapt<BranchViewModel>();
@@ -103,10 +114,10 @@ namespace WarehousePL.Web.Controllers.Branches
             if (branch is null)
                 return NotFound();
 
-                branch.LastAction = LastActionName.Update;
-                branch.UpdatedById = User.GetUserId();
-                branch.UpdatedOn = DateTime.Now;
-                _unitOfWork.Branches.Update(branch);
+            branch.LastAction = LastActionName.Update;
+            branch.UpdatedById = User.GetUserId();
+            branch.UpdatedOn = DateTime.Now;
+            _unitOfWork.Branches.Update(branch);
             _unitOfWork.SaveChanges();
 
             var viewModel = branch.Adapt<BranchViewModel>();

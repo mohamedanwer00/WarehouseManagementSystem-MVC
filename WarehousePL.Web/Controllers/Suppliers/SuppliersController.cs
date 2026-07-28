@@ -69,13 +69,13 @@ namespace WarehousePL.Web.Controllers.Suppliers
                 return PartialView("_Row", viewModel);
         }
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task< IActionResult> Edit(int id)
         {
-            var supplier = _unitOfWork.Suppliers.GetById(id);
+            Supplier? supplier =await _unitOfWork.Suppliers.GetById(id);
             if (supplier is null)
                 return NotFound();
 
-            var model = supplier.Adapt<SupplierFormViewModel>();
+            SupplierFormViewModel model = supplier.Adapt<SupplierFormViewModel>();
             return PartialView("_Form", model);
         }
 
@@ -165,6 +165,8 @@ namespace WarehousePL.Web.Controllers.Suppliers
         [HttpGet]
         public IActionResult Statement(int? supplierId, DateTime? dateFrom, DateTime? dateTo)
         {
+            dateFrom ??= DateTime.Today.AddMonths(-1);
+            dateTo ??= DateTime.Today;
             var model = new SupplierStatementViewModel
             {
                 SupplierId = supplierId ?? 0,
@@ -173,7 +175,7 @@ namespace WarehousePL.Web.Controllers.Suppliers
                 Suppliers = GetSuppliersList()
             };
 
-            if (supplierId.HasValue && supplierId > 0 && dateFrom.HasValue && dateTo.HasValue)
+            if (supplierId.HasValue && supplierId > 0)
             {
                 var supplier = _unitOfWork.Suppliers.GetById(supplierId.Value).GetAwaiter().GetResult();
                 if (supplier != null)

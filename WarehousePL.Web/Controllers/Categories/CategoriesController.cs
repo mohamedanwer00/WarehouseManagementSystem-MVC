@@ -54,15 +54,16 @@ namespace WarehousePL.Web.Controllers.Categories
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var category = _unitOfWork.Categories.GetById(id);
+            Category? category = await _unitOfWork.Categories.GetById(id);
 
             if (category is null)
                 return NotFound();
 
-            var form = category.Adapt<CategoryFormViewModel>();
-            return PartialView("_Form", form);
+            CategoryFormViewModel viewModel = category.Adapt<CategoryFormViewModel>();
+
+            return PartialView("_Form", viewModel);
         }
 
         [HttpPost]
