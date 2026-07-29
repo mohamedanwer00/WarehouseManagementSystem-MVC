@@ -1,4 +1,5 @@
 @using WarehouseBLL.BusinessServices.View_Models.Customer
+@using WarehouseDAL.Entities.Enums
 @model CustomerStatementViewModel
 
 @{
@@ -36,101 +37,129 @@
     </div>
 </form>
 
-@if (Model.CustomerId > 0 && Model.DateFrom.HasValue && Model.DateTo.HasValue)
+@if (Model != null && Model.CustomerId > 0)
 {
     <div class="card shadow-sm border-0">
-        <div class="card-header py-3">
+        <div class="card-header text-white py-3">
             <h5 class="mb-0 fw-bold">
                 <i class="bx bx-receipt me-2"></i>
                 كشف حساب العميل: @Model.CustomerName
-                <span class="fw-normal fs-6">من @Model.DateFrom.Value.ToString("yyyy/MM/dd") إلى @Model.DateTo.Value.ToString("yyyy/MM/dd")</span>
+                @if (Model.DateFrom.HasValue && Model.DateTo.HasValue)
+                {
+                    <span class="fw-normal fs-6 text-light ms-2">
+                        (من @Model.DateFrom.Value.ToString("yyyy/MM/dd") إلى @Model.DateTo.Value.ToString("yyyy/MM/dd"))
+                    </span>
+                }
             </h5>
         </div>
         <div class="card-body">
-            <div class="row mb-3 p-3 bg-light rounded">
+            <!-- ملخص الحساب -->
+            <div class="row mb-4 p-3 bg-light rounded border text-center">
                 <div class="col-md-4">
-                    <strong>الرصيد الافتتاحي:</strong>
-                    <span class="text-primary fw-bold">
-                        @Model.OpeningBalance.ToString("0.00")
+                    <span class="d-block text-muted mb-1">الرصيد الافتتاحي المسجل</span>
+                    <span class="fs-5 fw-bold text-primary">
+                        @Model.OpeningBalance.ToString("N2")
                         (@(Model.OpeningBalanceType == BalanceType.Debitor ? "مدين" : "دائن"))
                     </span>
                 </div>
                 <div class="col-md-4">
-                    <strong>إجمالي المدين:</strong>
-                    <span class="text-success fw-bold">@Model.TotalDebtor.ToString("0.00")</span>
+                    <span class="d-block text-muted mb-1">إجمالي المدين (فواتير للفترة)</span>
+                    <span class="fs-5 fw-bold text-success">@Model.TotalDebtor.ToString("N2")</span>
                 </div>
                 <div class="col-md-4">
-                    <strong>إجمالي الدائن:</strong>
-                    <span class="text-warning fw-bold">@Model.TotalCreditor.ToString("0.00")</span>
+                    <span class="d-block text-muted mb-1">إجمالي الدائن (سدادات للفترة)</span>
+                    <span class="fs-5 fw-bold text-warning">@Model.TotalCreditor.ToString("N2")</span>
                 </div>
             </div>
 
+            <!-- جدول حركة كشف الحساب -->
             <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle text-center">
+                <table class="table table-bordered table-hover align-middle text-center mb-0">
                     <thead class="table-dark">
                         <tr>
                             <th width="12%">التاريخ</th>
                             <th>البيان / رقم الفاتورة</th>
-                            <th width="13%">مدين</th>
-                            <th width="13%">دائن</th>
-                            <th width="15%">الرصيد الدائر</th>
+                            <th width="13%">مدين (عليه)</th>
+                            <th width="13%">دائن (له)</th>
+                            <th width="15%">الرصيد التراكمي</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="bg-light">
-                            <td colspan="2" class="text-start fw-bold">رصيد افتتاحي</td>
+                        <!-- سطر الرصيد الافتتاحي -->
+                        <tr class="table-secondary">
+                            <td>-</td>
+                            <td class="text-start fw-bold">رصيد افتتاحي قبل الفترة</td>
                             <td>
                                 @if (Model.OpeningBalanceType == BalanceType.Debitor)
                                 {
-                                    <span class="fw-bold text-success">@Model.OpeningBalance.ToString("0.00")</span>
+                                    <span class="fw-bold text-success">@Model.OpeningBalance.ToString("N2")</span>
                                 }
                             </td>
                             <td>
                                 @if (Model.OpeningBalanceType == BalanceType.Creditor)
                                 {
-                                    <span class="fw-bold text-warning">@Model.OpeningBalance.ToString("0.00")</span>
+                                    <span class="fw-bold text-warning">@Model.OpeningBalance.ToString("N2")</span>
                                 }
                             </td>
-                            <td class="fw-bold @(Model.ClosingBalance >= 0 ? "text-success" : "text-warning")">
-                                @((Model.OpeningBalanceType == BalanceType.Debitor ? Model.OpeningBalance : -Model.OpeningBalance).ToString("0.00"))
+                            <td class="fw-bold @(Model.OpeningBalanceType == BalanceType.Debitor ? "text-success" : "text-warning")">
+                                @((Model.OpeningBalanceType == BalanceType.Debitor ? Model.OpeningBalance : -Model.OpeningBalance).ToString("N2"))
                             </td>
                         </tr>
 
-                        @if (Model.HasTransactions)
+                        @if (Model.HasTransactions && Model.Lines != null && Model.Lines.Any())
                         {
                             @foreach (var line in Model.Lines)
                             {
                                 <tr>
                                     <td>@line.Date.ToString("yyyy/MM/dd")</td>
                                     <td class="text-start">
-                                        @if (line.InvoiceId.HasValue && !string.IsNullOrEmpty(line.InvoiceNumber))
+                                        @if (line.CreditAmount.HasValue && line.CreditAmount.Value > 0)
                                         {
-                                            if (!line.IsPurchaseInvoice)
-                                            {
-                                                <a asp-action="Details" asp-controller="SalesInvoices" asp-route-id="@line.InvoiceId.Value" class="text-primary fw-bold">
-                                                    فاتورة مبيعات: @line.InvoiceNumber
-                                                </a>
-                                            }
+                                            <!-- حركة سداد -->
+                                            <span class="text-success fw-bold">
+                                                <i class="bx bx-check-circle me-1"></i>
+                                                سداد @(!string.IsNullOrWhiteSpace(line.Notes) ? $"({line.Notes})" : "")
+                                                @if (line.InvoiceId.HasValue && !string.IsNullOrEmpty(line.InvoiceNumber))
+                                                {
+                                                    <span class="text-muted fw-normal ms-1">(عن فاتورة رقم: @line.InvoiceNumber)</span>
+                                                }
+                                            </span>
                                         }
-                                        else if (!string.IsNullOrEmpty(line.Notes))
+                                        else if (line.DebtorAmount.HasValue && line.DebtorAmount.Value > 0 && line.InvoiceId.HasValue)
                                         {
-                                            @line.Notes
+                                            <!-- حركة فاتورة مبيعات -->
+                                            <a asp-action="Details" asp-controller="SalesInvoices" asp-route-id="@line.InvoiceId.Value" class="text-primary fw-bold text-decoration-none">
+                                                <i class="bx bx-file me-1"></i>فاتورة مبيعات رقم: @line.InvoiceNumber
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <!-- أي بيان آخر -->
+                                            <span>@line.Notes</span>
                                         }
                                     </td>
                                     <td>
-                                        @if (line.DebtorAmount.HasValue)
+                                        @if (line.DebtorAmount.HasValue && line.DebtorAmount.Value > 0)
                                         {
-                                            <span class="fw-bold text-success">@line.DebtorAmount.Value.ToString("0.00")</span>
+                                            <span class="fw-bold text-success">@line.DebtorAmount.Value.ToString("N2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
                                         }
                                     </td>
                                     <td>
-                                        @if (line.CreditAmount.HasValue)
+                                        @if (line.CreditAmount.HasValue && line.CreditAmount.Value > 0)
                                         {
-                                            <span class="fw-bold text-warning">@line.CreditAmount.Value.ToString("0.00")</span>
+                                            <span class="fw-bold text-warning">@line.CreditAmount.Value.ToString("N2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
                                         }
                                     </td>
                                     <td class="fw-bold @(line.RunningBalance >= 0 ? "text-success" : "text-warning")">
-                                        @line.RunningBalance.ToString("0.00")
+                                        @line.RunningBalance.ToString("N2")
                                     </td>
                                 </tr>
                             }
@@ -138,22 +167,27 @@
                         else
                         {
                             <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">لا توجد معاملات خلال الفترة المحددة</td>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="bx bx-info-circle fs-4 d-block mb-1"></i>
+                                    لا توجد معاملات أو حركات خلال الفترة المحددة
+                                </td>
                             </tr>
                         }
                     </tbody>
                     <tfoot>
-                        <tr class="table-primary fw-bold">
-                            <td colspan="2" class="text-end">الإجمالي:</td>
-                            <td class="text-success">@Model.TotalDebtor.ToString("0.00")</td>
-                            <td class="text-warning">@Model.TotalCreditor.ToString("0.00")</td>
+                        <tr class="table-light fw-bold">
+                            <td colspan="2" class="text-end">إجمالي الحركة خلال الفترة:</td>
+                            <td class="text-success">@Model.TotalDebtor.ToString("N2")</td>
+                            <td class="text-warning">@Model.TotalCreditor.ToString("N2")</td>
                             <td></td>
                         </tr>
-                        <tr class="table-secondary fw-bold">
-                            <td colspan="4" class="text-end">الرصيد الختامي:</td>
+                        <tr class="table-dark fw-bold">
+                            <td colspan="4" class="text-end">الرصيد الختامي النهائي:</td>
                             <td class="@(Model.ClosingBalance >= 0 ? "text-success" : "text-warning")">
-                                @Model.ClosingBalance.ToString("0.00")
-                                (@(Model.ClosingBalance >= 0 ? "مدين لدينا" : "دائن علينا"))
+                                @Math.Abs(Model.ClosingBalance).ToString("N2")
+                                <span class="fs-6 fw-normal">
+                                    (@(Model.ClosingBalance >= 0 ? "مدين لدينا" : "دائن علينا"))
+                                </span>
                             </td>
                         </tr>
                     </tfoot>

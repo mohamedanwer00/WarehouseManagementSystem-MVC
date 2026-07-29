@@ -7,7 +7,7 @@
 
 <form asp-action="ItemMovement" method="get" class="mb-4">
     <div class="card shadow-sm border-0 mb-3">
-        <div class="card-header text-white py-3">
+        <div class="card-header  text-white py-3">
             <h5 class="mb-0 fw-bold"><i class="bx bx-filter me-2"></i>بيانات التصفية</h5>
         </div>
         <div class="card-body">
@@ -36,51 +36,57 @@
     </div>
 </form>
 
-@if (Model.SelectedProductId.HasValue && Model.SelectedProductId > 0 &&
-    Model.DateFrom.HasValue && Model.DateTo.HasValue)
+@if (Model != null && Model.SelectedProductId.HasValue && Model.SelectedProductId > 0)
 {
     <div class="card shadow-sm border-0">
-        <div class="card-header py-3">
+        <div class="card-header text-white py-3">
             <h5 class="mb-0 fw-bold">
                 <i class="bx bx-transfer me-2"></i>
                 حركة الصنف خلال الفترة:
-                <span class="fw-normal fs-6">من @Model.DateFrom.Value.ToString("yyyy/MM/dd") إلى @Model.DateTo.Value.ToString("yyyy/MM/dd")</span>
+                @if (Model.DateFrom.HasValue && Model.DateTo.HasValue)
+                {
+                    <span class="fw-normal fs-6 text-light ms-2">
+                        (من @Model.DateFrom.Value.ToString("yyyy/MM/dd") إلى @Model.DateTo.Value.ToString("yyyy/MM/dd"))
+                    </span>
+                }
             </h5>
         </div>
         <div class="card-body">
-            <div class="row mb-3 p-3 bg-light rounded">
+            <!-- كروت الإحصائيات -->
+            <div class="row mb-4 p-3 bg-light rounded border text-center">
                 <div class="col-md-4">
-                    <strong>إجمالي الداخل:</strong>
-                    <span class="text-success fw-bold">@Model.TotalIn.ToString("0.00")</span>
+                    <span class="d-block text-muted mb-1">إجمالي الداخل (الفترة)</span>
+                    <span class="fs-5 fw-bold text-success">@Model.TotalIn.ToString("N2")</span>
                 </div>
                 <div class="col-md-4">
-                    <strong>إجمالي الخارج:</strong>
-                    <span class="text-danger fw-bold">@Model.TotalOut.ToString("0.00")</span>
+                    <span class="d-block text-muted mb-1">إجمالي الخارج (الفترة)</span>
+                    <span class="fs-5 fw-bold text-danger">@Model.TotalOut.ToString("N2")</span>
                 </div>
                 <div class="col-md-4">
-                    <strong>صافي الرصيد:</strong>
-                    <span class="fw-bold @(Model.NetBalance >= 0 ? "text-primary" : "text-warning")">
-                        @Model.NetBalance.ToString("0.00")
+                    <span class="d-block text-muted mb-1">الرصيد المتبقي التراكمي</span>
+                    <span class="fs-5 fw-bold @(Model.NetBalance >= 0 ? "text-primary" : "text-warning")">
+                        @Model.NetBalance.ToString("N2")
                     </span>
                 </div>
             </div>
 
+            <!-- جدول الحركات -->
             <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle text-center">
+                <table class="table table-bordered table-hover align-middle text-center mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th width="12%">التاريخ</th>
-                            <th width="13%">نوع العملية</th>
-                            <th width="13%">الفرع</th>
-                            <th width="13%">المخزن</th>
-                            <th>رقم المرجع</th>
-                            <th width="11%" class="text-success">داخل</th>
-                            <th width="11%" class="text-danger">خارج</th>
-                            <th width="13%">الرصيد الدائر</th>
+                            <th width="14%">التاريخ والوقت</th>
+                            <th width="12%">نوع العملية</th>
+                            <th width="12%">الفرع</th>
+                            <th width="12%">المخزن</th>
+                            <th>رقم المرجع / الفاتورة</th>
+                            <th width="11%" class="text-success">داخل (+)</th>
+                            <th width="11%" class="text-danger">خارج (-)</th>
+                            <th width="13%">الرصيد المتبقي</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.HasMovements)
+                        @if (Model.HasMovements && Model.Lines != null && Model.Lines.Any())
                         {
                             @foreach (var line in Model.Lines)
                             {
@@ -88,27 +94,35 @@
                                     <td>@line.Date.ToString("yyyy/MM/dd HH:mm")</td>
                                     <td>
                                         <span class="badge @(line.TransactionTypeName == "بيع" ? "bg-danger" :
-                                                    line.TransactionTypeName == "شراء" ? "bg-success" : "bg-secondary")">
+                                                                                                        line.TransactionTypeName == "شراء" ? "bg-success" : "bg-info")">
                                             @line.TransactionTypeName
                                         </span>
                                     </td>
                                     <td>@line.BranchName</td>
                                     <td>@line.WarehouseName</td>
-                                    <td>@line.ReferenceNumber</td>
+                                    <td class="fw-semibold">@(string.IsNullOrEmpty(line.ReferenceNumber) ? "-" : line.ReferenceNumber)</td>
                                     <td>
-                                        @if (line.InQuantity.HasValue)
+                                        @if (line.InQuantity.HasValue && line.InQuantity.Value > 0)
                                         {
-                                            <span class="fw-bold text-success">@line.InQuantity.Value.ToString("0.00")</span>
+                                            <span class="fw-bold text-success">@line.InQuantity.Value.ToString("N2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
                                         }
                                     </td>
                                     <td>
-                                        @if (line.OutQuantity.HasValue)
+                                        @if (line.OutQuantity.HasValue && line.OutQuantity.Value > 0)
                                         {
-                                            <span class="fw-bold text-danger">@line.OutQuantity.Value.ToString("0.00")</span>
+                                            <span class="fw-bold text-danger">@line.OutQuantity.Value.ToString("N2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
                                         }
                                     </td>
                                     <td class="fw-bold @(line.RunningBalance >= 0 ? "text-primary" : "text-warning")">
-                                        @line.RunningBalance.ToString("0.00")
+                                        @line.RunningBalance.ToString("N2")
                                     </td>
                                 </tr>
                             }
@@ -117,22 +131,23 @@
                         {
                             <tr>
                                 <td colspan="8" class="text-center py-4 text-muted">
-                                    لا توجد حركات خلال الفترة المحددة
+                                    <i class="bx bx-info-circle fs-4 d-block mb-1"></i>
+                                    لا توجد أي حركات مخزنية لهذا الصنف خلال الفترة المحددة
                                 </td>
                             </tr>
                         }
                     </tbody>
                     <tfoot>
-                        <tr class="table-primary fw-bold">
-                            <td colspan="5" class="text-end">الإجمالي:</td>
-                            <td class="text-success">@Model.TotalIn.ToString("0.00")</td>
-                            <td class="text-danger">@Model.TotalOut.ToString("0.00")</td>
+                        <tr class="table-light fw-bold">
+                            <td colspan="5" class="text-end">إجمالي حركات الفترة:</td>
+                            <td class="text-success">@Model.TotalIn.ToString("N2")</td>
+                            <td class="text-danger">@Model.TotalOut.ToString("N2")</td>
                             <td></td>
                         </tr>
-                        <tr class="table-secondary fw-bold">
-                            <td colspan="7" class="text-end">صافي الرصيد:</td>
+                        <tr class="table-dark fw-bold">
+                            <td colspan="7" class="text-end">الرصيد التراكمي النهائي:</td>
                             <td class="@(Model.NetBalance >= 0 ? "text-primary" : "text-warning")">
-                                @Model.NetBalance.ToString("0.00")
+                                @Model.NetBalance.ToString("N2")
                             </td>
                         </tr>
                     </tfoot>

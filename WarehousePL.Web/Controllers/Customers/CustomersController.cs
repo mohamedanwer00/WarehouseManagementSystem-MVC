@@ -171,11 +171,13 @@ public class CustomersController : Controller
             ViewModel.LastAction = customer.LastAction;
             return PartialView("_Row", ViewModel);
     }
+
     [HttpGet]
-    public IActionResult Statement(int? customerId, DateTime? dateFrom, DateTime? dateTo)
+    public async Task<IActionResult> Statement(int? customerId, DateTime? dateFrom, DateTime? dateTo)
     {
         dateFrom ??= DateTime.Today.AddMonths(-1);
         dateTo ??= DateTime.Today;
+
         var model = new CustomerStatementViewModel
         {
             CustomerId = customerId ?? 0,
@@ -186,59 +188,75 @@ public class CustomersController : Controller
 
         if (customerId.HasValue && customerId > 0)
         {
-            var customer = _unitOfWork.Customers.GetById(customerId.Value).GetAwaiter().GetResult();
+            var customer = await _unitOfWork.Customers.GetById(customerId.Value);
             if (customer != null)
             {
                 model.CustomerName = customer.Name;
                 model.OpeningBalance = customer.OpeningBalance;
                 model.OpeningBalanceType = customer.OpeningBalanceType;
 
-                var transactions = _unitOfWork.CustomerTransactions
+                DateTime searchDateFrom = dateFrom.Value.Date;
+                DateTime searchDateTo = dateTo.Value.Date.AddDays(1).AddTicks(-1);
+
+                var priorTransactions = await _unitOfWork.CustomerTransactions
                     .GetTableNoTracking()
-                    .Where(t => t.CustomerId == customerId && t.Date >= dateFrom && t.Date <= dateTo)
+                    .Where(t => t.CustomerId == customerId.Value && t.Date < searchDateFrom)
+                    .ToListAsync();
+
+                decimal initialBalance = customer.OpeningBalanceType == BalanceType.Debitor
+                    ? customer.OpeningBalance
+                    : -customer.OpeningBalance;
+
+                foreach (var pt in priorTransactions)
+                {
+                    if (pt.CustomerTransactionType == CustomerTransactionType.SalesInvoice ||
+                        pt.CustomerTransactionType == CustomerTransactionType.OPenBalance)
+                    {
+                        initialBalance += pt.Amount;
+                    }
+                    else if (pt.CustomerTransactionType == CustomerTransactionType.Payment)
+                    {
+                        initialBalance -= pt.Amount;
+                    }
+                }
+
+                // 2. جلب معاملات الفترة المحددة
+                var transactions = await _unitOfWork.CustomerTransactions
+                    .GetTableNoTracking()
+                    .Where(t => t.CustomerId == customerId.Value && t.Date >= searchDateFrom && t.Date <= searchDateTo)
                     .Include(t => t.SalesInvoice)
                     .OrderBy(t => t.Date)
-                    .ToList();
+                    .ToListAsync();
 
                 model.HasTransactions = transactions.Any();
-                model.Lines = BuildStatementLines(transactions, model.OpeningBalance, model.OpeningBalanceType);
+                model.Lines = BuildStatementLines(transactions, initialBalance);
+
                 model.TotalDebtor = model.Lines.Sum(l => l.DebtorAmount ?? 0);
                 model.TotalCreditor = model.Lines.Sum(l => l.CreditAmount ?? 0);
-                model.ClosingBalance = model.Lines.LastOrDefault()?.RunningBalance
-                    ?? (model.OpeningBalanceType == BalanceType.Debitor ? model.OpeningBalance : -model.OpeningBalance);
+                model.ClosingBalance = model.Lines.LastOrDefault()?.RunningBalance ?? initialBalance;
             }
         }
 
         return View(model);
     }
 
-    private IEnumerable<SelectListItem> GetCustomersList()
-    {
-        return _unitOfWork.Customers
-            .GetAll(x => x.LastAction != LastActionName.Delete)
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-            .ToList();
-    }
-
     private List<StatementLineViewModel> BuildStatementLines(
         List<CustomerTransaction> transactions,
-        decimal openingBalance, BalanceType openingBalanceType)
+        decimal initialBalance)
     {
-        decimal running = openingBalanceType == BalanceType.Debitor
-            ? openingBalance : -openingBalance;
-
+        decimal running = initialBalance;
         var lines = new List<StatementLineViewModel>();
+
         foreach (var t in transactions)
         {
             string notes = t.Notes;
-            if (t.CustomerTransactionType == CustomerTransactionType.OPenBalance && string.IsNullOrWhiteSpace(notes))
-                notes = "رصيد افتتاحي";
-            else if (t.CustomerTransactionType == CustomerTransactionType.Payment && string.IsNullOrWhiteSpace(notes))
-                notes = "سداد";
 
             if (t.CustomerTransactionType == CustomerTransactionType.SalesInvoice ||
                 t.CustomerTransactionType == CustomerTransactionType.OPenBalance)
             {
+                if (t.CustomerTransactionType == CustomerTransactionType.OPenBalance && string.IsNullOrWhiteSpace(notes))
+                    notes = "رصيد افتتاحي";
+
                 running += t.Amount;
                 lines.Add(new StatementLineViewModel
                 {
@@ -253,6 +271,9 @@ public class CustomersController : Controller
             }
             else if (t.CustomerTransactionType == CustomerTransactionType.Payment)
             {
+                if (string.IsNullOrWhiteSpace(notes))
+                   
+
                 running -= t.Amount;
                 lines.Add(new StatementLineViewModel
                 {
@@ -266,6 +287,17 @@ public class CustomersController : Controller
                 });
             }
         }
+
         return lines;
     }
+
+    private IEnumerable<SelectListItem> GetCustomersList()
+    {
+        return _unitOfWork.Customers
+            .GetAll(x => x.LastAction != LastActionName.Delete)
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+            .ToList();
+    }
+
+
 }

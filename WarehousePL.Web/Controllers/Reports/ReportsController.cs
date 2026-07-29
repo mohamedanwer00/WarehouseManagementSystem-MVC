@@ -11,110 +11,109 @@ public class ReportsController : Controller
         _unitOfWork = unitOfWork;
     }
 
-    public IActionResult BranchInventory(int? selectedBranchId)
+    public async Task<IActionResult> BranchInventory(int? selectedBranchId)
     {
         var model = new BranchInventoryViewModel
         {
             SelectedBranchId = selectedBranchId,
-            Branches = GetBranchesList()
+            Branches = await GetSelectListAsync(_unitOfWork.Branches.GetAll(x => x.LastAction != LastActionName.Delete))
         };
 
-        if (selectedBranchId.HasValue && selectedBranchId > 0)
-        {
-            var warehouses = _unitOfWork.Warehouses
-                .GetAll(x => x.BranchId == selectedBranchId && x.LastAction != LastActionName.Delete)
-                .OrderBy(x => x.Id)
-                .ToList();
+        if (!selectedBranchId.HasValue || selectedBranchId <= 0)
+            return View(model);
 
-            model.WarehouseNames = warehouses.Select(w => w.Name).ToList();
-            var warehouseIds = warehouses.Select(w => w.Id).ToList();
+        var warehouses = await _unitOfWork.Warehouses
+            .GetAll(x => x.BranchId == selectedBranchId && x.LastAction != LastActionName.Delete)
+            .OrderBy(x => x.Id)
+            .ToListAsync();
 
-            var productWarehouses = _unitOfWork.ProductWarehouses
-                .GetTableNoTracking()
-                .Include(pw => pw.Product)
-                .Where(pw => warehouseIds.Contains(pw.WarehouseId))
-                .ToList();
+        model.WarehouseNames = warehouses.Select(w => w.Name).ToList();
+        var warehouseIds = warehouses.Select(w => w.Id).ToList();
 
-            var productGroups = productWarehouses
-                .GroupBy(pw => pw.ProductId)
-                .OrderBy(g => g.First().Product.Name)
-                .ToList();
+        var productWarehouses = await _unitOfWork.ProductWarehouses
+            .GetTableNoTracking()
+            .Include(pw => pw.Product)
+            .Where(pw => warehouseIds.Contains(pw.WarehouseId))
+            .ToListAsync();
 
-            foreach (var group in productGroups)
+        var baseUnitNames = await GetBaseUnitNamesAsync(productWarehouses.Select(pw => pw.ProductId));
+
+        model.Items = productWarehouses
+            .GroupBy(pw => pw.ProductId)
+            .OrderBy(g => g.First().Product.Name)
+            .Select(group =>
             {
                 var product = group.First().Product;
-                var baseUnitName = GetBaseUnitName(product.Id);
-                var displayName = $"{product.Name} ({baseUnitName})";
+                var quantityByWarehouse = warehouses.ToDictionary(
+                    w => w.Name,
+                    w => group.FirstOrDefault(pw => pw.WarehouseId == w.Id)?.Quantity ?? 0);
 
-                var quantityByWarehouse = new Dictionary<string, decimal>();
-                foreach (var whName in model.WarehouseNames)
+                return new BranchInventoryItemViewModel
                 {
-                    quantityByWarehouse[whName] = 0;
-                }
-
-                decimal total = 0;
-                foreach (var pw in group)
-                {
-                    var wh = warehouses.FirstOrDefault(w => w.Id == pw.WarehouseId);
-                    if (wh != null)
-                    {
-                        quantityByWarehouse[wh.Name] = pw.Quantity;
-                        total += pw.Quantity;
-                    }
-                }
-
-                model.Items.Add(new BranchInventoryItemViewModel
-                {
-                    ProductName = displayName,
+                    ProductName = $"{product.Name} ({baseUnitNames.GetValueOrDefault(product.Id)})",
                     QuantityByWarehouse = quantityByWarehouse,
-                    TotalQuantity = total
-                });
-            }
+                    TotalQuantity = quantityByWarehouse.Values.Sum()
+                };
+            })
+            .ToList();
 
-            model.GrandTotal = model.Items.Sum(i => i.TotalQuantity);
-        }
-
+        model.GrandTotal = model.Items.Sum(i => i.TotalQuantity);
         return View(model);
     }
 
-    public IActionResult WarehouseInventory(int? selectedBranchId, int? selectedWarehouseId)
+    public async Task<IActionResult> WarehouseInventory(int? selectedBranchId, int? selectedWarehouseId)
     {
         var model = new WarehouseInventoryViewModel
         {
             SelectedBranchId = selectedBranchId,
             SelectedWarehouseId = selectedWarehouseId,
-            Branches = GetBranchesList(),
+            Branches = await GetSelectListAsync(_unitOfWork.Branches.GetAll(x => x.LastAction != LastActionName.Delete)),
             Warehouses = selectedBranchId.HasValue && selectedBranchId > 0
-                ? GetWarehousesList(selectedBranchId.Value)
+                ? await GetSelectListAsync(_unitOfWork.Warehouses.GetAll(x => x.BranchId == selectedBranchId && x.LastAction != LastActionName.Delete))
                 : Enumerable.Empty<SelectListItem>()
         };
 
-        if (selectedBranchId.HasValue && selectedBranchId > 0 &&
-            selectedWarehouseId.HasValue && selectedWarehouseId > 0)
-        {
-            var productWarehouses = _unitOfWork.ProductWarehouses
+        if (!selectedBranchId.HasValue || selectedBranchId <= 0 ||
+            !selectedWarehouseId.HasValue || selectedWarehouseId <= 0)
+            return View(model);
+
+        var productWarehouses = await _unitOfWork.ProductWarehouses
+            .GetTableNoTracking()
+            .Include(pw => pw.Product)
+            .Where(pw => pw.WarehouseId == selectedWarehouseId)
+            .OrderBy(pw => pw.Product.Name)
+            .ToListAsync();
+
+        var productIds = productWarehouses.Select(pw => pw.ProductId).ToList();
+
+        var transactionsByProduct = (await _unitOfWork.InventoryTransactions
                 .GetTableNoTracking()
-                .Include(pw => pw.Product)
-                .Where(pw => pw.WarehouseId == selectedWarehouseId)
-                .OrderBy(pw => pw.Product.Name)
-                .ToList();
+                .Where(t => t.WarehouseId == selectedWarehouseId && productIds.Contains(t.ProductId))
+                .OrderByDescending(t => t.Date)
+                .ToListAsync())
+            .GroupBy(t => t.ProductId)
+            .ToDictionary(g => g.Key, g => g.ToList());
 
-            const int lastMovementsCount = 10;
+        var baseUnitNames = await GetBaseUnitNamesAsync(productIds);
+        const int lastMovementsCount = 10;
 
-            foreach (var pw in productWarehouses)
+        foreach (var pw in productWarehouses)
+        {
+            var productTransactions = transactionsByProduct.GetValueOrDefault(pw.ProductId, new List<InventoryTransaction>());
+
+            model.Items.Add(new WarehouseInventoryItemViewModel
             {
-                var baseUnitName = GetBaseUnitName(pw.ProductId);
-                var displayName = $"{pw.Product.Name} ({baseUnitName})";
-
-                var allTransactions = _unitOfWork.InventoryTransactions
-                    .GetTableNoTracking()
-                    .Where(t => t.ProductId == pw.ProductId && t.WarehouseId == selectedWarehouseId)
-                    .OrderByDescending(t => t.Date)
-                    .ToList();
-
-                var movements = allTransactions
+                ProductId = pw.ProductId,
+                ProductName = $"{pw.Product.Name} ({baseUnitNames.GetValueOrDefault(pw.ProductId)})",
+                TotalIn = productTransactions
+                    .Where(t => t.InventoryTransactionType is InventoryTransactionType.Purchase or InventoryTransactionType.OpeningStock)
+                    .Sum(t => t.Quantity),
+                TotalOut = productTransactions
+                    .Where(t => t.InventoryTransactionType == InventoryTransactionType.Sell)
+                    .Sum(t => t.Quantity),
+                Available = pw.Quantity,
+                Movements = productTransactions
                     .Take(lastMovementsCount)
-                    .OrderByDescending(t => t.Date)
                     .Select(t => new InventoryTransactionLineViewModel
                     {
                         Date = t.Date,
@@ -122,36 +121,16 @@ public class ReportsController : Controller
                         Quantity = t.Quantity,
                         ReferenceNumber = t.ReferenceNumber
                     })
-                    .ToList();
-
-                var totalIn = allTransactions
-                    .Where(t => t.InventoryTransactionType == InventoryTransactionType.Purchase
-                               || t.InventoryTransactionType == InventoryTransactionType.OpeningStock)
-                    .Sum(t => t.Quantity);
-
-                var totalOut = allTransactions
-                    .Where(t => t.InventoryTransactionType == InventoryTransactionType.Sell)
-                    .Sum(t => t.Quantity);
-
-                model.Items.Add(new WarehouseInventoryItemViewModel
-                {
-                    ProductId = pw.ProductId,
-                    ProductName = displayName,
-                    TotalIn = totalIn,
-                    TotalOut = totalOut,
-                    Available = pw.Quantity,
-                    Movements = movements
-                });
-            }
-
-            model.TotalProducts = model.Items.Count;
-            model.TotalQuantity = model.Items.Sum(i => i.Available);
+                    .ToList()
+            });
         }
 
+        model.TotalProducts = model.Items.Count;
+        model.TotalQuantity = model.Items.Sum(i => i.Available);
         return View(model);
     }
-    //حركه المخزون
-    public IActionResult ItemMovement(int? selectedProductId, DateTime? dateFrom, DateTime? dateTo)
+
+    public async Task<IActionResult> ItemMovement(int? selectedProductId, DateTime? dateFrom, DateTime? dateTo)
     {
         dateFrom ??= DateTime.Today.AddMonths(-1);
         dateTo ??= DateTime.Today;
@@ -161,102 +140,100 @@ public class ReportsController : Controller
             SelectedProductId = selectedProductId,
             DateFrom = dateFrom,
             DateTo = dateTo,
-            Products = GetProductsList()
+            Products = await GetSelectListAsync(_unitOfWork.Products.GetAll(x => x.LastAction != LastActionName.Delete))
         };
 
-        if (selectedProductId.HasValue && selectedProductId > 0)
+        if (!selectedProductId.HasValue || selectedProductId <= 0)
+            return View(model);
+
+        DateTime searchDateFrom = dateFrom!.Value.Date;
+        DateTime searchDateTo = dateTo!.Value.Date.AddDays(1).AddTicks(-1);
+
+        var priorTransactions = await _unitOfWork.InventoryTransactions
+            .GetTableNoTracking()
+            .Where(t => t.ProductId == selectedProductId.Value && t.Date < searchDateFrom)
+            .ToListAsync();
+
+        decimal running = priorTransactions
+            .Sum(t => t.InventoryTransactionType is InventoryTransactionType.Purchase or InventoryTransactionType.OpeningStock
+                ? t.Quantity
+                : -t.Quantity);
+
+        var transactions = await _unitOfWork.InventoryTransactions
+            .GetTableNoTracking()
+            .Include(t => t.Branch)
+            .Include(t => t.Warehouse)
+            .Where(t => t.ProductId == selectedProductId.Value
+                     && t.Date >= searchDateFrom
+                     && t.Date <= searchDateTo)
+            .OrderBy(t => t.Date)
+            .ThenBy(t => t.Id)
+            .ToListAsync();
+
+        model.HasMovements = transactions.Any();
+
+        foreach (var t in transactions)
         {
-            var transactions = _unitOfWork.InventoryTransactions
-                .GetTableNoTracking()
-                .Include(t => t.Branch)
-                .Include(t => t.Warehouse)
-                .Where(t => t.ProductId == selectedProductId
-                         && t.Date >= dateFrom && t.Date <= dateTo)
-                .OrderBy(t => t.Date)
-                .ThenBy(t => t.Id)
-                .ToList();
-
-            model.HasMovements = transactions.Any();
-
-            decimal running = 0;
-            foreach (var t in transactions)
+            var line = new ItemMovementLineViewModel
             {
-                var line = new ItemMovementLineViewModel
-                {
-                    Date = t.Date,
-                    TransactionTypeName = GetTransactionTypeName(t.InventoryTransactionType),
-                    BranchName = t.Branch?.Name ?? string.Empty,
-                    WarehouseName = t.Warehouse?.Name ?? string.Empty,
-                    ReferenceNumber = t.ReferenceNumber
-                };
+                Date = t.Date,
+                TransactionTypeName = GetTransactionTypeName(t.InventoryTransactionType),
+                BranchName = t.Branch?.Name ?? "-",
+                WarehouseName = t.Warehouse?.Name ?? "-",
+                ReferenceNumber = t.ReferenceNumber
+            };
 
-                if (t.InventoryTransactionType == InventoryTransactionType.Purchase ||
-                    t.InventoryTransactionType == InventoryTransactionType.OpeningStock)
-                {
-                    line.InQuantity = t.Quantity;
-                    running += t.Quantity;
-                }
-                else if (t.InventoryTransactionType == InventoryTransactionType.Sell)
-                {
-                    line.OutQuantity = t.Quantity;
-                    running -= t.Quantity;
-                }
+            bool isIn = t.InventoryTransactionType is InventoryTransactionType.Purchase or InventoryTransactionType.OpeningStock;
+            if (isIn)
+                line.InQuantity = t.Quantity;
+            else
+                line.OutQuantity = t.Quantity;
 
-                line.RunningBalance = running;
-                model.Lines.Add(line);
-            }
-
-            model.TotalIn = model.Lines.Sum(l => l.InQuantity ?? 0);
-            model.TotalOut = model.Lines.Sum(l => l.OutQuantity ?? 0);
-            model.NetBalance = model.TotalIn - model.TotalOut;
+            running += isIn ? t.Quantity : -t.Quantity;
+            line.RunningBalance = running;
+            model.Lines.Add(line);
         }
+
+        model.TotalIn = model.Lines.Sum(l => l.InQuantity ?? 0);
+        model.TotalOut = model.Lines.Sum(l => l.OutQuantity ?? 0);
+        model.NetBalance = running;
 
         return View(model);
     }
 
     [HttpGet]
-    public IActionResult GetWarehouses(int branchId)
+    public async Task<IActionResult> GetWarehouses(int branchId)
     {
-        var warehouses = _unitOfWork.Warehouses
-            .GetAll(x => x.BranchId == branchId && x.LastAction != LastActionName.Delete)
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-            .ToList();
+        var warehouses = await GetSelectListAsync(
+            _unitOfWork.Warehouses.GetAll(x => x.BranchId == branchId && x.LastAction != LastActionName.Delete));
 
         return Json(warehouses);
     }
 
-    private IEnumerable<SelectListItem> GetBranchesList()
+    // ---- Helpers مشتركة ----
+
+    private static async Task<IEnumerable<SelectListItem>> GetSelectListAsync<T>(IQueryable<T> query)
+        where T : class
     {
-        return _unitOfWork.Branches
-            .GetAll(x => x.LastAction != LastActionName.Delete)
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-            .ToList();
+        // كل الكيانات هنا فيها Id + Name، فالاستعلام العام ده بيغني عن 3 دوال مكررة
+        return await query
+            .Select(x => new SelectListItem
+            {
+                Value = EF.Property<int>(x, "Id").ToString(),
+                Text = EF.Property<string>(x, "Name")
+            })
+            .ToListAsync();
     }
 
-    private IEnumerable<SelectListItem> GetWarehousesList(int branchId)
+    private async Task<Dictionary<int, string>> GetBaseUnitNamesAsync(IEnumerable<int> productIds)
     {
-        return _unitOfWork.Warehouses
-            .GetAll(x => x.BranchId == branchId && x.LastAction != LastActionName.Delete)
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-            .ToList();
-    }
+        var ids = productIds.Distinct().ToList();
 
-    private IEnumerable<SelectListItem> GetProductsList()
-    {
-        return _unitOfWork.Products
-            .GetAll(x => x.LastAction != LastActionName.Delete)
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-            .ToList();
-    }
-
-    private string GetBaseUnitName(int productId)
-    {
-        var baseUnit = _unitOfWork.ProductUnits
+        return await _unitOfWork.ProductUnits
             .GetTableNoTracking()
             .Include(pu => pu.Unit)
-            .FirstOrDefault(pu => pu.ProductId == productId && pu.IsBaseUnit);
-
-        return baseUnit?.Unit?.Name ?? string.Empty;
+            .Where(pu => ids.Contains(pu.ProductId) && pu.IsBaseUnit)
+            .ToDictionaryAsync(pu => pu.ProductId, pu => pu.Unit != null ? pu.Unit.Name : string.Empty);
     }
 
     private static string GetTransactionTypeName(InventoryTransactionType type)

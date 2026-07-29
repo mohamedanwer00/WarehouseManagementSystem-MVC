@@ -136,7 +136,6 @@ namespace WarehousePL.Web.Controllers.OpeningStock
             TempData["SuccessMessage"] = "تم حفظ المخزون الافتتاحي بنجاح.";
             return RedirectToAction(nameof(Create), new { selectedBranchId = model.SelectedBranch, selectedWarehouseId = model.SelectedWarehouse });
         }
-        // 4. Endpoints للتعامل عبر JS/AJAX إن أردت
         [HttpGet]
         public IActionResult GetWarehouses(int branchId)
         {
@@ -159,7 +158,6 @@ namespace WarehousePL.Web.Controllers.OpeningStock
                 .Where(s => s.WarehouseId == warehouseId && s.LastAction != LastActionName.Delete)
                 .ToDictionary(s => s.ProductId, s => s.Quantity);
 
-            // 2. جلب المنتجات وربط الكمية فوراً من الـ Dictionary
             return _unitOfWork.Products
                 .GetTableNoTracking()
                 .Where(p => p.LastAction != LastActionName.Delete)
